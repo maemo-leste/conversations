@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 project(conversations)
 message(STATUS "Initiating compile using CMake ${CMAKE_VERSION}")
 
-set(VERSION_MAJOR "1")
+set(VERSION_MAJOR "0")
 set(VERSION_MINOR "1")
 set(VERSION_REVISION "0")
 
