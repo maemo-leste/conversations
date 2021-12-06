@@ -117,7 +117,12 @@ void ChatModel::getOverviewMessages(const int limit, const int offset) {
 }
 
 unsigned int ChatModel::getMessages(const QString &remote_uid) {
-  return this->getMessages(remote_uid, m_limit, m_offset);
+  auto count = this->getMessages(remote_uid, m_limit, m_offset);
+  if(count < m_limit) {
+    m_exhausted = true;
+    emit exhaustedChanged();
+  }
+  return count;
 }
 
 unsigned int ChatModel::getMessages(const QString &remote_uid, const int limit, const int offset) {
