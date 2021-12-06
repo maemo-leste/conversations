@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
   Q_INIT_RESOURCE(assets);
   Q_INIT_RESOURCE(whatsthat);
   Q_INIT_RESOURCE(chatty);
+  Q_INIT_RESOURCE(irssi);
 
   intl("conversations-ui");
   qputenv("QML_DISABLE_DISK_CACHE", "1");

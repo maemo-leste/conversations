@@ -25,6 +25,7 @@ qt5_add_resources(RESOURCES
         qml/components/qml_components.qrc
         qml/chat/chatty/chatty.qrc
         qml/chat/whatsthat/whatsthat.qrc
+        qml/chat/irssi/irssi.qrc
         )
 
 if(NOT MAEMO)
