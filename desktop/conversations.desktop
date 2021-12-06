@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Conversations
+GenericName=Conversations
+Exec=conversations
+Icon=general_sms
+Terminal=false
+Type=Application
+Categories=Telephony;
+MimeType=x-scheme-handler/sms;

@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource prefix="/whatsthat">
+        <file>bg.png</file>
+        <file>whatsthat.png</file>
+        <file>whatsthat.qml</file>
+    </qresource>
+</RCC>

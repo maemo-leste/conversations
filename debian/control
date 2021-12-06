@@ -1,0 +1,34 @@
+Source: conversations
+Section: x11
+Priority: extra
+Maintainer: Merlijn Wajer <merlijn@wizzup.org>
+Build-Depends: debhelper (>= 10),
+    qtbase5-dev,
+    ccache,
+    cmake,
+    libx11-dev,
+    zlib1g-dev,
+    libpng-dev,
+    libqt5svg5-dev,
+    libqt5maemo5-dev,
+    libqt5x11extras5-dev,
+    qtquickcontrols2-5-dev,
+    libosso-abook-dev,
+Homepage: https://github.com/maemo-leste/conversations
+XSBC-Bugtracker: https://github.com/maemo-leste/conversations/issues
+Vcs-Git: https://github.com/maemo-leste/conversations/
+Vcs-Browser: https://github.com/maemo-leste/conversations/
+
+
+Package: conversations
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+Description: libqt5quickcontrols2-5,
+    qml-module-qtquick-controls2,
+    qml-module-qtquick2,
+    qml-module-qtquick-layouts,
+    qml-module-qtquick-controls,
+    qml-module-qtquick-extras,
+    qml-module-qtquick-dialogs,
+    qml-module-qtquick-controls
+# TODO: rtcom-eventlogger, osso-abook

@@ -1,0 +1,13 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource prefix="/">
+        <file>assets/appicon.icns</file>
+        <file>assets/images/video_tab_icon.svg</file>
+
+        <file alias="overview.qml">qml/overview.qml</file>
+
+        <file alias="avatar.jpg">assets/images/avatar.jpeg</file>
+        <file alias="wabbit.png">assets/images/wabbit.png</file>
+        <file alias="wajer.png">assets/images/wajer.png</file>
+        <file alias="uvos.png">assets/images/uvos.png</file>
+    </qresource>
+</RCC>

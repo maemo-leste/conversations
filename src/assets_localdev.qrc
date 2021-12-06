@@ -1,0 +1,19 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource prefix="/">
+        <file alias="chat_failed_sms.png">assets/images/icons/chat_failed_sms.png</file>
+        <file alias="chat_pending_sms.png">assets/images/icons/chat_pending_sms.png</file>
+        <file alias="chat_replied_chat.png">assets/images/icons/chat_replied_chat.png</file>
+        <file alias="chat_replied_sms.png">assets/images/icons/chat_replied_sms.png</file>
+        <file alias="chat_unread_sms.png">assets/images/icons/chat_unread_sms.png</file>
+        <file alias="chat_unread_chat.png">assets/images/icons/chat_unread_chat.png</file>
+        <file alias="general_default_avatar.png">assets/images/icons/general_default_avatar.png</file>
+        <file alias="general_folder.png">assets/images/icons/general_folder.png</file>
+        <file alias="general_sent.png">assets/images/icons/general_sent.png</file>
+        <file alias="general_sms.png">assets/images/icons/general_sms.png</file>
+        <file alias="general_settings.png">assets/images/icons/general_settings.png</file>
+        <file alias="general_sending_failed.png">assets/images/icons/general_sending_failed.png</file>
+        <file alias="general_contacts.png">assets/images/icons/general_contacts.png</file>
+        <file alias="general_missed.png">assets/images/icons/general_missed.png</file>
+        <file alias="rss_reader_move_down.png">assets/images/icons/rss_reader_move_down.png</file>
+    </qresource>
+</RCC>

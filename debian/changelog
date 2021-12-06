@@ -1,0 +1,6 @@
+conversations (0.1) unstable; urgency=medium
+
+  * Initial debian packaging
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Sat, 04 Dec 2021 20:33:36 +0100
+

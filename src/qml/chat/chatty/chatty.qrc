@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource prefix="/chatty">
+        <file>chatty.png</file>
+        <file>chatty.qml</file>
+    </qresource>
+</RCC>
