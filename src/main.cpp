@@ -17,9 +17,6 @@ int main(int argc, char *argv[]) {
   Q_INIT_RESOURCE(assets);
   Q_INIT_RESOURCE(whatsthat);
   Q_INIT_RESOURCE(chatty);
-#ifdef MAEMO
-  Q_INIT_RESOURCE(assets_maemo);
-#endif
 
   intl("conversations-ui");
   qputenv("QML_DISABLE_DISK_CACHE", "1");

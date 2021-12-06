@@ -66,7 +66,7 @@ Rectangle {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
                         id: imgStatus
-                        source: "qrc:///" + icon_name + ".png";
+                        source: ctx.ossoIconLookup(icon_name + ".png");
                         smooth: true
                         visible: true
                     }
@@ -137,7 +137,7 @@ Rectangle {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
                         id: imgPerson
-                        source: "qrc:///general_default_avatar.png"
+                        source: ctx.ossoIconLookup("general_default_avatar.png")
                         smooth: true
                         visible: true
                     }

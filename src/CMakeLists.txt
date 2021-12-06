@@ -27,9 +27,7 @@ qt5_add_resources(RESOURCES
         qml/chat/whatsthat/whatsthat.qrc
         )
 
-if(MAEMO)
-    qt5_add_resources(RESOURCES assets_maemo.qrc)
-else()
+if(NOT MAEMO)
     qt5_add_resources(RESOURCES assets_localdev.qrc)
 endif()
 

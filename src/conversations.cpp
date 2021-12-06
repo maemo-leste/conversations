@@ -47,6 +47,23 @@ void Conversations::setWindowTitle(const QString &title) {
   emit setTitle(title);
 }
 
+QString Conversations::ossoIconLookup(const QString &filename) {
+  if(ossoIconCache.contains(filename)) return ossoIconCache[filename];
+
+  auto fn = QString("/usr/share/icons/hicolor/48x48/hildon/%1").arg(filename);
+  auto fn_qrc = QString("qrc:///%1").arg(filename);
+
+  if(Utils::fileExists(fn)) {
+    auto res = QString("file:///%1").arg(fn);
+    ossoIconCache[filename] = res;
+    return res;
+  } else if(Utils::fileExists(fn_qrc)) {
+    ossoIconCache[filename] = fn_qrc;
+    return fn_qrc;
+  }
+  return QString("not_found_%1").arg(filename);
+}
+
 void Conversations::onTextScalingChanged() {
   m_textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
   emit textScalingChanged();

@@ -41,6 +41,7 @@ public:
     ChatModel *chatOverviewModel;
 
     void setWindowTitle(const QString &title);
+    Q_INVOKABLE QString ossoIconLookup(const QString &filename); // /usr/share/icons/hicolor/48x48/hildon/
 
 signals:
     void clockSkewDetected();
@@ -56,6 +57,7 @@ public slots:
 
 private:
     float m_textScaling = 1.0;
+    QMap<QString, QString> ossoIconCache;
     QTimer m_hibernateTimer;
     std::chrono::seconds m_hibernateDetectInterval{300};
     std::chrono::time_point<std::chrono::steady_clock> m_hibernatePreviousTime;

@@ -21,7 +21,7 @@ Item {
         height: 48
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
-        source: "qrc:///rss_reader_move_down.png"
+        source: ctx.ossoIconLookup("rss_reader_move_down.png")
         smooth: true
     }
 
