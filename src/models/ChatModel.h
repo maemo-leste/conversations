@@ -45,6 +45,7 @@ public:
     Q_PROPERTY(bool exhausted READ is_exhausted NOTIFY exhaustedChanged);
     Q_PROPERTY(int limit READ limit NOTIFY limitChanged);
     Q_PROPERTY(int offset READ offset NOTIFY offsetChanged);
+    Q_PROPERTY(QString remote_uid MEMBER m_remote_uid CONSTANT);
     int limit() const { return m_limit; }
     int offset() const { return m_offset; }
     bool is_exhausted() {

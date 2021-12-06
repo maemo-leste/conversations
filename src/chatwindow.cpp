@@ -38,10 +38,14 @@ ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QStri
   auto *qctx = ui->quick->rootContext();
   qctx->setContextProperty("chatModel", this->chatModel);
   qctx->setContextProperty("ctx", m_ctx);
+  const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+  qctx->setContextProperty("fixedFont", fixedFont);
 
   auto theme = config()->get(ConfigKeys::ChatTheme).toString();
   if(theme == "chatty")
     ui->quick->setSource(QUrl("qrc:/chatty/chatty.qml"));
+  else if(theme == "irssi")
+    ui->quick->setSource(QUrl("qrc:/irssi/irssi.qml"));
   else
     ui->quick->setSource(QUrl("qrc:/whatsthat/whatsthat.qml"));
 

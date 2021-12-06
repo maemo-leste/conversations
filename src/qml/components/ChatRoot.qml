@@ -144,4 +144,8 @@ Rectangle {
 
         chatList.visible = true;
     }
+
+    Component.onCompleted: {
+        root.scrollToBottom();
+    }
 }

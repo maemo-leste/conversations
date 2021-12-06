@@ -29,13 +29,17 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
 #endif
   QPixmap p_theme_whatsthat(":whatsthat/whatsthat.png");
   QPixmap p_theme_chatty(":chatty/chatty.png");
+  QPixmap p_theme_irssi(":irssi/irssi.png");
 
   ui->label_chatty_img->setPixmap(p_theme_chatty);
   ui->label_whatsthat_img->setPixmap(p_theme_whatsthat);
+  ui->label_irssi_img->setPixmap(p_theme_irssi);
 
   auto theme = config()->get(ConfigKeys::ChatTheme).toString();
   if(theme == "chatty")
     ui->radio_theme_chatty->setChecked(true);
+  else if(theme == "irssi")
+    ui->radio_theme_irssi->setChecked(true);
   else
     ui->radio_theme_whatsthat->setChecked(true);
 
@@ -45,6 +49,8 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
         config()->set(ConfigKeys::ChatTheme, "whatsthat");
       } else if(name == "radio_theme_chatty") {
         config()->set(ConfigKeys::ChatTheme, "chatty");
+      } else if(name == "radio_theme_irssi") {
+        config()->set(ConfigKeys::ChatTheme, "irssi");
       }
   });
 

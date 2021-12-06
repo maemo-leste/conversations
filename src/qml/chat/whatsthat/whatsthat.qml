@@ -122,8 +122,4 @@ Components.ChatRoot {
             }
         }
     }
-
-    Component.onCompleted: {
-        root.scrollToBottom();
-    }
 }

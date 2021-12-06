@@ -24,7 +24,7 @@
     <normaloff>:/assets/images/appicons/64x64.png</normaloff>:/assets/images/appicons/64x64.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout_4">
+   <layout class="QVBoxLayout" name="verticalLayout_5">
     <item>
      <widget class="QLabel" name="label">
       <property name="text">
@@ -68,6 +68,27 @@
          <widget class="QRadioButton" name="radio_theme_chatty">
           <property name="text">
            <string>Chatty</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">themeRadioGroup</string>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QLabel" name="label_irssi_img">
+          <property name="text">
+           <string>irssi_img</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="radio_theme_irssi">
+          <property name="text">
+           <string>Irssi</string>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">themeRadioGroup</string>
