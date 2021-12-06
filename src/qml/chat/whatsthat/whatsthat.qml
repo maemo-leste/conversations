@@ -130,10 +130,14 @@ Components.ChatRoot {
         chatListView.visible = false;
         var count_results = chatModel.getPage();
         if(!chatListView.atBottom) {
-            var jump_to = count_results <= 1 ? 0 : count_results + 1
+            var jump_to = count_results <= 1 ? 0 : count_results - 1
             chatListView.positionViewAtIndex(jump_to, ListView.Beginning)
         }
 
         chatListView.visible = true;
+    }
+
+    Component.onCompleted: {
+        root.scrollToBottom();
     }
 }
