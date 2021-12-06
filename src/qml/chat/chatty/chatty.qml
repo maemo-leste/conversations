@@ -153,14 +153,4 @@ Components.ChatRoot {
             }
         }
     }
-
-    onFetchHistory: {
-        // Prepend new items to the model by calling `getPage()`.
-        // temp. disable visibility to 'break' the touch gesture,
-        // if we dont the list scrolling bugs out by "jumping"
-        chatListView.visible = false;
-        var count_results = chatModel.getPage();
-        chatListView.positionViewAtIndex(count_results, ListView.Visible)
-        chatListView.visible = true;
-    }
 }

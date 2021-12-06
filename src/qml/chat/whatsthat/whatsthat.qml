@@ -123,20 +123,6 @@ Components.ChatRoot {
         }
     }
 
-    onFetchHistory: {
-        // Prepend new items to the model by calling `getPage()`.
-        // temp. disable visibility to 'break' the touch gesture,
-        // if we dont the list scrolling bugs out by "jumping"
-        chatListView.visible = false;
-        var count_results = chatModel.getPage();
-        if(!chatListView.atBottom) {
-            var jump_to = count_results <= 1 ? 0 : count_results - 1
-            chatListView.positionViewAtIndex(jump_to, ListView.Beginning)
-        }
-
-        chatListView.visible = true;
-    }
-
     Component.onCompleted: {
         root.scrollToBottom();
     }

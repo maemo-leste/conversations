@@ -128,9 +128,20 @@ Rectangle {
         interval: 10
         repeat: false
         running: false
-        onTriggered: {
-            console.log("scrolling to bottom");
-            chatList.positionViewAtEnd();
+        onTriggered: chatList.positionViewAtEnd();
+    }
+
+    onFetchHistory: {
+        // Prepend new items to the model by calling `getPage()`.
+        // temp. disable visibility to 'break' the touch gesture,
+        // if we dont the list scrolling bugs out by "jumping"
+        chatList.visible = false;
+        var count_results = chatModel.getPage();
+        if(!chatList.atBottom) {
+            var jump_to = count_results <= 1 ? 0 : count_results - 1
+            chatList.positionViewAtIndex(jump_to, ListView.Beginning)
         }
+
+        chatList.visible = true;
     }
 }
