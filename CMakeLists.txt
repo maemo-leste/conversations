@@ -6,12 +6,6 @@ set(VERSION_MAJOR "0")
 set(VERSION_MINOR "1")
 set(VERSION_REVISION "0")
 
-option(MAEMO "compiling on maemo")
-if(EXISTS "/usr/bin/maemo-launcher")
-    set(MAEMO ON)
-    message(STATUS "Compiling on Maemo Leste")
-endif()
-
 # add `cmake` directory as cmake module path
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -29,6 +23,10 @@ include(CheckFunctionExists)
 
 find_package(PkgConfig REQUIRED)
 find_package(GLib REQUIRED)
+pkg_search_module(LIBHILDON hildon-1)
+if(DEFINED LIBHILDON_LIBRARIES)
+    set(MAEMO ON)
+endif()
 
 # rtcom-eventlogger
 pkg_check_modules(RTCOM-EVENTLOGGER REQUIRED rtcom-eventlogger)
