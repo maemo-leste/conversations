@@ -14,6 +14,7 @@ Build-Depends: debhelper (>= 10),
     libqt5x11extras5-dev,
     qtquickcontrols2-5-dev,
     libosso-abook-dev,
+    librtcom-eventlogger-dev,
 Homepage: https://github.com/maemo-leste/conversations
 XSBC-Bugtracker: https://github.com/maemo-leste/conversations/issues
 Vcs-Git: https://github.com/maemo-leste/conversations/
@@ -30,5 +31,7 @@ Description: libqt5quickcontrols2-5,
     qml-module-qtquick-controls,
     qml-module-qtquick-extras,
     qml-module-qtquick-dialogs,
-    qml-module-qtquick-controls
+    qml-module-qtquick-controls,
+    librtcom-eventlogger1,
+    libosso-abook,
 # TODO: rtcom-eventlogger, osso-abook
