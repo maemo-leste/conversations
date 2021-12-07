@@ -67,7 +67,6 @@ Rectangle {
                         anchors.verticalCenter: parent.verticalCenter
                         id: imgStatus
                         source: ctx.ossoIconLookup(icon_name + ".png");
-                        smooth: true
                         visible: true
                     }
                 }

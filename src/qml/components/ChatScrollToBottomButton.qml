@@ -22,7 +22,6 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
         source: ctx.ossoIconLookup("rss_reader_move_down.png")
-        smooth: true
     }
 
     MouseArea {

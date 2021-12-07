@@ -60,7 +60,6 @@ Components.ChatRoot {
                             else if(name == "uvos") return "qrc:///uvos.png"
                             return "qrc:///wabbit.png"
                         }
-                        smooth: true
                     }
                 }
 
