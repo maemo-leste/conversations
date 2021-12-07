@@ -4,6 +4,7 @@ Priority: extra
 Maintainer: Merlijn Wajer <merlijn@wizzup.org>
 Build-Depends: debhelper (>= 10),
     qtbase5-dev,
+    qt5-default,
     ccache,
     cmake,
     libx11-dev,

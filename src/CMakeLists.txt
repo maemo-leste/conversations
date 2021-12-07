@@ -15,12 +15,12 @@ file(GLOB SOURCE_FILES
         "models/*.cpp"
         )
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui Network Svg Xml Quick QuickWidgets Qml QuickControls2)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui Network Svg Xml Quick QuickWidgets Qml QuickControls2 QuickCompiler)
 if(MAEMO)
     find_package(Qt5 REQUIRED COMPONENTS Maemo5)
 endif()
 
-qt5_add_resources(RESOURCES
+qtquick_compiler_add_resources(RESOURCES
         assets.qrc
         qml/components/qml_components.qrc
         qml/chat/chatty/chatty.qrc
@@ -29,7 +29,7 @@ qt5_add_resources(RESOURCES
         )
 
 if(NOT MAEMO)
-    qt5_add_resources(RESOURCES assets_localdev.qrc)
+    qtquick_compiler_add_resources(RESOURCES assets_localdev.qrc)
 endif()
 
 set(EXECUTABLE_FLAG)
