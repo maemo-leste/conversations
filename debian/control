@@ -27,7 +27,7 @@ Vcs-Browser: https://github.com/maemo-leste/conversations/
 Package: conversations
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-Description: libqt5quickcontrols2-5,
+    libqt5quickcontrols2-5,
     qml-module-qtquick-controls2,
     qml-module-qtquick2,
     qml-module-qtquick-layouts,
@@ -37,4 +37,4 @@ Description: libqt5quickcontrols2-5,
     qml-module-qtquick-controls,
     librtcom-eventlogger1,
     libosso-abook,
-# TODO: rtcom-eventlogger, osso-abook
+Description: Maemo Conversations UI with RTCOM and Telepathy integration
