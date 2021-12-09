@@ -14,7 +14,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 set(CONVERSATIONS_DESKTOP_DIR /usr/share/applications/hildon)
 
-include(VersionConversations)
+configure_file("cmake/config-conversations.h.cmake" "${CMAKE_CURRENT_SOURCE_DIR}/src/config-conversations.h")
 
 set(CMAKE_CXX_STANDARD 14)
 include(FindCcache)
