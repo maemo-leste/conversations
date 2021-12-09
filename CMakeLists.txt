@@ -5,6 +5,7 @@ message(STATUS "Initiating compile using CMake ${CMAKE_VERSION}")
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "1")
 set(VERSION_REVISION "0")
+set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION}")
 
 # add `cmake` directory as cmake module path
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake")
@@ -22,7 +23,7 @@ include(CheckFunctionExists)
 #include(CheckSymbolExists)
 
 find_package(PkgConfig REQUIRED)
-find_package(GLib REQUIRED)
+find_package(GLIB REQUIRED)
 pkg_search_module(LIBHILDON hildon-1)
 if(DEFINED LIBHILDON_LIBRARIES)
     set(MAEMO ON)

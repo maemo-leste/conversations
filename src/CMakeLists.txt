@@ -58,7 +58,7 @@ target_include_directories(conversations PUBLIC
         ${Qt5Network_INCLUDE_DIRS}
         ${Qt5Svg_INCLUDE_DIRS}
         ${Qt5Xml_INCLUDE_DIRS}
-        ${GLib_INCLUDE_DIRS}
+        ${GLIB_INCLUDE_DIRS}
         ${RTCOM-EVENTLOGGER_INCLUDE_DIRS}
         )
 
@@ -77,7 +77,6 @@ target_compile_definitions(conversations
         ${Qt5Network_DEFINITIONS}
         ${Qt5Svg_DEFINITIONS}
         ${Qt5Xml_DEFINITIONS}
-        ${GLib_DEFINITIONS}
         )
 
 set(CMAKE_CXX_FLAGS
@@ -99,7 +98,7 @@ target_link_libraries(conversations PUBLIC
         Qt5::Qml
         Qt5::QuickControls2
         Threads::Threads
-        ${GLib_LIBRARY}
+        ${GLIB_LIBRARIES}
         ${RTCOM-EVENTLOGGER_LIBRARIES}
 )
 
@@ -122,6 +121,6 @@ message(STATUS "VERSION_MINOR: ${VERSION_MINOR}")
 message(STATUS "VERSION_REVISION: ${VERSION_REVISION}")
 message(STATUS "VERSION: ${VERSION}")
 message(STATUS "This build is for Maemo: ${MAEMO}")
-message(STATUS "GLib: ${GLib_VERSION}")
+message(STATUS "GLib: ${GLIB_VERSION}")
 message(STATUS "rtcom-eventlogger: ${RTCOM-EVENTLOGGER_VERSION}")
 message(STATUS "=============================================")
