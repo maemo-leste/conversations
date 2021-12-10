@@ -26,7 +26,7 @@ Components.ChatRoot {
         height: 26 * ctx.scaleFactor
         color: statusBarBackgroundColor
 
-        Text {
+        Components.PlainText {
             id: statusBarText
             color: textDimmedColor
             text: chatModel.remote_uid
@@ -54,7 +54,7 @@ Components.ChatRoot {
             width: parent.width
             spacing: 0
 
-            Text {
+            Components.PlainText {
                 font.pointSize: 14 * ctx.scaleFactor
                 font.family: fixedFont
                 color: "white"
@@ -63,7 +63,7 @@ Components.ChatRoot {
                 Layout.alignment: Qt.AlignTop
             }
 
-            Text {
+            Components.PlainText {
                 font.pointSize: 12 * ctx.scaleFactor
                 font.family: fixedFont
                 color: textGreyColor
@@ -71,7 +71,7 @@ Components.ChatRoot {
                 Layout.alignment: Qt.AlignTop
             }
 
-            Text {
+            Components.PlainText {
                 font.pointSize: 14 * ctx.scaleFactor
                 font.family: fixedFont
                 color: "white"
@@ -80,7 +80,7 @@ Components.ChatRoot {
                 Layout.alignment: Qt.AlignTop
             }
 
-            Text {
+            Components.PlainText {
                 font.pointSize: 12 * ctx.scaleFactor
                 font.family: fixedFont
                 color: textGreyColor
@@ -89,7 +89,7 @@ Components.ChatRoot {
                 Layout.alignment: Qt.AlignTop
             }
 
-            Text {
+            Components.PlainText {
                 id: textMessage
                 font.family: fixedFont
                 font.pointSize: 14 * ctx.scaleFactor

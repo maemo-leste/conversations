@@ -87,22 +87,20 @@ Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: itemHeight / 2
 
-                        Text {
+                        Components.PlainText {
                             text: remote_name
-                            textFormat: Text.PlainText
                             color: "white"
                             font.pointSize: 18 * ctx.scaleFactor
                             Layout.alignment: Qt.AlignTop
                         }
 
-                        Text {
+                        Components.PlainText {
                             Layout.leftMargin: 6
                             text: {
                                 if(message !== "") datestr + " " + hourstr;
                                 else "";
                             }
                             color: "grey"
-                            textFormat: Text.PlainText
                             font.pointSize: 12 * ctx.scaleFactor
                             Layout.alignment: Qt.AlignTop
 
@@ -113,10 +111,9 @@ Rectangle {
                         }
                     }
 
-                    Text {
+                    Components.PlainText {
                         Layout.fillWidth: true
                         Layout.preferredHeight: itemHeight / 2
-                        textFormat: Text.PlainText
                         color: "grey"
                         font.pointSize: 14 * ctx.scaleFactor
                         text: {

@@ -41,7 +41,7 @@ Rectangle {
         color: chatRoot.historyPopupBackgroundColor
         radius: 6
 
-        Text {
+        Components.PlainText {
             color: chatRoot.historyPopupTextColor
             font.pointSize: 16 * ctx.scaleFactor
             text: !chatModel.exhausted ? "Load history" : "No more history"
@@ -74,63 +74,63 @@ Rectangle {
             id: debugBar
             property int pointSize: 16
 
-            Text {
+            Components.PlainText {
                 color: "lime"
                 text: "Messages: " + chatList.count + " (limit: " + chatModel.limit + " offset: " + chatModel.offset + " exhausted: " + chatModel.exhausted + ")"
                 font.pointSize: parent.pointSize
                 font.bold: true
             }
 
-            Text {
+            Components.PlainText {
                 color: "lime"
                 text: "mayAutoScroll: " + chatList.mayAutoScroll
                 font.pointSize: parent.pointSize
                 font.bold: true
             }
 
-            Text {
+            Components.PlainText {
                 color: "lime"
                 text: "atBottom: " + chatList.atBottom
                 font.pointSize: parent.pointSize
                 font.bold: true
             }
 
-            Text {
+            Components.PlainText {
                 color: "lime"
                 text: "atTop: " + chatList.atTop
                 font.pointSize: parent.pointSize
                 font.bold: true
             }
 
-            Text {
+            Components.PlainText {
                 color: "lime"
                 text: "rootHeight: " + chatRoot.height
                 font.pointSize: parent.pointSize
                 font.bold: true
             }
 
-            Text {
+            Components.PlainText {
                 color: "lime"
                 text: "chatList.cRect.height: " + chatList.childrenRect.height
                 font.pointSize: parent.pointSize
                 font.bold: true
             }
 
-            Text {
+            Components.PlainText {
                 color: "lime"
                 text: "scrollPosition: " + chatList.chatScroll.position.toFixed(4)
                 font.pointSize: parent.pointSize
                 font.bold: true
             }
 
-            Text {
+            Components.PlainText {
                 color: "lime"
                 text: "scrollable: " + chatList.scrollable
                 font.pointSize: parent.pointSize
                 font.bold: true
             }
 
-            Text {
+            Components.PlainText {
                 color: "lime"
                 text: "scaling: " + ctx.scaleFactor
                 font.pointSize: parent.pointSize

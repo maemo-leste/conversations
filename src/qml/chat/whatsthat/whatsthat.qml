@@ -83,7 +83,7 @@ Components.ChatRoot {
                             Layout.fillWidth: true
                         }
 
-                        Text {
+                        Components.PlainText {
                             visible: !outgoing && isHead
                             font.pointSize: 12 * ctx.scaleFactor
                             color: "lightblue"
@@ -95,7 +95,7 @@ Components.ChatRoot {
                             Layout.fillWidth: true
                         }
 
-                        Text {
+                        Components.PlainText {
                             font.pointSize: 12 * ctx.scaleFactor
                             color: "#98ac90"
                             text: datestr + " " + hourstr
@@ -103,7 +103,7 @@ Components.ChatRoot {
                         }
                     }
 
-                    Text {
+                    Components.PlainText {
                         id: textMessage
                         color: "white"
                         text: message

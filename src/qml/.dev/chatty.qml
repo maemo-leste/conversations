@@ -131,7 +131,6 @@ Rectangle {
                         id: textNick
                         Layout.alignment: Qt.AlignVCenter
                         Layout.minimumWidth: chatListView.nickWidth
-                        textFormat: Text.PlainText
                         text: {
                             if(!isHead) return "";
                             if(name == "_self") return "d4irc";
@@ -152,7 +151,6 @@ Rectangle {
                         Layout.fillWidth: true
                         Layout.leftMargin: 8
                         Layout.alignment: isHead ? Qt.AlignVCenter : Qt.AlignTop
-                        textFormat: Text.PlainText
                         text: message
                         color: "white"
                         wrapMode: Text.WordWrap
@@ -170,7 +168,6 @@ Rectangle {
                         Text {
                             //Layout.preferredWidth: parent.width
                             Layout.fillWidth: true
-                            textFormat: Text.PlainText
                             text: message
                             color: "white"
                             wrapMode: Text.WordWrap
@@ -199,7 +196,6 @@ Rectangle {
                     Text {
                         Layout.leftMargin: 12
                         Layout.alignment: Qt.AlignVCenter
-                        textFormat: Text.PlainText
                         text: "hourstr"
                         color: "grey"
                         font.pointSize: 12

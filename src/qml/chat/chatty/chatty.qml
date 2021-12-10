@@ -72,11 +72,10 @@ Components.ChatRoot {
                 RowLayout {
                     Layout.fillWidth: true
 
-                    Text {
+                    Components.PlainText {
                         id: textNick
                         Layout.alignment: Qt.AlignVCenter
                         Layout.minimumWidth: chatListView.nickWidth
-                        textFormat: Text.PlainText
                         text: {
                             if(!isHead) return "";
                             if(outgoing) return "<self>";
@@ -91,13 +90,12 @@ Components.ChatRoot {
                         }
                     }
 
-                    Text {
+                    Components.PlainText {
                         id: textChatMessage
                         visible: isHead
                         Layout.fillWidth: true
                         Layout.leftMargin: 8
                         Layout.alignment: isHead ? Qt.AlignVCenter : Qt.AlignTop
-                        textFormat: Text.PlainText
                         text: message
                         color: "white"
                         wrapMode: Text.WordWrap
@@ -112,9 +110,8 @@ Components.ChatRoot {
                         Layout.leftMargin: 8
                         visible: !isHead
 
-                        Text {
+                        Components.PlainText {
                             Layout.fillWidth: true
-                            textFormat: Text.PlainText
                             text: message
                             color: "white"
                             wrapMode: Text.WordWrap
@@ -140,10 +137,9 @@ Components.ChatRoot {
                         Layout.fillWidth: true
                     }
 
-                    Text {
+                    Components.PlainText {
                         Layout.leftMargin: 12
                         Layout.alignment: Qt.AlignVCenter
-                        textFormat: Text.PlainText
                         text: hourstr
                         color: "grey"
                         font.pointSize: 12 * ctx.scaleFactor

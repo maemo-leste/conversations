@@ -1,5 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
     <qresource prefix="/">
+        <file alias="components/PlainText.qml">PlainText.qml</file>
         <file alias="components/ChatScrollToBottomButton.qml">ChatScrollToBottomButton.qml</file>
         <file alias="components/ChatRoot.qml">ChatRoot.qml</file>
         <file alias="components/ChatListView.qml">ChatListView.qml</file>
