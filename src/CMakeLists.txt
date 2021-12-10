@@ -114,13 +114,7 @@ install(TARGETS conversations
         DESTINATION bin
         )
 
-
-message(STATUS "=============================================")
-message(STATUS "VERSION_MAJOR: ${VERSION_MAJOR}")
-message(STATUS "VERSION_MINOR: ${VERSION_MINOR}")
-message(STATUS "VERSION_REVISION: ${VERSION_REVISION}")
-message(STATUS "VERSION: ${VERSION}")
-message(STATUS "This build is for Maemo: ${MAEMO}")
+message(STATUS "CONVERSATIONS: ${VERSION}")
+message(STATUS "Maemo build: ${MAEMO}")
 message(STATUS "GLib: ${GLIB_VERSION}")
 message(STATUS "rtcom-eventlogger: ${RTCOM-EVENTLOGGER_VERSION}")
-message(STATUS "=============================================")
