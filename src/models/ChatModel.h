@@ -73,7 +73,6 @@ private:
     int m_limit = 20;
     int m_offset = 0;
     bool m_exhausted = false;
-    gint m_rtcom_sms_service_id = 3;  // rtcom_el_get_service_id(el, "RTCOM_EL_SERVICE_SMS");
 };
 
 #endif

@@ -100,10 +100,11 @@ void ChatModel::clear() {
 
 void ChatModel::getOverviewMessages(const int limit, const int offset) {
   rtcom_query* query_struct = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_CONTACT);
+  gint rtcom_sms_service_id = rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_SMS");
   bool query_prepared = FALSE;
 
   query_prepared = rtcom_el_query_prepare(query_struct->query,
-                                          "service-id", m_rtcom_sms_service_id, RTCOM_EL_OP_EQUAL, NULL);
+                                          "service-id", rtcom_sms_service_id, RTCOM_EL_OP_EQUAL, NULL);
   if(!query_prepared) {
     qCritical() << "Couldn't prepare query";
     g_object_unref(query_struct->query);
@@ -129,10 +130,11 @@ unsigned int ChatModel::getMessages(const QString &remote_uid, const int limit, 
   m_remote_uid = remote_uid;
 
   rtcom_query* query_struct = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_NONE);
+  gint rtcom_sms_service_id = rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_SMS");
   bool query_prepared = FALSE;
   query_prepared = rtcom_el_query_prepare(query_struct->query,
                                           "remote-uid", remote_uid.toStdString().c_str(), RTCOM_EL_OP_EQUAL,
-                                          "service-id", m_rtcom_sms_service_id, RTCOM_EL_OP_EQUAL,
+                                          "service-id", rtcom_sms_service_id, RTCOM_EL_OP_EQUAL,
                                           NULL);
   if(!query_prepared) {
     qCritical() << "Couldn't prepare query";
