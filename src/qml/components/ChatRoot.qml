@@ -37,13 +37,13 @@ Rectangle {
         anchors.topMargin: 20
 
         width: parent.width / 3
-        height: 32
+        height: 32 * ctx.scaleFactor
         color: chatRoot.historyPopupBackgroundColor
         radius: 6
 
         Text {
             color: chatRoot.historyPopupTextColor
-            font.pointSize: 16
+            font.pointSize: 16 * ctx.scaleFactor
             text: !chatModel.exhausted ? "Load history" : "No more history"
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
@@ -58,68 +58,84 @@ Rectangle {
         }
     }
 
-    ColumnLayout {
-        // debugBar
+    Rectangle {
+        color: "#80000000"
         z: parent.z + 1
         visible: ctx.isDebug
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.leftMargin: 60
         anchors.topMargin: 60
-        property int pointSize: 16
+        height: debugBar.childrenRect.height
+        width: debugBar.childrenRect.width
 
-        Text {
-            color: "lime"
-            text: "Messages: " + chatList.count + " (limit: " + chatModel.limit + " offset: " + chatModel.offset + " exhausted: " + chatModel.exhausted + ")"
-            font.pointSize: parent.pointSize
-        }
+        ColumnLayout {
+            // debugBar
+            id: debugBar
+            property int pointSize: 16
 
-        Text {
-            color: "lime"
-            text: "mayAutoScroll: " + chatList.mayAutoScroll
-            font.pointSize: parent.pointSize
-        }
+            Text {
+                color: "lime"
+                text: "Messages: " + chatList.count + " (limit: " + chatModel.limit + " offset: " + chatModel.offset + " exhausted: " + chatModel.exhausted + ")"
+                font.pointSize: parent.pointSize
+                font.bold: true
+            }
 
-        Text {
-            color: "lime"
-            text: "atBottom: " + chatList.atBottom
-            font.pointSize: parent.pointSize
-        }
+            Text {
+                color: "lime"
+                text: "mayAutoScroll: " + chatList.mayAutoScroll
+                font.pointSize: parent.pointSize
+                font.bold: true
+            }
 
-        Text {
-            color: "lime"
-            text: "atTop: " + chatList.atTop
-            font.pointSize: parent.pointSize
-        }
+            Text {
+                color: "lime"
+                text: "atBottom: " + chatList.atBottom
+                font.pointSize: parent.pointSize
+                font.bold: true
+            }
 
-        Text {
-            color: "lime"
-            text: "rootHeight: " + chatRoot.height
-            font.pointSize: parent.pointSize
-        }  
+            Text {
+                color: "lime"
+                text: "atTop: " + chatList.atTop
+                font.pointSize: parent.pointSize
+                font.bold: true
+            }
 
-        Text {
-            color: "lime"
-            text: "chatList.cRect.height: " + chatList.childrenRect.height
-            font.pointSize: parent.pointSize
-        }
+            Text {
+                color: "lime"
+                text: "rootHeight: " + chatRoot.height
+                font.pointSize: parent.pointSize
+                font.bold: true
+            }
 
-        Text {
-            color: "lime"
-            text: "scrollPosition: " + chatList.chatScroll.position.toFixed(4)
-            font.pointSize: parent.pointSize
-        }
+            Text {
+                color: "lime"
+                text: "chatList.cRect.height: " + chatList.childrenRect.height
+                font.pointSize: parent.pointSize
+                font.bold: true
+            }
 
-        Text {
-            color: "lime"
-            text: "scrollable: " + chatList.scrollable
-            font.pointSize: parent.pointSize
-        }
+            Text {
+                color: "lime"
+                text: "scrollPosition: " + chatList.chatScroll.position.toFixed(4)
+                font.pointSize: parent.pointSize
+                font.bold: true
+            }
 
-        Text {
-            color: "lime"
-            text: "scaling: " + ctx.scaleFactor
-            font.pointSize: parent.pointSize
+            Text {
+                color: "lime"
+                text: "scrollable: " + chatList.scrollable
+                font.pointSize: parent.pointSize
+                font.bold: true
+            }
+
+            Text {
+                color: "lime"
+                text: "scaling: " + ctx.scaleFactor
+                font.pointSize: parent.pointSize
+                font.bold: true
+            }
         }
     }
 

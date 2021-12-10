@@ -12,7 +12,7 @@ ListView {
     //boundsBehavior: Flickable.StopAtBounds
     property var chatScroll: chatScroll
     property bool scrollable: root.childrenRect.height > parent.height
-    property bool atBottom: (chatScroll.position + chatScroll.size) == 1
+    property bool atBottom: (chatScroll.position + chatScroll.size) >= 1
     property bool atTop: chatScroll.position <= 0.01
     property bool mayAutoScroll: atBottom && scrollable
 

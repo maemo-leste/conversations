@@ -19,6 +19,7 @@ Components.ChatRoot {
     historyPopupTextColor: "white"
 
     Rectangle {
+        z: parent.z + 1
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
@@ -57,7 +58,7 @@ Components.ChatRoot {
                 font.pointSize: 14 * ctx.scaleFactor
                 font.family: fixedFont
                 color: "white"
-                text: datestr + " " + hourstr
+                text: hourstr
                 Layout.rightMargin: 10
                 Layout.alignment: Qt.AlignTop
             }
