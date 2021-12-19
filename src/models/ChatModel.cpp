@@ -1,7 +1,11 @@
 #include <QObject>
 #include <QDebug>
 
+#ifdef RTCOM
 #include "lib/rtcom.h"
+#include <rtcom-eventlogger/eventlogger.h>
+#endif
+
 #include "models/ChatModel.h"
 
 
@@ -99,6 +103,7 @@ void ChatModel::clear() {
 }
 
 void ChatModel::getOverviewMessages(const int limit, const int offset) {
+#ifdef RTCOM
   rtcom_query* query_struct = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_CONTACT);
   gint rtcom_sms_service_id = rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_SMS");
   bool query_prepared = FALSE;
@@ -115,6 +120,7 @@ void ChatModel::getOverviewMessages(const int limit, const int offset) {
   auto results = rtcomIterateResults(query_struct);
   for (const auto &message: results)
     this->appendMessage(message);
+#endif
 }
 
 unsigned int ChatModel::getMessages(const QString &remote_uid) {
@@ -127,6 +133,9 @@ unsigned int ChatModel::getMessages(const QString &remote_uid) {
 }
 
 unsigned int ChatModel::getMessages(const QString &remote_uid, const int limit, const int offset) {
+#ifndef RTCOM
+  return 0;
+#else
   m_remote_uid = remote_uid;
 
   rtcom_query* query_struct = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_NONE);
@@ -162,6 +171,7 @@ unsigned int ChatModel::getMessages(const QString &remote_uid, const int limit, 
   }
 
   return results.length();
+#endif
 }
 
 unsigned int ChatModel::getPage() {

@@ -48,6 +48,10 @@ if(MAEMO)
     target_compile_definitions(conversations PRIVATE MAEMO=1)
 endif()
 
+if(RTCOM)
+    target_compile_definitions(conversations PRIVATE RTCOM=1)
+endif()
+
 target_include_directories(conversations PUBLIC
         ${CMAKE_SOURCE_DIR}/src
         ${X11_INCLUDE_DIR}
@@ -117,4 +121,8 @@ install(TARGETS conversations
 message(STATUS "CONVERSATIONS: ${VERSION}")
 message(STATUS "Maemo build: ${MAEMO}")
 message(STATUS "GLib: ${GLIB_VERSION}")
-message(STATUS "rtcom-eventlogger: ${RTCOM-EVENTLOGGER_VERSION}")
+if(RTCOM)
+    message(STATUS "rtcom-eventlogger: ${RTCOM-EVENTLOGGER_VERSION}")
+else()
+    message(STATUS "rtcom-eventlogger: off")
+endif()

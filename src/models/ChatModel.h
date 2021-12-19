@@ -5,7 +5,6 @@
 #include <QDateTime>
 #include <QStringList>
 
-#include <rtcom-eventlogger/eventlogger.h>
 #include <glib.h>
 #include <glib/gstdio.h>
 
