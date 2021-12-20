@@ -54,7 +54,7 @@ public:
     Q_INVOKABLE unsigned int getPage();
     unsigned int getMessages(const QString &remote_uid);
     unsigned int getMessages(const QString &remote_uid, int limit, int offset);
-    void getOverviewMessages(int limit = 20, int offset = 0);
+    void getOverviewMessages(int limit = 9999, int offset = 0);
 
     void clear();
 
