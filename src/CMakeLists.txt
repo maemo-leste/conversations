@@ -15,7 +15,7 @@ file(GLOB SOURCE_FILES
         "models/*.cpp"
         )
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui Network Svg Xml Quick QuickWidgets Qml QuickControls2 QuickCompiler)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui Network DBus Svg Xml Quick QuickWidgets Qml QuickControls2 QuickCompiler)
 if(MAEMO)
     find_package(Qt5 REQUIRED COMPONENTS Maemo5)
 endif()
@@ -42,6 +42,7 @@ add_executable(conversations ${EXECUTABLE_FLAG} main.cpp
 set_property(TARGET conversations PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 target_include_directories(conversations PUBLIC ${Qt5Gui_PRIVATE_INCLUDE_DIRS})
+#target_include_directories(PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}  ${CMAKE_CURRENT_BINARY_DIR})
 
 if(MAEMO)
     # @TODO: should not be necessary, but definition `Q_WS_MAEMO` is *not* available via CMake
@@ -60,6 +61,7 @@ target_include_directories(conversations PUBLIC
         ${Qt5Widgets_INCLUDE_DIRS}
         ${Qt5Gui_INCLUDE_DIRS}
         ${Qt5Network_INCLUDE_DIRS}
+        ${Qt5DBus_INCLUDE_DIRS}
         ${Qt5Svg_INCLUDE_DIRS}
         ${Qt5Xml_INCLUDE_DIRS}
         ${GLIB_INCLUDE_DIRS}
@@ -78,6 +80,7 @@ target_compile_definitions(conversations
         ${Qt5Core_DEFINITIONS}
         ${Qt5Widgets_DEFINITIONS}
         ${Qt5Gui_DEFINITIONS}
+        ${Qt5DBus_DEFINITIONS}
         ${Qt5Network_DEFINITIONS}
         ${Qt5Svg_DEFINITIONS}
         ${Qt5Xml_DEFINITIONS}
@@ -92,6 +95,7 @@ target_link_libraries(conversations PUBLIC
         Qt5::Core
         Qt5::Widgets
         Qt5::Gui
+        Qt5::DBus
         Qt5::Network
         Qt5::Svg
         Qt5::QSvgIconPlugin

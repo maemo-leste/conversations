@@ -10,8 +10,11 @@
 #include "lib/utils.h"
 #include "lib/globals.h"
 
-Conversations::Conversations(QCommandLineParser *cmdargs) {
+Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   this->cmdargs = cmdargs;
+
+  this->ipc = ipc;
+  connect(ipc, &IPC::commandReceived, this, &Conversations::onIPCReceived);
 
   // Paths
   pathGenericData = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
@@ -35,7 +38,16 @@ Conversations::Conversations(QCommandLineParser *cmdargs) {
   this->chatOverviewModel->getOverviewMessages();
 }
 
-void Conversations::onSendMessage(const QString &message) {
+void Conversations::onIPCReceived(const QString &cmd) {
+  if(cmd.contains(globals::reRemoteUID)) {
+    emit showApplication();
+    emit openChatWindow(cmd);
+  } else if(cmd == "makeActive") {
+    emit showApplication();
+  }
+}
+
+void Conversations::onSendOutgoingMessage(const QString &message) {
 //  auto _msg = message.toUtf8();
 //  auto date_t = QDateTime::currentDateTime();
 //
@@ -80,4 +92,6 @@ void Conversations::createConfigDirectory(const QString &dir) {
   }
 }
 
-Conversations::~Conversations() {}
+Conversations::~Conversations() {
+
+}

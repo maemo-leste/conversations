@@ -4,6 +4,8 @@
 #include <QtCore>
 
 #include "conversations.h"
+#include "lib/globals.h"
+#include "lib/ipc.h"
 #include "conv-intl.h"
 #include "config-conversations.h"
 #include "mainwindow.h"
@@ -25,6 +27,7 @@ int main(int argc, char *argv[]) {
   QApplication::setApplicationName("conversations");
   QApplication::setOrganizationDomain("https://maemo-leste.github.io/");
   QApplication::setOrganizationName("Maemo Leste");
+  QApplication::setQuitOnLastWindowClosed(false);  // allow conversations to operate in the background
   QApplication::setApplicationVersion(CONVERSATIONS_VERSION);
 
   QApplication app(argc, argv);
@@ -45,7 +48,10 @@ int main(int argc, char *argv[]) {
   parser.addVersionOption();
   parser.setApplicationDescription("Communications");
 
-  QCommandLineOption debugModeOption(QStringList() << "debug", "Run program in debug mode.");
+  QCommandLineOption backgroundModeOption(QStringList() << "background", "Start without spawning the GUI.");
+  parser.addOption(backgroundModeOption);
+
+  QCommandLineOption debugModeOption(QStringList() << "debug", "Start in debug mode.");
   parser.addOption(debugModeOption);
 
   QStringList argv_;
@@ -60,14 +66,44 @@ int main(int argc, char *argv[]) {
 
   const QStringList args = parser.positionalArguments();
   bool debugMode = parser.isSet(debugModeOption);
-
   parser.process(app);
-  auto *ctx = new Conversations(&parser);
+
+  // check if conversations is already running
+  auto *ipc = new IPC();
+  QIODevice *ls = ipc->open();
+
+  if(ls->isOpen()) {
+    // pass argv[] to 1st instance and exit
+    for (const auto &arg: args) {
+      if (arg.isEmpty() || arg.length() >= 128) continue;
+      if (arg.contains(globals::reRemoteUID)) {
+        return IPC::send(ls, arg);
+      }
+    }
+    return IPC::send(ls, "makeActive");
+  }
+
+  // Listen on IPC
+  QTimer::singleShot(0, ipc, SLOT(bind()));
+
+  // initialize application
+  auto *ctx = new Conversations(&parser, ipc);
   ctx->applicationPath = argv_.at(0);
   ctx->isDebug = debugMode;
 #ifdef MAEMO
   ctx->isMaemo = true;
 #endif
   auto *mainWindow = new MainWindow(ctx);
+  if(!parser.isSet(backgroundModeOption))
+    mainWindow->onShowApplication();
+
+  // handle positional startup arguments
+  for (const auto &arg: args) {
+    if(arg.contains(globals::reRemoteUID)) {
+      ctx->onIPCReceived(arg);
+      break;
+    }
+  }
+
   return QApplication::exec();
 }

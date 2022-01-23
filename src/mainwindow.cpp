@@ -1,12 +1,10 @@
 #include <QPixmap>
+#include <QWidget>
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QCoreApplication>
 #include <QSystemTrayIcon>
 #include <QFileDialog>
-#include <QQuickWidget>
-#include <QQuickView>
-#include <QQmlContext>
 
 #include "mainwindow.h"
 #include "config-conversations.h"
@@ -22,7 +20,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
     m_ctx(ctx) {
   pMainWindow = this;
   ui->setupUi(this);
-
+  ui->menuBar->hide();
 #ifdef MAEMO
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
@@ -34,8 +32,8 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   this->screenDpi = QGuiApplication::primaryScreen()->logicalDotsPerInch();
   this->screenDpiPhysical = QGuiApplication::primaryScreen()->physicalDotsPerInch();
   this->screenRatio = this->screenDpiPhysical / this->screenDpiRef;
-  qInfo()
-      << QString("%1x%2 (%3 DPI)").arg(this->screenRect.width()).arg(this->screenRect.height()).arg(this->screenDpi);
+  qDebug() << QString("%1x%2 (%3 DPI)").arg(
+      this->screenRect.width()).arg(this->screenRect.height()).arg(this->screenDpi);
 
   // js: cfg.get(Config.MaemoTest);  |  cfg.set(Config.MaemoTest , "foo");
   qmlRegisterUncreatableMetaObject(
@@ -46,41 +44,77 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
       "Error: only enums"
   );
 
-  auto *qctx = ui->quick->rootContext();
+  connect(m_ctx, &Conversations::setTitle, this, &QMainWindow::setWindowTitle);
+  connect(m_ctx, SIGNAL(openChatWindow(QString)), this, SLOT(onOpenChatWindow(QString)));
+  connect(m_ctx, &Conversations::showApplication, this, &MainWindow::onShowApplication);
+  connect(m_ctx, &Conversations::hideApplication, this, &MainWindow::onHideApplication);
+  connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::onOpenSettingsWindow);
+}
+
+void MainWindow::createQml() {
+  if(m_quickWidget != nullptr) return;
+  m_quickWidget = new QQuickWidget(this);
+
+  auto *qctx = m_quickWidget->rootContext();
   qctx->setContextProperty("cfg", config());
   qctx->setContextProperty("ctx", m_ctx);
   qctx->setContextProperty("chatOverviewModel", m_ctx->chatOverviewModel);
 
-  ui->quick->setSource(QUrl("qrc:/overview.qml"));
+  m_quickWidget->setSource(QUrl("qrc:/overview.qml"));
+  m_quickWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
 
-  ui->menuBar->hide();
-  connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::openSettingsWindow);
-  connect((QObject*)ui->quick->rootObject(), SIGNAL(rowClicked(QString, QString, QString)), this, SLOT(openChatWindow(QString, QString, QString)));
+  connect((QObject*)m_quickWidget->rootObject(), SIGNAL(rowClicked(QString, QString, QString)),
+      this, SLOT(onOpenChatWindow(QString, QString, QString)));
 
-  connect(m_ctx, &Conversations::setTitle, this, &QMainWindow::setWindowTitle);
-
-  this->show();
+  ui->centralWidget->layout()->addWidget(m_quickWidget);
 }
 
-void MainWindow::openSettingsWindow() {
+void MainWindow::destroyQml() {
+  if(m_quickWidget == nullptr) return;
+  m_quickWidget->disconnect();
+  m_quickWidget->deleteLater();
+  m_quickWidget = nullptr;
+}
+
+void MainWindow::onOpenChatWindow(const QString &remote_uid) {
+  this->onOpenChatWindow("", "", remote_uid);
+}
+
+void MainWindow::onOpenChatWindow(const QString &group_uid, const QString &local_uid, const QString &remote_uid) {
+  m_chatWindow = new ChatWindow(m_ctx, group_uid, local_uid, remote_uid, this);
+  m_chatWindow->show();
+
+  connect(m_chatWindow, &ChatWindow::sendMessage, this->m_ctx, &Conversations::onSendOutgoingMessage);
+  connect(m_chatWindow, &ChatWindow::closed, this, &MainWindow::onChatWindowClosed);
+}
+
+void MainWindow::onOpenSettingsWindow() {
   m_settings = new Settings(m_ctx, this);
   m_settings->show();
 
   connect(m_settings, &Settings::textScalingChanged, this->m_ctx, &Conversations::onTextScalingChanged);
 }
 
-void MainWindow::openChatWindow(const QString &group_uid, const QString &local_uid, const QString &remote_uid) {
-  m_chatWindow = new ChatWindow(m_ctx, group_uid, local_uid, remote_uid, this);
-  m_chatWindow->show();
-
-  connect(m_chatWindow, &ChatWindow::sendMessage, this->m_ctx, &Conversations::onSendMessage);
+void MainWindow::closeEvent(QCloseEvent *event) {
+  // override close event, force hide window
+  this->onHideApplication();
+  event->ignore();
 }
 
-void MainWindow::showDebugInfo() {
-//  auto *dialog = new DebugInfoDialog(m_ctx, this);
-//  dialog->exec();
-//  dialog->deleteLater();
-  printf("oki\n");
+void MainWindow::onChatWindowClosed() {
+  if(m_chatWindow == nullptr) return;
+  m_chatWindow->deleteLater();
+  m_chatWindow = nullptr;
+}
+
+void MainWindow::onShowApplication() {
+  this->createQml();
+  this->show();
+}
+
+void MainWindow::onHideApplication() {
+  this->hide();
+  this->destroyQml();
 }
 
 MainWindow *MainWindow::getInstance() {
@@ -89,10 +123,6 @@ MainWindow *MainWindow::getInstance() {
 
 Conversations *MainWindow::getContext(){
   return pMainWindow->m_ctx;
-}
-
-void MainWindow::closeEvent(QCloseEvent *event) {
-  QWidget::closeEvent(event);
 }
 
 MainWindow::~MainWindow() {

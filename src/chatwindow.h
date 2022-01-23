@@ -37,6 +37,7 @@ private slots:
     void onGatherMessage();
 
 signals:
+    void closed();
     void sendMessage(const QString &message);
 
 private:

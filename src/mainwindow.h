@@ -8,6 +8,9 @@
 #include <QtWidgets/QMenu>
 #include <QMainWindow>
 #include <QObject>
+#include <QQuickWidget>
+#include <QQuickView>
+#include <QQmlContext>
 #include <QtCore>
 #include <QtGui>
 #include <QFileInfo>
@@ -40,17 +43,26 @@ public:
     qreal screenDpiPhysical;
     qreal screenRatio;
 
-private slots:
-    void openChatWindow(const QString &group_uid, const QString &local_uid, const QString &remote_uid);
-    void openSettingsWindow();
+public slots:
+    void onOpenChatWindow(const QString &remote_uid);
+    void onOpenChatWindow(const QString &group_uid, const QString &local_uid, const QString &remote_uid);
+    void onOpenSettingsWindow();
+    void onShowApplication();
+    void onHideApplication();
+    void onChatWindowClosed();
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
 
 private:
+    QQuickWidget *m_quickWidget = nullptr;
     Conversations *m_ctx;
     static MainWindow *pMainWindow;
-    void closeEvent(QCloseEvent *event) override;
-    void showDebugInfo();
     ChatWindow *m_chatWindow = nullptr;
     Settings *m_settings = nullptr;
+
+    void createQml();
+    void destroyQml();
 };
 
 #endif

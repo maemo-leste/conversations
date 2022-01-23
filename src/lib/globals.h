@@ -2,10 +2,13 @@
 #define CONV_GLOBALS_H
 
 #include <QtGlobal>
+#include <QRegExp>
 
 namespace globals
 {
-    const unsigned int foo = 3;
+  const static QRegExp reTelMimeHandler = QRegExp(R"(^(?:tel|callto)\:([\d\-+]+))");
+  const static QRegExp reConversationsHandler = QRegExp(R"(^conversations\:([\d\-+]+))");
+  const static QRegExp reRemoteUID = QRegExp(R"(^([\d\-+]+))");
 }
 
 #endif

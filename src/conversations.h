@@ -8,6 +8,7 @@
 
 #include "lib/http.h"
 #include "lib/config.h"
+#include "lib/ipc.h"
 #include "models/ChatModel.h"
 
 class Conversations : public QObject {
@@ -22,12 +23,13 @@ class Conversations : public QObject {
     Q_PROPERTY(float isMaemo MEMBER isMaemo NOTIFY isMaemoChanged);
 
 public:
-    explicit Conversations(QCommandLineParser *cmdargs);
+    explicit Conversations(QCommandLineParser *cmdargs, IPC *ipc);
     ~Conversations() override;
     bool isDebug = false;
     bool isMaemo = false;
 
     QCommandLineParser *cmdargs;
+    IPC *ipc;
 
     QString configDirectory;
     QString configRoot;
@@ -50,10 +52,14 @@ signals:
     void debugChanged();
     void textScalingChanged();
     void isMaemoChanged();
+    void showApplication();
+    void hideApplication();
+    void openChatWindow(const QString &remote_uid);
 
 public slots:
-    void onSendMessage(const QString &message);
+    void onSendOutgoingMessage(const QString &message);
     void onTextScalingChanged();
+    void onIPCReceived(const QString &cmd);
 
 private:
     float m_textScaling = 1.0;

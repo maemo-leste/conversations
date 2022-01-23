@@ -68,6 +68,7 @@ Conversations *ChatWindow::getContext(){
 
 void ChatWindow::closeEvent(QCloseEvent *event) {
   this->chatModel->clear();
+  emit closed();
   QWidget::closeEvent(event);
 }
 
