@@ -1,3 +1,14 @@
+conversations (0.3) unstable; urgency=medium
+
+  * Allow conversations to act like a background service
+  * Allow starting conversations with --background flag
+  * Disallow running 2 instances at the same time, enforced via IPC (unix socket for now)
+  * Support startup arguments `./conversations <remote_uid>`
+  * Support passing startup arguments via IPC
+  * Fix a memory leak while opening and closing chat windows
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Mon, 24 Jan 2022 00:11:52 +0100
+
 conversations (0.2) unstable; urgency=medium
 
   * Theming improvements (irssi theme)
