@@ -17,8 +17,8 @@ ListView {
     property bool mayAutoScroll: atBottom && scrollable
 
     onCountChanged: {  // scroll to bottom
-        if(chatListView.mayAutoScroll)
-            scrollToBottom();
+        //if(chatListView.mayAutoScroll)
+        scrollToBottom();
     }
 
     ScrollBar.vertical: ScrollBar {

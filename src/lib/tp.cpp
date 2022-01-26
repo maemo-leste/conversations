@@ -8,8 +8,7 @@
 #include "lib/utils.h"
 
 
-Sender::Sender(QObject *parent) : QObject(parent)
-{
+Sender::Sender(QObject *parent) : QObject(parent) {
   acc = Tp::Account::create(TP_QT_ACCOUNT_MANAGER_BUS_NAME, "/org/freedesktop/Telepathy/Account/idle/irc/dscbot0");
   //"/org/freedesktop/Telepathy/Account/ring/tel/ring");
   //"/org/freedesktop/Telepathy/Account/idle/irc/fremantle0");
@@ -38,8 +37,7 @@ Sender::Sender(QObject *parent) : QObject(parent)
   SLOT(onMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)));
 }
 
-void Sender::onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel)
-{
+void Sender::onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel) {
   qDebug() << "onMessageSent" << message.text();
 
   auto self_name = acc->nickname().toLocal8Bit();
@@ -48,13 +46,15 @@ void Sender::onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags f
   auto remote_uid = channel->targetContact()->id().toLocal8Bit();
   auto text = message.text().toLocal8Bit();
 
-  // TODO: remote_name != remote_uid, we shouldn't make them equal, but let's
-  // do it for now
-  create_event(message.sent().toTime_t(), self_name.data(), backend_name.data(), remote_uid, remote_uid, text, true, true);
+  // TODO: remote_name != remote_uid, we shouldn't make them equal, but let's do it for now
+  auto epoch = message.sent().toTime_t();
+  create_event(epoch, self_name.data(), backend_name.data(), remote_uid, remote_uid, text, true, true);
+
+  auto *item = new ChatMessage(1, "3", "", backend_name, remote_uid, remote_uid, "", text, "", epoch, 0, "", "11", true, 0);
+  emit databaseAddition(item);
 }
 
-void Sender::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel)
-{
+void Sender::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel) {
   qDebug() << "onMessageReceived" << message.received() << message.senderNickname() << message.text();
   qDebug() << "isDeliveryReport" << message.isDeliveryReport();
 
@@ -70,12 +70,12 @@ void Sender::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::Tex
   //QByteArray remote_uid = message.sender()->id().toLocal8Bit();
   QByteArray text = message.text().toLocal8Bit();
 
-  // TODO: remote_name != remote_uid, we shouldn't make them equal, but let's
-  // do it for now
-  create_event(message.received().toTime_t(), self_name.data(), backend_name.data(), remote_uid, remote_uid, text, false, true);
+  // TODO: remote_name != remote_uid, we shouldn't make them equal, but let's do it for now
+  auto epoch = message.received().toTime_t();
+  create_event(epoch, self_name.data(), backend_name.data(), remote_uid, remote_uid, text, false, true);
 
-  channel->send("echo " + message.text());
-
+  auto *item = new ChatMessage(1, "3", "", backend_name, remote_uid, remote_uid, "", text, "", epoch, 0, "", "11", false, 0);
+  emit databaseAddition(item);
 }
 
 void Sender::onOnline(bool online)
@@ -123,8 +123,7 @@ void Sender::onPresence(Tp::PendingOperation *op) {
   acc->reconnect(); // Let's not check the result for now
 }
 
-void Sender::onConnectionReady(Tp::PendingOperation *op)
-{
+void Sender::onConnectionReady(Tp::PendingOperation *op) {
   qDebug() << "onConnectionReady, isError:" << op->isError();
 
   auto conn = ((Tp::PendingConnection*)op)->connection();
@@ -156,6 +155,16 @@ void Sender::onHandles(Tp::PendingOperation *op) {
           SLOT(onContacts(Tp::PendingOperation*)));
 }
 
+void Sender::sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message) {
+  auto *pending = acc->ensureTextChat(remote_uid);
+
+  connect(pending, &Tp::PendingChannelRequest::finished, [=](Tp::PendingOperation *op){
+    auto *_pending = (Tp::PendingChannelRequest*)op;
+    auto chanrequest = _pending->channelRequest();
+    auto lolchan = (Tp::TextChannel*)chanrequest->channel().data();
+    lolchan->send(message);
+  });
+}
 
 void Sender::onContacts(Tp::PendingOperation *op) {
   qDebug() << "onContacts, isError:" << op->isError();

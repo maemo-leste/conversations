@@ -57,6 +57,7 @@
 #include <TelepathyQt/Types>
 
 #include "lib/utils.h"
+#include "models/ChatMessage.h"
 #ifdef RTCOM
 #include "lib/rtcom.h"
 #include <rtcom-eventlogger/eventlogger.h>
@@ -86,8 +87,13 @@ public:
   explicit Sender(QObject *parent = nullptr);
   ~Sender() override;
 
-private Q_SLOTS:
+signals:
+  void databaseAddition(ChatMessage *msg);
 
+public slots:
+  void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
+
+private slots:
   void onOnline(bool online);
   void onAccReady(Tp::PendingOperation *op);
   void onAutoConnectSet(Tp::PendingOperation *op);
@@ -97,11 +103,6 @@ private Q_SLOTS:
   void onConnectionReady(Tp::PendingOperation *op);
   void onChannel(Tp::PendingOperation *op);
   void onChannelGroup(Tp::PendingOperation *op);
-#if 0
-  void onListNames(Tp::PendingOperation *op);
-    void onConnection(Tp::PendingOperation *op);
-    void onConnectionClosed(Tp::PendingOperation *op);
-#endif
 
   void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
   void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);

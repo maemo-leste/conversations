@@ -50,6 +50,14 @@ ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QStri
     ui->quick->setSource(QUrl("qrc:/whatsthat/whatsthat.qml"));
 
   connect(this->ui->btnSend, &QPushButton::clicked, this, &ChatWindow::onGatherMessage);
+
+  connect(m_ctx->telepathy, &Sender::databaseAddition, this, &ChatWindow::onDatabaseAddition);
+}
+
+void ChatWindow::onDatabaseAddition(ChatMessage *msg) {
+  if(m_local_uid == msg->local_uid()) {
+    this->chatModel->appendMessage(msg);
+  }
 }
 
 void ChatWindow::onGatherMessage() {
@@ -57,7 +65,7 @@ void ChatWindow::onGatherMessage() {
   _msg = _msg.trimmed();
   if(_msg.isEmpty())
     return;
-  emit sendMessage(_msg);
+  emit sendMessage(m_local_uid, m_remote_uid, _msg);
 
   this->ui->chatBox->clear();
 }

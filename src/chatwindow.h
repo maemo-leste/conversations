@@ -17,6 +17,7 @@
 #include "conversations.h"
 #include "lib/config.h"
 #include "models/ChatModel.h"
+#include "models/ChatMessage.h"
 
 namespace Ui {
     class ChatWindow;
@@ -33,12 +34,15 @@ public:
 
     ChatModel *chatModel;
 
+public slots:
+  void onDatabaseAddition(ChatMessage *msg);
+
 private slots:
     void onGatherMessage();
 
 signals:
     void closed();
-    void sendMessage(const QString &message);
+    void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
 
 private:
     Conversations *m_ctx;

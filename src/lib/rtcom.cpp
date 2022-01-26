@@ -73,6 +73,8 @@ QList<ChatMessage*> rtcomIterateResults(rtcom_query *query_struct) {
 
 void create_event(time_t start_time, const char* self_name, const char* backend_name, const char *remote_uid, const char *remote_name, const char* text, bool is_outgoing, bool is_sms) {
   qDebug() << "create_event";
+  if(evlog == NULL)
+    evlog = rtcom_el_new();
 
   RTComElEvent *ev = rtcom_el_event_new();
 

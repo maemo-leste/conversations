@@ -11,6 +11,7 @@
 #include "lib/ipc.h"
 #include "lib/tp.h"
 #include "models/ChatModel.h"
+#include "models/ChatMessage.h"
 
 class Conversations : public QObject {
     Q_OBJECT
@@ -58,11 +59,13 @@ signals:
     void hideApplication();
     void openChatWindow(const QString &remote_uid);
     void reloadOverview();
+    void databaseAddition(ChatMessage *msg);
 
 public slots:
-    void onSendOutgoingMessage(const QString &message);
+    void onSendOutgoingMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
     void onTextScalingChanged();
     void onIPCReceived(const QString &cmd);
+    void onDatabaseAddition(ChatMessage *msg);
 
 private:
     float m_textScaling = 1.0;
