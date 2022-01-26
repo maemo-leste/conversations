@@ -20,6 +20,8 @@ if(MAEMO)
     find_package(Qt5 REQUIRED COMPONENTS Maemo5)
 endif()
 
+find_package(TelepathyQt5 0.9.6 REQUIRED)
+
 qtquick_compiler_add_resources(RESOURCES
         assets.qrc
         qml/components/qml_components.qrc
@@ -53,6 +55,8 @@ if(RTCOM)
     target_compile_definitions(conversations PRIVATE RTCOM=1)
 endif()
 
+message(STATUS "xxx ${TELEPATHY_QT5_INCLUDE_DIR}")
+
 target_include_directories(conversations PUBLIC
         ${CMAKE_SOURCE_DIR}/src
         ${X11_INCLUDE_DIR}
@@ -64,6 +68,8 @@ target_include_directories(conversations PUBLIC
         ${Qt5DBus_INCLUDE_DIRS}
         ${Qt5Svg_INCLUDE_DIRS}
         ${Qt5Xml_INCLUDE_DIRS}
+        ${TELEPATHY_QT5_INCLUDE_DIR}
+        /usr/include/telepathy-qt5/
         ${GLIB_INCLUDE_DIRS}
         ${RTCOM-EVENTLOGGER_INCLUDE_DIRS}
         )
@@ -73,7 +79,7 @@ if(NOT "${CMAKE_BUILD_TYPE}" EQUAL "Debug")
     add_definitions(-DQT_NO_DEBUG)
 endif()
 
-target_compile_definitions(conversations PRIVATE HAS_QML=1)
+target_compile_definitions(conversations PRIVATE TP_QT_ENABLE_LOWLEVEL_API=1)
 
 target_compile_definitions(conversations
         PUBLIC
@@ -106,6 +112,7 @@ target_link_libraries(conversations PUBLIC
         Qt5::Qml
         Qt5::QuickControls2
         Threads::Threads
+        ${TELEPATHY_QT5_LIBRARIES}
         ${GLIB_LIBRARIES}
         ${RTCOM-EVENTLOGGER_LIBRARIES}
 )
@@ -125,6 +132,7 @@ install(TARGETS conversations
 message(STATUS "CONVERSATIONS: ${VERSION}")
 message(STATUS "Maemo build: ${MAEMO}")
 message(STATUS "GLib: ${GLIB_VERSION}")
+message(STATUS "tp-qt: ${TELEPATHY_QT5_VERSION}")
 if(RTCOM)
     message(STATUS "rtcom-eventlogger: ${RTCOM-EVENTLOGGER_VERSION}")
 else()

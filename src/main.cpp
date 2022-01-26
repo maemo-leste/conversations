@@ -6,6 +6,7 @@
 #include "conversations.h"
 #include "lib/globals.h"
 #include "lib/ipc.h"
+#include "lib/rtcom.h"
 #include "conv-intl.h"
 #include "config-conversations.h"
 #include "mainwindow.h"

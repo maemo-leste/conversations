@@ -10,7 +10,8 @@
 #include "lib/utils.h"
 #include "lib/globals.h"
 
-Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
+Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) :
+      telepathy(new Sender(this)) {
   this->cmdargs = cmdargs;
 
   this->ipc = ipc;
@@ -34,8 +35,18 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
     qDebug() << "configDirectory: " << configDirectory;
   }
 
+  Tp::registerTypes();
+  Tp::enableDebug(false);
+  Tp::enableWarnings(true);
+
   chatOverviewModel = new ChatModel();
-  this->chatOverviewModel->getOverviewMessages();
+  this->chatOverviewModel->onGetOverviewMessages();
+
+  connect(telepathy, &Sender::databaseAddition, this, &Conversations::onDatabaseAddition);
+}
+
+void Conversations::onDatabaseAddition(ChatMessage *msg) {
+  this->chatOverviewModel->onGetOverviewMessages();
 }
 
 void Conversations::onIPCReceived(const QString &cmd) {
@@ -47,12 +58,8 @@ void Conversations::onIPCReceived(const QString &cmd) {
   }
 }
 
-void Conversations::onSendOutgoingMessage(const QString &message) {
-//  auto _msg = message.toUtf8();
-//  auto date_t = QDateTime::currentDateTime();
-//
-//  auto *chat_obj = new ChatMessage("_self", date_t, _msg);
-//  chatModel->appendMessage(chat_obj);
+void Conversations::onSendOutgoingMessage(const QString &local_uid, const QString &remote_uid, const QString &message) {
+  telepathy->sendMessage(local_uid, remote_uid, message);
 }
 
 void Conversations::setWindowTitle(const QString &title) {

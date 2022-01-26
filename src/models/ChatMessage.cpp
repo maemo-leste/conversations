@@ -48,9 +48,6 @@ QString ChatMessage::hourstr() const { return m_date.toString("hh:mm"); }
 QString ChatMessage::datestr() const { return m_date.toString("dd/MM/yyyy"); }
 bool ChatMessage::isHead() const {
   if(previous == nullptr) return true;
-  if(m_text == "got in") {
-    int wegewg = 1;
-  }
   if(previous->cid() == m_cid) return false;
   return true;
 }

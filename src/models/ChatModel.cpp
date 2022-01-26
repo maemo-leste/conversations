@@ -94,6 +94,7 @@ QHash<int, QByteArray> ChatModel::roleNames() const {
 }
 
 void ChatModel::clear() {
+  qDebug() << "Clearing chatModel";
   beginResetModel();
 
   qDeleteAll(this->chats.begin(), this->chats.end());
@@ -102,7 +103,9 @@ void ChatModel::clear() {
   endResetModel();
 }
 
-void ChatModel::getOverviewMessages(const int limit, const int offset) {
+void ChatModel::onGetOverviewMessages(const int limit, const int offset) {
+  this->clear();
+
 #ifdef RTCOM
   rtcom_query* query_struct = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_CONTACT);
   gint rtcom_sms_service_id = rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_SMS");
