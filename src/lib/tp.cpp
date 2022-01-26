@@ -84,9 +84,9 @@ void Sender::onOnline(bool online)
 
   if (online) {
     //connect((Tp::PendingOperation*)acc->connection()->lowlevel()->requestConnect(),
-    connect((Tp::PendingOperation*)acc->connection()->becomeReady(),
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onConnectionReady(Tp::PendingOperation*)));
+//    connect((Tp::PendingOperation*)acc->connection()->becomeReady(),
+//            SIGNAL(finished(Tp::PendingOperation*)),
+//            SLOT(onConnectionReady(Tp::PendingOperation*)));
   }
 }
 

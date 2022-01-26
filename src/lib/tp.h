@@ -62,24 +62,6 @@
 #include <rtcom-eventlogger/eventlogger.h>
 #endif
 
-class ConvTelepathy : public QObject
-{
-  Q_OBJECT
-
-public:
-  explicit ConvTelepathy(QObject *parent = nullptr);
-
-private slots:
-  void onAccountManagerReady(Tp::PendingOperation *op);
-
-signals:
-  void databaseChanged();  // changes to rtcom occurred
-
-private:
-  Tp::ClientRegistrarPtr m_registrar;
-  Tp::AccountManagerPtr m_accountManager;
-};
-
 
 class MyHandler : public Tp::AbstractClientHandler
 {
