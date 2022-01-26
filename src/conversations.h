@@ -9,6 +9,7 @@
 #include "lib/http.h"
 #include "lib/config.h"
 #include "lib/ipc.h"
+#include "lib/tp.h"
 #include "models/ChatModel.h"
 
 class Conversations : public QObject {
@@ -41,6 +42,7 @@ public:
     static void createConfigDirectory(const QString &dir) ;
 
     ChatModel *chatOverviewModel;
+    ConvTelepathy *telepathy;
 
     void setWindowTitle(const QString &title);
     Q_INVOKABLE QString ossoIconLookup(const QString &filename); // /usr/share/icons/hicolor/48x48/hildon/
@@ -55,6 +57,7 @@ signals:
     void showApplication();
     void hideApplication();
     void openChatWindow(const QString &remote_uid);
+    void reloadOverview();
 
 public slots:
     void onSendOutgoingMessage(const QString &message);

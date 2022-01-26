@@ -10,7 +10,8 @@
 #include "lib/utils.h"
 #include "lib/globals.h"
 
-Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
+Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) :
+      telepathy(new ConvTelepathy(this)) {
   this->cmdargs = cmdargs;
 
   this->ipc = ipc;
@@ -34,8 +35,16 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
     qDebug() << "configDirectory: " << configDirectory;
   }
 
+  Tp::registerTypes();
+  Tp::enableDebug(true);
+  Tp::enableWarnings(true);
+
   chatOverviewModel = new ChatModel();
-  this->chatOverviewModel->getOverviewMessages();
+  this->chatOverviewModel->onGetOverviewMessages();
+
+//  connect(telepathy, &ConvTelepathy::databaseChanged, this->chatOverviewModel, [=]{
+//    this->chatOverviewModel->onGetOverviewMessages();
+//  });
 }
 
 void Conversations::onIPCReceived(const QString &cmd) {
