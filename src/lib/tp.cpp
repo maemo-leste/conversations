@@ -50,7 +50,7 @@ void Sender::onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags f
 
   // TODO: remote_name != remote_uid, we shouldn't make them equal, but let's
   // do it for now
-  //create_event(message.sent().toTime_t(), self_name.data(), backend_name.data(), remote_uid, remote_uid, text, true, true);
+  create_event(message.sent().toTime_t(), self_name.data(), backend_name.data(), remote_uid, remote_uid, text, true, true);
 }
 
 void Sender::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel)
