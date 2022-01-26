@@ -62,29 +62,6 @@
 #include <rtcom-eventlogger/eventlogger.h>
 #endif
 
-class UserX : public QObject
-{
-  Q_OBJECT
-
-public:
-  explicit UserX(Tp::AccountPtr &acc, QObject *parent = nullptr);
-
-public slots:
-  void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
-  void onAccReady(Tp::PendingOperation *op);
-  void onOnline(bool online);
-  void onConnectionReady(Tp::PendingOperation *op);
-  void onPresence(Tp::PendingOperation *op);
-
-signals:
-  void messageWritten();
-
-private:
-  QString xx;
-  Tp::AccountPtr m_acc;
-  Tp::SimpleTextObserverPtr m_observer;
-};
-
 class ConvTelepathy : public QObject
 {
   Q_OBJECT
@@ -101,9 +78,8 @@ signals:
 private:
   Tp::ClientRegistrarPtr m_registrar;
   Tp::AccountManagerPtr m_accountManager;
-
-  QList<UserX*> m_users;
 };
+
 
 class MyHandler : public Tp::AbstractClientHandler
 {
@@ -118,6 +94,44 @@ public:
                       const QList<Tp::ChannelRequestPtr> &requestsSatisfied,
                       const QDateTime &userActionTime,
                       const Tp::AbstractClientHandler::HandlerInfo &handlerInfo);
+};
+
+class Sender : public QObject
+{
+Q_OBJECT
+
+public:
+  explicit Sender(QObject *parent = nullptr);
+  ~Sender() override;
+
+private Q_SLOTS:
+
+  void onOnline(bool online);
+  void onAccReady(Tp::PendingOperation *op);
+  void onAutoConnectSet(Tp::PendingOperation *op);
+  void onPresence(Tp::PendingOperation *op);
+  void onHandles(Tp::PendingOperation *op);
+  void onContacts(Tp::PendingOperation *op);
+  void onConnectionReady(Tp::PendingOperation *op);
+  void onChannel(Tp::PendingOperation *op);
+  void onChannelGroup(Tp::PendingOperation *op);
+#if 0
+  void onListNames(Tp::PendingOperation *op);
+    void onConnection(Tp::PendingOperation *op);
+    void onConnectionClosed(Tp::PendingOperation *op);
+#endif
+
+  void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
+  void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
+
+private:
+  Tp::AccountPtr acc;
+  Tp::SimpleTextObserverPtr observer;
+  Tp::ContactMessengerPtr messenger;
+  Tp::ClientRegistrarPtr registrar;
+  Tp::TextChannel *hgbchan;
+
+  Tp::AbstractClientPtr clienthandler;
 };
 
 

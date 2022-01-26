@@ -6,6 +6,7 @@
 #include "conversations.h"
 #include "lib/globals.h"
 #include "lib/ipc.h"
+#include "lib/rtcom.h"
 #include "conv-intl.h"
 #include "config-conversations.h"
 #include "mainwindow.h"
@@ -20,6 +21,8 @@ int main(int argc, char *argv[]) {
   Q_INIT_RESOURCE(whatsthat);
   Q_INIT_RESOURCE(chatty);
   Q_INIT_RESOURCE(irssi);
+
+  evlog = rtcom_el_new();
 
   intl("conversations-ui");
   qputenv("QML_DISABLE_DISK_CACHE", "1");

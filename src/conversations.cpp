@@ -11,7 +11,7 @@
 #include "lib/globals.h"
 
 Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) :
-      telepathy(new ConvTelepathy(this)) {
+      telepathy(new Sender(this)) {
   this->cmdargs = cmdargs;
 
   this->ipc = ipc;

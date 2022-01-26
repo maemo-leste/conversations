@@ -42,7 +42,7 @@ public:
     static void createConfigDirectory(const QString &dir) ;
 
     ChatModel *chatOverviewModel;
-    ConvTelepathy *telepathy;
+    Sender *telepathy;
 
     void setWindowTitle(const QString &title);
     Q_INVOKABLE QString ossoIconLookup(const QString &filename); // /usr/share/icons/hicolor/48x48/hildon/
