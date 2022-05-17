@@ -103,9 +103,12 @@ private slots:
   void onConnectionReady(Tp::PendingOperation *op);
   void onChannel(Tp::PendingOperation *op);
   void onChannelGroup(Tp::PendingOperation *op);
+  void onAccountManagerReady(Tp::PendingOperation *op);
 
   void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
   void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
+
+  void setupAccount(Tp::AccountPtr accptr);
 
 private:
   Tp::AccountPtr acc;
@@ -113,6 +116,7 @@ private:
   Tp::ContactMessengerPtr messenger;
   Tp::ClientRegistrarPtr registrar;
   Tp::TextChannel *hgbchan;
+  Tp::AccountManagerPtr m_accountmanager;
 
   Tp::AbstractClientPtr clienthandler;
 };
