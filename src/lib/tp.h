@@ -8,6 +8,7 @@
 #include <TelepathyQt/Account>
 #include <TelepathyQt/AccountFactory>
 #include <TelepathyQt/AccountManager>
+#include <TelepathyQt/AccountSet>
 #include <TelepathyQt/Contact>
 #include <TelepathyQt/Debug>
 #include <TelepathyQt/Constants>
@@ -79,6 +80,45 @@ public:
                       const Tp::AbstractClientHandler::HandlerInfo &handlerInfo);
 };
 
+
+class MyAccount : public QObject
+{
+Q_OBJECT
+
+public:
+  explicit MyAccount(Tp::AccountPtr macc);
+  ~MyAccount() override;
+
+signals:
+  void databaseAddition(ChatMessage *msg);
+
+public slots:
+  void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
+
+private slots:
+  void onOnline(bool online);
+  void onAccReady(Tp::PendingOperation *op);
+  //void onHandles(Tp::PendingOperation *op);
+  //void onContacts(Tp::PendingOperation *op);
+  //void onChannel(Tp::PendingOperation *op);
+  //void onChannelGroup(Tp::PendingOperation *op);
+
+  void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
+  void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
+
+public:
+  Tp::AccountPtr acc;
+
+private:
+  Tp::SimpleTextObserverPtr observer;
+  Tp::ContactMessengerPtr messenger;
+  Tp::TextChannel *hgbchan;
+  Tp::AccountManagerPtr m_accountmanager;
+
+  Tp::AbstractClientPtr clienthandler;
+};
+
+
 class Sender : public QObject
 {
 Q_OBJECT
@@ -92,32 +132,16 @@ signals:
 
 public slots:
   void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
+  void onDatabaseAddition(ChatMessage *msg);
 
 private slots:
-  void onOnline(bool online);
-  void onAccReady(Tp::PendingOperation *op);
-  void onAutoConnectSet(Tp::PendingOperation *op);
-  void onPresence(Tp::PendingOperation *op);
-  void onHandles(Tp::PendingOperation *op);
-  void onContacts(Tp::PendingOperation *op);
-  void onConnectionReady(Tp::PendingOperation *op);
-  void onChannel(Tp::PendingOperation *op);
-  void onChannelGroup(Tp::PendingOperation *op);
   void onAccountManagerReady(Tp::PendingOperation *op);
 
-  void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
-  void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
-
-  void setupAccount(Tp::AccountPtr accptr);
-
 private:
-  Tp::AccountPtr acc;
-  Tp::SimpleTextObserverPtr observer;
-  Tp::ContactMessengerPtr messenger;
-  Tp::ClientRegistrarPtr registrar;
-  Tp::TextChannel *hgbchan;
-  Tp::AccountManagerPtr m_accountmanager;
+  QList<MyAccount*> accs;
 
+  Tp::ClientRegistrarPtr registrar;
+  Tp::AccountManagerPtr m_accountmanager;
   Tp::AbstractClientPtr clienthandler;
 };
 

@@ -12,56 +12,82 @@ Sender::Sender(QObject *parent) : QObject(parent) {
   m_accountmanager = Tp::AccountManager::create(Tp::AccountFactory::create(QDBusConnection::sessionBus(), Tp::Account::FeatureCore));
   connect(m_accountmanager->becomeReady(), &Tp::PendingReady::finished, this, &Sender::onAccountManagerReady);
 
-
-  //acc = Tp::Account::create(TP_QT_ACCOUNT_MANAGER_BUS_NAME, "/org/freedesktop/Telepathy/Account/idle/irc/wizzupvm0");
-
   registrar = Tp::ClientRegistrar::create();
   Tp::AbstractClientPtr handler = Tp::AbstractClientPtr::dynamicCast(
       Tp::SharedPtr<MyHandler>(new MyHandler(
           Tp::ChannelClassSpecList() << Tp::ChannelClassSpec::textChat())));
   registrar->registerClient(handler, "myhandler");
-
-  //observer = Tp::SimpleTextObserver::create(acc);
-
-  //connect(acc.data(),
-  //        SIGNAL(onlinenessChanged(bool)),
-  //        SLOT(onOnline(bool)));
-
-  //connect(acc->becomeReady(),
-  //        SIGNAL(finished(Tp::PendingOperation*)),
-  //        SLOT(onAccReady(Tp::PendingOperation*)));
-
-  //connect(observer.data(),
-  //        SIGNAL(messageReceived(const Tp::ReceivedMessage&, const Tp::TextChannelPtr&)),
-  //SLOT(onMessageReceived(const Tp::ReceivedMessage&, const Tp::TextChannelPtr&)));
-
-  //connect(observer.data(), SIGNAL(messageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)),
-  //SLOT(onMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)));
 }
 
 void Sender::onAccountManagerReady(Tp::PendingOperation *op) {
   qDebug() << "onAccountManagerReady";
 
   auto validaccounts = m_accountmanager->validAccounts();
-
   auto l = validaccounts->accounts();
 
   qDebug() << "account count:" << l.count();
 
+  Tp::AccountPtr acc;
 
   for (int i = 0; i < l.count(); i++) {
       acc = l[i];
+      auto myacc = new MyAccount(acc);
+      accs << myacc;
 
-      qDebug() << acc->nickname();
-      setupAccount(acc);
-      break;
+      connect(myacc, SIGNAL(databaseAddition(ChatMessage *)), SLOT(onDatabaseAddition(ChatMessage *)));
   }
 }
 
+void Sender::onDatabaseAddition(ChatMessage *msg) {
+    emit databaseAddition(msg);
+}
 
-void Sender::setupAccount(Tp::AccountPtr accptr) {
-  // TODO: observer is also global
-  // XXX: accptr is not used here
+void Sender::sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message) {
+    qDebug() << local_uid << remote_uid;
+
+    for (MyAccount *ma : accs) {
+        auto acc = ma->acc;
+
+        QByteArray backend_name = (acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName()).toLocal8Bit();
+
+        if (backend_name == local_uid) {
+            qDebug() << backend_name;
+            ma->sendMessage(local_uid, remote_uid, message);
+        }
+
+    }
+}
+
+
+
+Sender::~Sender()
+{
+}
+
+
+MyHandler::MyHandler(const Tp::ChannelClassSpecList &channelFilter)
+    : Tp::AbstractClientHandler(channelFilter) { }
+
+bool MyHandler::bypassApproval() const {
+  return false;
+}
+
+void MyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &context,
+                               const Tp::AccountPtr &account,
+                               const Tp::ConnectionPtr &connection,
+                               const QList<Tp::ChannelPtr> &channels,
+                               const QList<Tp::ChannelRequestPtr> &requestsSatisfied,
+                               const QDateTime &userActionTime,
+                               const Tp::AbstractClientHandler::HandlerInfo &handlerInfo)
+{
+  // do something
+  context->setFinished();
+}
+
+
+MyAccount::MyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
+  acc = macc;
+
   observer = Tp::SimpleTextObserver::create(acc);
 
   connect(acc.data(),
@@ -79,9 +105,10 @@ void Sender::setupAccount(Tp::AccountPtr accptr) {
   connect(observer.data(), SIGNAL(messageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)),
   SLOT(onMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)));
 
+
 }
 
-void Sender::onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel) {
+void MyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel) {
   qDebug() << "onMessageSent" << message.text();
 
   auto self_name = acc->nickname().toLocal8Bit();
@@ -98,7 +125,7 @@ void Sender::onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags f
   emit databaseAddition(item);
 }
 
-void Sender::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel) {
+void MyAccount::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel) {
   qDebug() << "onMessageReceived" << message.received() << message.senderNickname() << message.text();
   qDebug() << "isDeliveryReport" << message.isDeliveryReport();
 
@@ -122,19 +149,15 @@ void Sender::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::Tex
   emit databaseAddition(item);
 }
 
-void Sender::onOnline(bool online)
+void MyAccount::onOnline(bool online)
 {
   qDebug() << "onOnline: " << online;
 
   if (online) {
-    //connect((Tp::PendingOperation*)acc->connection()->lowlevel()->requestConnect(),
-//    connect((Tp::PendingOperation*)acc->connection()->becomeReady(),
-//            SIGNAL(finished(Tp::PendingOperation*)),
-//            SLOT(onConnectionReady(Tp::PendingOperation*)));
   }
 }
 
-void Sender::onAccReady(Tp::PendingOperation *op)
+void MyAccount::onAccReady(Tp::PendingOperation *op)
 {
   qDebug() << "onAccReady, isError:" << op->isError();
   qDebug() << "onAccReady, connection:" << acc->connection();
@@ -142,66 +165,83 @@ void Sender::onAccReady(Tp::PendingOperation *op)
   qDebug() << "connectsAutomatically" << acc->connectsAutomatically();
   qDebug() << "isOnline" << acc->isOnline();
 
-  //connect((Tp::PendingOperation*)acc->setConnectsAutomatically(true),
-  //        SIGNAL(finished(Tp::PendingOperation*)),
-  //        SLOT(onAutoConnectSet(Tp::PendingOperation*)));
-
-  //qDebug() << "currentPresence" << acc->currentPresence();
-  //connect((Tp::PendingOperation*)acc->setRequestedPresence(Tp::Presence::available()),
+  // XXX: note that the account is ready, use that for some guards
 }
 
-void Sender::onAutoConnectSet(Tp::PendingOperation *op) {
-  qDebug() << "onAutoConnectSet, isError:" << op->isError();
+// void MyAccount::onHandles(Tp::PendingOperation *op) {
+//   qDebug() << "onHandles, isError:" << op->isError();
+// 
+//   auto opera = ((Tp::PendingHandles*)op);
+// 
+//   Tp::ReferencedHandles handles = opera->handles();
+// 
+//   qDebug() << "validNames:" << opera->validNames();
+//   qDebug() << "handles toList:" << handles.toList();
+// 
+//   connect(acc->connection()->contactManager()->contactsForHandles(handles),
+//           SIGNAL(finished(Tp::PendingOperation*)),
+//           SLOT(onContacts(Tp::PendingOperation*)));
+// }
+// 
+// void MyAccount::onContacts(Tp::PendingOperation *op) {
+//   qDebug() << "onContacts, isError:" << op->isError();
+//   if (op->isError()) {
+//     qDebug() << op->errorName() << op->errorMessage();
+//   }
+// 
+//   Tp::PendingContacts* pending = (Tp::PendingContacts*)op;
+//   auto contacts = pending->contacts();
+//   auto conn = contacts.value(0)->manager()->connection();
+//   auto contact = contacts.value(0);
+// 
+//   qDebug() << "contact id 0: " << contact->id();
+// 
+//   //connect(acc->ensureTextChat(contact->id()),
+//   //        SIGNAL(finished(Tp::PendingOperation*)),
+//   //        SLOT(onChannel(Tp::PendingOperation*)));
+// 
+//   //connect(acc->ensureTextChatroom("#hetgrotebos"),
+//   //        SIGNAL(finished(Tp::PendingOperation*)),
+//   //        SLOT(onChannelGroup(Tp::PendingOperation*)));
+// }
+// 
+// void MyAccount::onChannel(Tp::PendingOperation *op) {
+//   qDebug() << "onChannel, isError:" << op->isError();
+//   if (op->isError()) {
+//     qDebug() << op->errorName() << op->errorMessage();
+//   }
+// 
+//   Tp::PendingChannelRequest* pending = (Tp::PendingChannelRequest*)op;
+//   auto chanrequest = pending->channelRequest();
+// 
+//   //wizzupchan = (Tp::TextChannelPtr)chanrequest->channel().data();
+//   auto wizzupchan = (Tp::TextChannel*)chanrequest->channel().data();
+// 
+//   qDebug() << "Sending to channel" << wizzupchan;
+// 
+//   wizzupchan->send("Telepathy decided to send you this message without you initiating anything");
+//   //wizzupchan->send("Telepathy kan nu ook hallo zeggen zonder napraten");
+// }
+// 
+// void MyAccount::onChannelGroup(Tp::PendingOperation *op) {
+//   qDebug() << "onChannel, isError:" << op->isError();
+//   if (op->isError()) {
+//     qDebug() << op->errorName() << op->errorMessage();
+//   }
+// 
+//   Tp::PendingChannelRequest* pending = (Tp::PendingChannelRequest*)op;
+//   auto chanrequest = pending->channelRequest();
+// 
+//   //wizzupchan = (Tp::TextChannelPtr)chanrequest->channel().data();
+//   hgbchan = (Tp::TextChannel*)chanrequest->channel().data();
+// 
+//   //qDebug() << "Sending to channel" << wizzupchan;
+// 
+//   //wizzupchan->send("Nog een test");
+//   //wizzupchan->send("Telepathy kan nu ook hallo zeggen zonder napraten");
+// }
 
-  //connect((Tp::PendingOperation*)acc->setAutomaticPresence(Tp::Presence::available()),
-  //        SIGNAL(finished(Tp::PendingOperation*)),
-  //        SLOT(onPresence(Tp::PendingOperation*)));
-}
-
-
-void Sender::onPresence(Tp::PendingOperation *op) {
-  qDebug() << "onPresence, isError:" << op->isError();
-
-  qDebug() << "onPresence, connection:" << acc->connection();
-
-  //acc->reconnect(); // Let's not check the result for now
-}
-
-void Sender::onConnectionReady(Tp::PendingOperation *op) {
-#if 0
-  qDebug() << "onConnectionReady, isError:" << op->isError();
-
-  auto conn = ((Tp::PendingConnection*)op)->connection();
-
-  qDebug() << "connection status:" << conn->status();
-  auto low_level_conn = conn->lowlevel();
-
-  qDebug() << "lowLevel conn: " << low_level_conn;
-  auto pending = low_level_conn->requestHandles(Tp::HandleTypeContact, QStringList{"dsc_"});
-  //auto pending = low_level_conn->requestHandles(Tp::HandleTypeContact, QStringList{"wizzup", "dsc_"});
-
-  connect((Tp::PendingOperation*)pending,
-          SIGNAL(finished(Tp::PendingOperation*)),
-          SLOT(onHandles(Tp::PendingOperation*)));
-#endif
-}
-
-void Sender::onHandles(Tp::PendingOperation *op) {
-  qDebug() << "onHandles, isError:" << op->isError();
-
-  auto opera = ((Tp::PendingHandles*)op);
-
-  Tp::ReferencedHandles handles = opera->handles();
-
-  qDebug() << "validNames:" << opera->validNames();
-  qDebug() << "handles toList:" << handles.toList();
-
-  connect(acc->connection()->contactManager()->contactsForHandles(handles),
-          SIGNAL(finished(Tp::PendingOperation*)),
-          SLOT(onContacts(Tp::PendingOperation*)));
-}
-
-void Sender::sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message) {
+void MyAccount::sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message) {
   auto *pending = acc->ensureTextChat(remote_uid);
 
   connect(pending, &Tp::PendingChannelRequest::finished, [=](Tp::PendingOperation *op){
@@ -212,93 +252,6 @@ void Sender::sendMessage(const QString &local_uid, const QString &remote_uid, co
   });
 }
 
-void Sender::onContacts(Tp::PendingOperation *op) {
-  qDebug() << "onContacts, isError:" << op->isError();
-  if (op->isError()) {
-    qDebug() << op->errorName() << op->errorMessage();
-  }
-
-  Tp::PendingContacts* pending = (Tp::PendingContacts*)op;
-  auto contacts = pending->contacts();
-  auto conn = contacts.value(0)->manager()->connection();
-  auto contact = contacts.value(0);
-
-  qDebug() << "contact id 0: " << contact->id();
-
-  connect(acc->ensureTextChat(contact->id()),
-          SIGNAL(finished(Tp::PendingOperation*)),
-          SLOT(onChannel(Tp::PendingOperation*)));
-
-  //connect(acc->ensureTextChatroom("#hetgrotebos"),
-  //        SIGNAL(finished(Tp::PendingOperation*)),
-  //        SLOT(onChannelGroup(Tp::PendingOperation*)));
-}
-
-void Sender::onChannel(Tp::PendingOperation *op) {
-  qDebug() << "onChannel, isError:" << op->isError();
-  if (op->isError()) {
-    qDebug() << op->errorName() << op->errorMessage();
-  }
-
-  Tp::PendingChannelRequest* pending = (Tp::PendingChannelRequest*)op;
-  auto chanrequest = pending->channelRequest();
-
-  //wizzupchan = (Tp::TextChannelPtr)chanrequest->channel().data();
-  auto wizzupchan = (Tp::TextChannel*)chanrequest->channel().data();
-
-  qDebug() << "Sending to channel" << wizzupchan;
-
-  wizzupchan->send("Telepathy decided to send you this message without you initiating anything");
-  //wizzupchan->send("Telepathy kan nu ook hallo zeggen zonder napraten");
-}
-
-void Sender::onChannelGroup(Tp::PendingOperation *op) {
-  qDebug() << "onChannel, isError:" << op->isError();
-  if (op->isError()) {
-    qDebug() << op->errorName() << op->errorMessage();
-  }
-
-  Tp::PendingChannelRequest* pending = (Tp::PendingChannelRequest*)op;
-  auto chanrequest = pending->channelRequest();
-
-  //wizzupchan = (Tp::TextChannelPtr)chanrequest->channel().data();
-  hgbchan = (Tp::TextChannel*)chanrequest->channel().data();
-
-  //qDebug() << "Sending to channel" << wizzupchan;
-
-  //wizzupchan->send("Nog een test");
-  //wizzupchan->send("Telepathy kan nu ook hallo zeggen zonder napraten");
-}
-
-Sender::~Sender()
+MyAccount::~MyAccount()
 {
-}
-
-
-
-
-
-
-
-
-
-
-
-MyHandler::MyHandler(const Tp::ChannelClassSpecList &channelFilter)
-    : Tp::AbstractClientHandler(channelFilter) { }
-
-bool MyHandler::bypassApproval() const {
-  return false;
-}
-
-void MyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &context,
-                               const Tp::AccountPtr &account,
-                               const Tp::ConnectionPtr &connection,
-                               const QList<Tp::ChannelPtr> &channels,
-                               const QList<Tp::ChannelRequestPtr> &requestsSatisfied,
-                               const QDateTime &userActionTime,
-                               const Tp::AbstractClientHandler::HandlerInfo &handlerInfo)
-{
-  // do something
-  context->setFinished();
 }
