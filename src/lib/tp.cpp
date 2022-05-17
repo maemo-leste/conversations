@@ -9,9 +9,11 @@
 
 
 Sender::Sender(QObject *parent) : QObject(parent) {
-  acc = Tp::Account::create(TP_QT_ACCOUNT_MANAGER_BUS_NAME, "/org/freedesktop/Telepathy/Account/idle/irc/dscbot0");
-  //"/org/freedesktop/Telepathy/Account/ring/tel/ring");
-  //"/org/freedesktop/Telepathy/Account/idle/irc/fremantle0");
+  m_accountmanager = Tp::AccountManager::create(Tp::AccountFactory::create(QDBusConnection::sessionBus(), Tp::Account::FeatureCore));
+  connect(m_accountmanager->becomeReady(), &Tp::PendingReady::finished, this, &Sender::onAccountManagerReady);
+
+
+  //acc = Tp::Account::create(TP_QT_ACCOUNT_MANAGER_BUS_NAME, "/org/freedesktop/Telepathy/Account/idle/irc/wizzupvm0");
 
   registrar = Tp::ClientRegistrar::create();
   Tp::AbstractClientPtr handler = Tp::AbstractClientPtr::dynamicCast(
@@ -19,6 +21,47 @@ Sender::Sender(QObject *parent) : QObject(parent) {
           Tp::ChannelClassSpecList() << Tp::ChannelClassSpec::textChat())));
   registrar->registerClient(handler, "myhandler");
 
+  //observer = Tp::SimpleTextObserver::create(acc);
+
+  //connect(acc.data(),
+  //        SIGNAL(onlinenessChanged(bool)),
+  //        SLOT(onOnline(bool)));
+
+  //connect(acc->becomeReady(),
+  //        SIGNAL(finished(Tp::PendingOperation*)),
+  //        SLOT(onAccReady(Tp::PendingOperation*)));
+
+  //connect(observer.data(),
+  //        SIGNAL(messageReceived(const Tp::ReceivedMessage&, const Tp::TextChannelPtr&)),
+  //SLOT(onMessageReceived(const Tp::ReceivedMessage&, const Tp::TextChannelPtr&)));
+
+  //connect(observer.data(), SIGNAL(messageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)),
+  //SLOT(onMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)));
+}
+
+void Sender::onAccountManagerReady(Tp::PendingOperation *op) {
+  qDebug() << "onAccountManagerReady";
+
+  auto validaccounts = m_accountmanager->validAccounts();
+
+  auto l = validaccounts->accounts();
+
+  qDebug() << "account count:" << l.count();
+
+
+  for (int i = 0; i < l.count(); i++) {
+      acc = l[i];
+
+      qDebug() << acc->nickname();
+      setupAccount(acc);
+      break;
+  }
+}
+
+
+void Sender::setupAccount(Tp::AccountPtr accptr) {
+  // TODO: observer is also global
+  // XXX: accptr is not used here
   observer = Tp::SimpleTextObserver::create(acc);
 
   connect(acc.data(),
@@ -35,6 +78,7 @@ Sender::Sender(QObject *parent) : QObject(parent) {
 
   connect(observer.data(), SIGNAL(messageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)),
   SLOT(onMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)));
+
 }
 
 void Sender::onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel) {
@@ -98,9 +142,9 @@ void Sender::onAccReady(Tp::PendingOperation *op)
   qDebug() << "connectsAutomatically" << acc->connectsAutomatically();
   qDebug() << "isOnline" << acc->isOnline();
 
-  connect((Tp::PendingOperation*)acc->setConnectsAutomatically(true),
-          SIGNAL(finished(Tp::PendingOperation*)),
-          SLOT(onAutoConnectSet(Tp::PendingOperation*)));
+  //connect((Tp::PendingOperation*)acc->setConnectsAutomatically(true),
+  //        SIGNAL(finished(Tp::PendingOperation*)),
+  //        SLOT(onAutoConnectSet(Tp::PendingOperation*)));
 
   //qDebug() << "currentPresence" << acc->currentPresence();
   //connect((Tp::PendingOperation*)acc->setRequestedPresence(Tp::Presence::available()),
@@ -109,9 +153,9 @@ void Sender::onAccReady(Tp::PendingOperation *op)
 void Sender::onAutoConnectSet(Tp::PendingOperation *op) {
   qDebug() << "onAutoConnectSet, isError:" << op->isError();
 
-  connect((Tp::PendingOperation*)acc->setAutomaticPresence(Tp::Presence::available()),
-          SIGNAL(finished(Tp::PendingOperation*)),
-          SLOT(onPresence(Tp::PendingOperation*)));
+  //connect((Tp::PendingOperation*)acc->setAutomaticPresence(Tp::Presence::available()),
+  //        SIGNAL(finished(Tp::PendingOperation*)),
+  //        SLOT(onPresence(Tp::PendingOperation*)));
 }
 
 
@@ -120,10 +164,11 @@ void Sender::onPresence(Tp::PendingOperation *op) {
 
   qDebug() << "onPresence, connection:" << acc->connection();
 
-  acc->reconnect(); // Let's not check the result for now
+  //acc->reconnect(); // Let's not check the result for now
 }
 
 void Sender::onConnectionReady(Tp::PendingOperation *op) {
+#if 0
   qDebug() << "onConnectionReady, isError:" << op->isError();
 
   auto conn = ((Tp::PendingConnection*)op)->connection();
@@ -138,6 +183,7 @@ void Sender::onConnectionReady(Tp::PendingOperation *op) {
   connect((Tp::PendingOperation*)pending,
           SIGNAL(finished(Tp::PendingOperation*)),
           SLOT(onHandles(Tp::PendingOperation*)));
+#endif
 }
 
 void Sender::onHandles(Tp::PendingOperation *op) {
