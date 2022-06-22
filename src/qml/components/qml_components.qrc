@@ -4,5 +4,6 @@
         <file alias="components/ChatScrollToBottomButton.qml">ChatScrollToBottomButton.qml</file>
         <file alias="components/ChatRoot.qml">ChatRoot.qml</file>
         <file alias="components/ChatListView.qml">ChatListView.qml</file>
+        <file alias="components/StackViewFancy.qml">StackViewFancy.qml</file>
     </qresource>
 </RCC>

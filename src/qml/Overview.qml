@@ -3,33 +3,30 @@ import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.0
 import MaemoConfig 1.0
 
-import "components" as Components
+import "../components" as Components
 
 Rectangle {
-    id: appWindow
-    visible: true
-    color: "black"
+    id: root
     property string highlight: "#00a2ff"
     property int itemHeight: 76 * ctx.scaleFactor
-
-    signal rowClicked(string group_uid, string local_uid, string remote_uid);
+    color: "black"
 
     ListView {
-        anchors.topMargin: 10
+        anchors.fill: parent
+        anchors.topMargin: 12
         anchors.bottomMargin: 10
         anchors.leftMargin: 4
         anchors.rightMargin: 4
-        anchors.fill: parent
         model: chatOverviewModel
         boundsBehavior: Flickable.StopAtBounds
 
         delegate: Rectangle {
-            height: itemHeight
+            height: root.itemHeight
             width: parent.width
             color: "black"
 
             Item {
-                height: itemHeight
+                height: root.itemHeight
                 width: parent.width
 
                 MouseArea {
@@ -53,12 +50,12 @@ Rectangle {
 
             RowLayout {
                 spacing: 0
-                height: itemHeight
+                height: root.itemHeight
                 width: parent.width
 
                 Item {
                     Layout.preferredWidth: 64
-                    Layout.preferredHeight: itemHeight
+                    Layout.preferredHeight: root.itemHeight
 
                     Image {
                         width: 48
@@ -74,7 +71,7 @@ Rectangle {
                 Item {
                     // spacer
                     Layout.preferredWidth: 8
-                    Layout.preferredHeight: itemHeight
+                    Layout.preferredHeight: root.itemHeight
                 }
 
                 ColumnLayout {
@@ -85,7 +82,7 @@ Rectangle {
 
                     RowLayout {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: itemHeight / 2
+                        Layout.preferredHeight: root.itemHeight / 2
 
                         Components.PlainText {
                             text: remote_name
@@ -103,7 +100,6 @@ Rectangle {
                             color: "grey"
                             font.pointSize: 12 * ctx.scaleFactor
                             Layout.alignment: Qt.AlignTop
-
                         }
 
                         Item {
@@ -113,7 +109,7 @@ Rectangle {
 
                     Components.PlainText {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: itemHeight / 2
+                        Layout.preferredHeight: root.itemHeight / 2
                         color: "grey"
                         font.pointSize: 14 * ctx.scaleFactor
                         text: {
@@ -124,8 +120,8 @@ Rectangle {
                 }
 
                 Item {
-                    Layout.preferredHeight: itemHeight
-                    Layout.preferredWidth: itemHeight
+                    Layout.preferredHeight: root.itemHeight
+                    Layout.preferredWidth: root.itemHeight
 
                     Image {
                         width: 48
@@ -140,5 +136,9 @@ Rectangle {
                 }
             }
         }
+    }
+
+    function onPageCompleted() {
+
     }
 }

@@ -51,6 +51,9 @@ public slots:
     void onHideApplication();
     void onChatWindowClosed();
 
+signals:
+    void requestOverviewSearchWindow();
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 

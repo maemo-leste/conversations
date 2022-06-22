@@ -130,7 +130,11 @@ install(TARGETS conversations
         )
 
 message(STATUS "CONVERSATIONS: ${VERSION}")
-message(STATUS "Maemo build: ${MAEMO}")
+if(MAEMO)
+    message(STATUS "Maemo build: ON")
+else()
+    message(STATUS "Maemo build: NO! (not running on maemo? things may not work!)")
+endif()
 message(STATUS "GLib: ${GLIB_VERSION}")
 message(STATUS "tp-qt: ${TELEPATHY_QT5_VERSION}")
 if(RTCOM)

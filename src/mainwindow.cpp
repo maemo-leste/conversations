@@ -49,6 +49,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx, &Conversations::showApplication, this, &MainWindow::onShowApplication);
   connect(m_ctx, &Conversations::hideApplication, this, &MainWindow::onHideApplication);
   connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::onOpenSettingsWindow);
+  connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::requestOverviewSearchWindow);
 }
 
 void MainWindow::createQml() {
@@ -58,9 +59,10 @@ void MainWindow::createQml() {
   auto *qctx = m_quickWidget->rootContext();
   qctx->setContextProperty("cfg", config());
   qctx->setContextProperty("ctx", m_ctx);
+  qctx->setContextProperty("mainWindow", this);
   qctx->setContextProperty("chatOverviewModel", m_ctx->chatOverviewModel);
 
-  m_quickWidget->setSource(QUrl("qrc:/overview.qml"));
+  m_quickWidget->setSource(QUrl("qrc:/qml/Main.qml"));
   m_quickWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
 
   connect((QObject*)m_quickWidget->rootObject(), SIGNAL(rowClicked(QString, QString, QString)),
