@@ -32,10 +32,14 @@ Components.ChatRoot {
         anchors.rightMargin: 32
 
         onScrollToBottom: root.scrollToBottom();
+        property int itemHeightSpacing: ctx.scaleFactor == 1 ? 12 : 32
 
         delegate: RowLayout {
             id: item
-            property int itemHeight: textColumn.implicitHeight + 12
+
+            property int itemHeight: textColumn.implicitHeight + chatListView.itemHeightSpacing
+            property bool highlight: root.highlightEventId == event_id
+
             height: itemHeight + 12
             width: parent.width
             spacing: 0
@@ -47,11 +51,7 @@ Components.ChatRoot {
             }
 
             Rectangle {
-                id: textRectangle
-                radius: 4
-                clip: true
-                color: outgoing ? root.chatBackgroundSelf : root.chatBackgroundThem
-
+                color: highlight ? "white" : "transparent"
                 Layout.preferredHeight: itemHeight
                 Layout.preferredWidth: {
                     var max_width = item.width / 6 * 4;
@@ -65,52 +65,61 @@ Components.ChatRoot {
                     return max_width;
                 }
 
-                ColumnLayout {
-                    id: textColumn
+                Rectangle {
+                    id: textRectangle
+                    radius: highlight ? 0 : 4
+                    clip: true
+                    color: outgoing ? root.chatBackgroundSelf : root.chatBackgroundThem
                     anchors.fill: parent
-                    anchors.margins: 6
-                    anchors.leftMargin: 10
-                    anchors.rightMargin: 10
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: itemHeight
+                    anchors.margins: highlight ? 2 * ctx.scaleFactor : 0
 
-                    RowLayout {
-                        id: metaRow
-                        spacing: 8
+                    ColumnLayout {
+                        id: textColumn
+                        anchors.fill: parent
+                        anchors.margins: 6 * ctx.scaleFactor
+                        anchors.leftMargin: 10 * ctx.scaleFactor
+                        anchors.rightMargin: 10 * ctx.scaleFactor
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: itemHeight
 
-                        Item {
-                            visible: !isHead
-                            Layout.fillWidth: true
+                        RowLayout {
+                            id: metaRow
+                            spacing: 8
+
+                            Item {
+                                visible: !isHead
+                                Layout.fillWidth: true
+                            }
+
+                            Components.PlainText {
+                                visible: !outgoing && isHead
+                                font.pointSize: 12 * ctx.scaleFactor
+                                color: "lightblue"
+                                text: name
+                            }
+
+                            Item {
+                                visible: isHead
+                                Layout.fillWidth: true
+                            }
+
+                            Components.PlainText {
+                                font.pointSize: 12 * ctx.scaleFactor
+                                color: "#98ac90"
+                                text: datestr + " " + hourstr
+                                Layout.rightMargin: 0
+                            }
                         }
 
                         Components.PlainText {
-                            visible: !outgoing && isHead
-                            font.pointSize: 12 * ctx.scaleFactor
-                            color: "lightblue"
-                            text: name
+                            id: textMessage
+                            color: "white"
+                            text: message
+                            wrapMode: Text.WordWrap
+                            width: parent.width
+                            font.pointSize: 14 * ctx.scaleFactor
+                            Layout.preferredWidth: parent.width
                         }
-
-                        Item {
-                            visible: isHead
-                            Layout.fillWidth: true
-                        }
-
-                        Components.PlainText {
-                            font.pointSize: 12 * ctx.scaleFactor
-                            color: "#98ac90"
-                            text: datestr + " " + hourstr
-                            Layout.rightMargin: 0
-                        }
-                    }
-
-                    Components.PlainText {
-                        id: textMessage
-                        color: "white"
-                        text: message
-                        wrapMode: Text.WordWrap
-                        width: parent.width
-                        font.pointSize: 14 * ctx.scaleFactor
-                        Layout.preferredWidth: parent.width
                     }
                 }
             }

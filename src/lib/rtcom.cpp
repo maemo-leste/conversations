@@ -11,8 +11,10 @@ rtcom_query* rtcomStartQuery(const int limit, const int offset, const RTComElQue
   if(group_by != RTCOM_EL_QUERY_GROUP_BY_NONE)
     rtcom_el_query_set_group_by(query, group_by);
 
-  rtcom_el_query_set_limit(query, limit);
-  rtcom_el_query_set_offset(query, offset);
+  if(limit > 0)
+    rtcom_el_query_set_limit(query, limit);
+  if(offset > 0)
+    rtcom_el_query_set_offset(query, offset);
 
   return new rtcom_query{query, it , el};
 }

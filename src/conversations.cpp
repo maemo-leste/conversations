@@ -40,6 +40,7 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) :
   Tp::enableWarnings(true);
 
   chatOverviewModel = new ChatModel();
+  chatSearchModel = new ChatModel();
   this->chatOverviewModel->onGetOverviewMessages();
 
   connect(telepathy, &Sender::databaseAddition, this, &Conversations::onDatabaseAddition);

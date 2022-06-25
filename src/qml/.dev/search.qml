@@ -12,7 +12,7 @@ Rectangle {
     }
 
     ListModel {
-        id: testModel
+        id: chatSearchModel
         ListElement {
             name: "John Brown"
             datestr: "18 Apr"
@@ -25,7 +25,7 @@ Rectangle {
         }
     }
 
-    signal rowClicked(string uid);
+    signal itemClicked(string group_uid, string local_uid, string remote_uid, string event_id);
 
     ColumnLayout {
         anchors.fill: parent
@@ -130,21 +130,21 @@ Rectangle {
             Layout.preferredHeight: childrenRect.height
             Layout.fillWidth: true
 
-            model: testModel
+            model: chatSearchModel
             delegate: ColumnLayout {
                 spacing: 8 * ctx.scaleFactor
                 id: item
                 width: parent.width
-                height: item.implicitHeight
+                height: implicitHeight
 
                 TextInput {
                     id: metaBox
-                    text: name + " - " + datestr
+                    text: "Test name" + " - " + "12/12/2009" + " " + "12:35"
                     color: "white"
                     font.pointSize: 18 * ctx.scaleFactor
 
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 32
+                    Layout.preferredHeight: 32 * ctx.scaleFactor
                 }
 
                 Rectangle {
@@ -158,9 +158,9 @@ Rectangle {
                     Text {
                         id: textBubble
                         anchors.fill: parent
-                        anchors.margins: 14
+                        anchors.margins: 14 * ctx.scaleFactor
                         wrapMode: Text.WordWrap
-                        text: msg
+                        text: msg;
                         color: "white"
                         font.pointSize: 18 * ctx.scaleFactor
                         textFormat: Text.RichText
@@ -169,11 +169,20 @@ Rectangle {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            console.log("click");
+                            root.itemClicked(group_uid, local_uid, remote_uid, event_id);
                         }
                     }
                 }
             }
+        }
+
+        Text {
+            id: noResultsText
+            text: "No results."
+            color: "grey"
+            font.pointSize: 18 * ctx.scaleFactor
+            textFormat: Text.RichText
+            visible: chatSearchModel.count === 0
         }
 
         Item {

@@ -12,6 +12,7 @@ Rectangle {
     property var chatList
     property string historyPopupBackgroundColor: "#b2b2b2"
     property string historyPopupTextColor: "#393939"
+    property string highlightEventId: ""
     signal scrollToBottom()
     signal fetchHistory()
 
@@ -159,6 +160,15 @@ Rectangle {
         }
 
         chatList.visible = true;
+    }
+
+
+    Connections {
+        target: chatWindow
+        onJumpToMessage: {
+            console.log("received jumpToMessage: " + event_id);
+            chatRoot.highlightEventId = event_id;
+        }
     }
 
     Component.onCompleted: {

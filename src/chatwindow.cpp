@@ -17,7 +17,7 @@
 
 ChatWindow * ChatWindow::pChatWindow = nullptr;
 
-ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QString &local_uid, const QString &remote_uid, QWidget *parent) :
+ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QString &local_uid, const QString &remote_uid, const QString &event_id, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::ChatWindow),
     m_group_uid(group_uid),
@@ -36,6 +36,7 @@ ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QStri
 #endif
 
   auto *qctx = ui->quick->rootContext();
+  qctx->setContextProperty("chatWindow", this);
   qctx->setContextProperty("chatModel", this->chatModel);
   qctx->setContextProperty("ctx", m_ctx);
   const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
@@ -52,6 +53,11 @@ ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QStri
   connect(this->ui->btnSend, &QPushButton::clicked, this, &ChatWindow::onGatherMessage);
 
   connect(m_ctx->telepathy, &Sender::databaseAddition, this, &ChatWindow::onDatabaseAddition);
+
+  if(!event_id.isEmpty()) {
+    qDebug() << "jump to message " << event_id;
+    this->jumpToMessage(event_id);
+  }
 }
 
 void ChatWindow::onDatabaseAddition(ChatMessage *msg) {
@@ -81,5 +87,6 @@ void ChatWindow::closeEvent(QCloseEvent *event) {
 }
 
 ChatWindow::~ChatWindow() {
+  qDebug() << "destroying chatWindow";
   delete ui;
 }

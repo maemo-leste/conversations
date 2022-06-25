@@ -61,12 +61,13 @@ void MainWindow::createQml() {
   qctx->setContextProperty("ctx", m_ctx);
   qctx->setContextProperty("mainWindow", this);
   qctx->setContextProperty("chatOverviewModel", m_ctx->chatOverviewModel);
+  qctx->setContextProperty("chatSearchModel", m_ctx->chatSearchModel);
 
   m_quickWidget->setSource(QUrl("qrc:/qml/Main.qml"));
   m_quickWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
 
-  connect((QObject*)m_quickWidget->rootObject(), SIGNAL(rowClicked(QString, QString, QString)),
-      this, SLOT(onOpenChatWindow(QString, QString, QString)));
+  connect((QObject*)m_quickWidget->rootObject(), SIGNAL(overviewRowClicked(QString, QString, QString, QString)),
+      this, SLOT(onOpenChatWindow(QString, QString, QString, QString)));
 
   ui->centralWidget->layout()->addWidget(m_quickWidget);
 }
@@ -79,11 +80,11 @@ void MainWindow::destroyQml() {
 }
 
 void MainWindow::onOpenChatWindow(const QString &remote_uid) {
-  this->onOpenChatWindow("", "", remote_uid);
+  this->onOpenChatWindow("", "", remote_uid, "");
 }
 
-void MainWindow::onOpenChatWindow(const QString &group_uid, const QString &local_uid, const QString &remote_uid) {
-  m_chatWindow = new ChatWindow(m_ctx, group_uid, local_uid, remote_uid, this);
+void MainWindow::onOpenChatWindow(const QString &group_uid, const QString &local_uid, const QString &remote_uid, const QString &event_id) {
+  m_chatWindow = new ChatWindow(m_ctx, group_uid, local_uid, remote_uid, event_id, this);
   m_chatWindow->show();
 
   connect(m_chatWindow, &ChatWindow::sendMessage, this->m_ctx, &Conversations::onSendOutgoingMessage);

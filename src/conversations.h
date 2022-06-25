@@ -43,6 +43,7 @@ public:
     static void createConfigDirectory(const QString &dir) ;
 
     ChatModel *chatOverviewModel;
+    ChatModel *chatSearchModel;
     Sender *telepathy;
 
     void setWindowTitle(const QString &title);

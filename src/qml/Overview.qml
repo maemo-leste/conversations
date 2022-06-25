@@ -43,7 +43,7 @@ Rectangle {
                             parent.parent.color = "black";
                     }
                     onClicked: {
-                        appWindow.rowClicked(group_uid, local_uid, remote_uid);
+                        appWindow.overviewRowClicked(group_uid, local_uid, remote_uid, "");
                     }
                 }
             }

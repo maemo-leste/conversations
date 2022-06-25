@@ -45,7 +45,7 @@ public:
 
 public slots:
     void onOpenChatWindow(const QString &remote_uid);
-    void onOpenChatWindow(const QString &group_uid, const QString &local_uid, const QString &remote_uid);
+    void onOpenChatWindow(const QString &group_uid, const QString &local_uid, const QString &remote_uid, const QString &event_id);
     void onOpenSettingsWindow();
     void onShowApplication();
     void onHideApplication();

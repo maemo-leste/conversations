@@ -10,7 +10,7 @@ Rectangle {
     visible: true
     color: "black"
 
-    signal rowClicked(string group_uid, string local_uid, string remote_uid);
+    signal overviewRowClicked(string group_uid, string local_uid, string remote_uid, string event_id);
 
     property Overview overviewWindow: Overview {
         Layout.fillWidth: true
@@ -33,7 +33,7 @@ Rectangle {
     Connections {
         target: searchWindow
         onItemClicked: {
-            console.log('weee');
+            overviewRowClicked(group_uid, local_uid, remote_uid, event_id);
         }
     }
 

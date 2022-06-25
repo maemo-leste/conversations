@@ -30,6 +30,7 @@ Rectangle {
             message: "I made this thing"
             isHead: true
             isLast: false
+            high: false
         }
         ListElement {
             name: "Wizzup"
@@ -37,6 +38,7 @@ Rectangle {
             message: "it kinda works"
             isHead: false
             isLast: false
+            high: true
         }
         ListElement {
             name: "Wizzup"
@@ -44,6 +46,7 @@ Rectangle {
             message: "you should look at itt"
             isHead: false
             isLast: false
+            high: false
         }
         ListElement {
             datestr: "11:32 pm"
@@ -51,6 +54,7 @@ Rectangle {
             message: "Yeah, that works pretty well!"
             isHead: true
             isLast: false
+            high: false
         }
         ListElement {
             datestr: "10:04 pm"
@@ -59,6 +63,7 @@ Rectangle {
             status: "sent"
             isHead: true
             isLast: false
+            high: false
         }
         ListElement {
             datestr: "10:02 pm"
@@ -67,6 +72,7 @@ Rectangle {
             status: "read"
             isHead: true
             isLast: false
+            high: false
         }
         ListElement {
             datestr: "10:02 pm"
@@ -75,6 +81,7 @@ Rectangle {
             status: "read"
             isHead: true
             isLast: false
+            high: false
         }
     }
 
@@ -101,9 +108,7 @@ Rectangle {
             }
 
             Rectangle {
-                radius: 4
-                clip: true
-                color: isSelf ? root.chatBackgroundSelf : root.chatBackgroundThem
+                color: high ? "white" : "transparent"
                 Layout.preferredHeight: itemHeight
                 Layout.preferredWidth: {
                     var max_width = item.width / 6 * 5;
@@ -117,60 +122,69 @@ Rectangle {
                     return max_width;
                 }
 
-                ColumnLayout {
-                    id: textColumn
+
+                Rectangle {
+                    radius: high ? 0 : 4
+                    clip: true
+                    color: isSelf ? root.chatBackgroundSelf : root.chatBackgroundThem
                     anchors.fill: parent
-                    anchors.margins: 6
-                    anchors.leftMargin: 10
-                    anchors.rightMargin: 10
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: itemHeight
+                    anchors.margins: 1
 
-                    RowLayout {
-                        id: metaRow
-                        spacing: 8
+                    ColumnLayout {
+                        id: textColumn
+                        anchors.fill: parent
+                        anchors.margins: 6
+                        anchors.leftMargin: 10
+                        anchors.rightMargin: 10
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: itemHeight
 
-                        Item {
-                            visible: !isHead
-                            Layout.fillWidth: true
+                        RowLayout {
+                            id: metaRow
+                            spacing: 8
+
+                            Item {
+                                visible: !isHead
+                                Layout.fillWidth: true
+                            }
+
+                            Text {
+                                visible: isHead
+                                font.pointSize: 12
+                                color: "lightblue"
+                                text: "+44 7878 772185"
+                            }
+
+                            Text {
+                                font.pointSize: 12
+                                color: "#98ac90"
+                                text: datestr
+                                Layout.rightMargin: 0
+                            }
+
+                            Item {
+                                visible: isHead
+                                Layout.fillWidth: true
+                            }
+
+                            Text {
+                                visible: isHead
+                                font.pointSize: 12
+                                color: "#98ac90"
+                                text: "~" + name
+                                Layout.rightMargin: 0
+                            }
                         }
 
                         Text {
-                            visible: isHead
-                            font.pointSize: 12
-                            color: "lightblue"
-                            text: "+44 7878 772185"
+                            id: textMessage
+                            color: "white"
+                            text: message
+                            wrapMode: Text.WordWrap
+                            width: parent.width
+                            font.pointSize: 14
+                            Layout.preferredWidth: parent.width
                         }
-
-                        Text {
-                            font.pointSize: 12
-                            color: "#98ac90"
-                            text: datestr
-                            Layout.rightMargin: 0
-                        }
-
-                        Item {
-                            visible: isHead
-                            Layout.fillWidth: true
-                        }
-
-                        Text {
-                            visible: isHead
-                            font.pointSize: 12
-                            color: "#98ac90"
-                            text: "~" + name
-                            Layout.rightMargin: 0
-                        }
-                    }
-
-                    Text {
-                        id: textMessage
-                        color: "white"
-                        text: message
-                        wrapMode: Text.WordWrap
-                        width: parent.width
-                        font.pointSize: 14
-                        Layout.preferredWidth: parent.width
                     }
                 }
             }

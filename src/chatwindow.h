@@ -28,7 +28,7 @@ class ChatWindow : public QMainWindow {
 
 public:
     Ui::ChatWindow *ui;
-    explicit ChatWindow(Conversations *ctx, const QString &group_uid, const QString &local_uid, const QString &remote_uid, QWidget *parent = nullptr);
+    explicit ChatWindow(Conversations *ctx, const QString &group_uid, const QString &local_uid, const QString &remote_uid, const QString &event_id, QWidget *parent = nullptr);
     static Conversations *getContext();
     ~ChatWindow() override;
 
@@ -43,6 +43,7 @@ private slots:
 signals:
     void closed();
     void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
+    void jumpToMessage(const QString &event_id);
 
 private:
     Conversations *m_ctx;
