@@ -29,6 +29,7 @@ public:
     bool outgoing() const;
     int flags() const;
     QString cid() const;
+    QString name() const;
 
     QString datestr() const;
     QString hourstr() const;

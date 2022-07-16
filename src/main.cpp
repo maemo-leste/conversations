@@ -3,6 +3,8 @@
 #include <QResource>
 #include <QtCore>
 
+#include <unistd.h>
+#include <sys/types.h>
 #include "conversations.h"
 #include "lib/globals.h"
 #include "lib/ipc.h"
@@ -16,6 +18,8 @@
 #include <QDBusMessage>
 #endif
 
+#include "rtcom-eventlogger/eventlogger-query.h"
+
 int main(int argc, char *argv[]) {
   Q_INIT_RESOURCE(assets);
   Q_INIT_RESOURCE(whatsthat);
@@ -24,6 +28,7 @@ int main(int argc, char *argv[]) {
 
   intl("conversations-ui");
   qputenv("QML_DISABLE_DISK_CACHE", "1");
+
   //QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
   QApplication::setApplicationName("conversations");
   QApplication::setOrganizationDomain("https://maemo-leste.github.io/");
@@ -81,7 +86,9 @@ int main(int argc, char *argv[]) {
         return IPC::send(ls, arg);
       }
     }
-    return IPC::send(ls, "makeActive");
+    auto res = IPC::send(ls, "makeActive");
+    qInfo() << "an instance of conversations is already active, sending `makeActive` and exiting the current process";
+    return res;
   }
 
   // Listen on IPC

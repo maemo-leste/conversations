@@ -3,10 +3,27 @@ import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.15
 
 Rectangle {
+    id: root
     color: "black"
     anchors.fill: parent
     property int itemHeight: 76;
     property string highlight: "#00a2ff"
+
+    ListModel {
+        id: xxx2
+        ListElement {
+            name: "Test"
+        }
+        ListElement {
+            name: "Bla"
+        }
+        ListElement {
+            name: "Foo"
+        }
+        ListElement {
+            name: "Bar"
+        }
+    }
 
     ListModel {
         id: xxx
@@ -60,8 +77,81 @@ Rectangle {
         }
     }
 
+    property int topBarHeight: 54
 
     ListView {
+        height: root.topBarHeight
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+
+        model: xxx2
+        orientation: Qt.Horizontal
+        layoutDirection: Qt.LeftToRight
+        delegate: Rectangle {
+            //color: index % 2 == 0 ? "grey" : "green"
+            width: text.implicitWidth + 80
+            height: root.topBarHeight
+            color: "green"
+
+            ColumnLayout {
+                anchors.centerIn: parent
+                width: parent.width * 0.8
+                height: parent.height * 0.7
+                spacing: 0
+
+                Rectangle {
+                    Layout.preferredHeight: parent.height * 0.8
+                    Layout.fillWidth: true
+                    color: "red"
+                    radius: 4
+
+                    Text {
+                        id: text
+                        text: name
+                        font.pointSize: 18
+                        color: "white"
+                        anchors.centerIn: parent
+                    }
+                }
+
+                Rectangle {
+                    Layout.preferredHeight: 4
+                    Layout.fillWidth: true
+                    color: "transparent"
+                    visible: index == 0
+
+                    Image {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        horizontalAlignment: Image.AlignLeft
+
+                        height: parent.preferredHeight
+                        source: "https://i.imgur.com/4SW610Y.png"
+                        fillMode: Image.TileHorizontally
+                        smooth: false
+                    }
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                onClicked: {
+                    console.log('xex');
+                }
+            }
+        }
+    }
+
+    ListView {
+        anchors.topMargin: root.topBarHeight
         anchors.fill: parent
 
         model: xxx

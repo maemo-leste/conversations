@@ -66,80 +66,86 @@
 #endif
 
 
-class MyHandler : public Tp::AbstractClientHandler
-{
-    public:
-        MyHandler(const Tp::ChannelClassSpecList &channelFilter);
-        ~MyHandler() { }
-        bool bypassApproval() const;
-        void handleChannels(const Tp::MethodInvocationContextPtr<> &context,
-                const Tp::AccountPtr &account,
-                const Tp::ConnectionPtr &connection,
-                const QList<Tp::ChannelPtr> &channels,
-                const QList<Tp::ChannelRequestPtr> &requestsSatisfied,
-                const QDateTime &userActionTime,
-                const Tp::AbstractClientHandler::HandlerInfo &handlerInfo);
+class TelepathyHandler : public Tp::AbstractClientHandler {
+public:
+    TelepathyHandler(const Tp::ChannelClassSpecList &channelFilter);
+    ~TelepathyHandler() { }
+    bool bypassApproval() const;
+    void handleChannels(const Tp::MethodInvocationContextPtr<> &context,
+        const Tp::AccountPtr &account,
+        const Tp::ConnectionPtr &connection,
+        const QList<Tp::ChannelPtr> &channels,
+        const QList<Tp::ChannelRequestPtr> &requestsSatisfied,
+        const QDateTime &userActionTime,
+        const Tp::AbstractClientHandler::HandlerInfo &handlerInfo);
 };
 
 
-class MyAccount : public QObject
-{
-    Q_OBJECT
+class TelepathyAccount : public QObject {
+Q_OBJECT
 
-    public:
-        explicit MyAccount(Tp::AccountPtr macc);
-        ~MyAccount() override;
+public:
+    explicit TelepathyAccount(Tp::AccountPtr macc);
+    ~TelepathyAccount() override;
+
+    QString nickname() const { return m_nickname; }
+    QString localUid() const { return m_local_uid; }
+    QString protocolName() const { return m_protocol_name; }
 
 signals:
-        void databaseAddition(ChatMessage *msg);
+    void databaseAddition(ChatMessage *msg);
 
-        public slots:
-            void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
+public slots:
+    void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
 
-        private slots:
-            void onOnline(bool online);
-        void onAccReady(Tp::PendingOperation *op);
+private slots:
+    void onOnline(bool online);
+    void onAccReady(Tp::PendingOperation *op);
 
-        void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
-        void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
+    void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
+    void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
 
-    public:
-        Tp::AccountPtr acc;
+public:
+    Tp::AccountPtr acc;
 
-    private:
-        Tp::SimpleTextObserverPtr observer;
-        Tp::ContactMessengerPtr messenger;
-        Tp::TextChannel *hgbchan;
-        Tp::AccountManagerPtr m_accountmanager;
+private:
+    QString m_nickname;
+    QString m_local_uid;
+    QString m_protocol_name;
 
-        Tp::AbstractClientPtr clienthandler;
+    Tp::SimpleTextObserverPtr observer;
+    Tp::ContactMessengerPtr messenger;
+    Tp::TextChannel *hgbchan;
+    Tp::AccountManagerPtr m_accountmanager;
+
+    Tp::AbstractClientPtr clienthandler;
 };
 
 
-class Sender : public QObject
-{
-    Q_OBJECT
+class Telepathy : public QObject {
+Q_OBJECT
 
-    public:
-        explicit Sender(QObject *parent = nullptr);
-        ~Sender() override;
+public:
+    explicit Telepathy(QObject *parent = nullptr);
+    ~Telepathy() override;
+
+    QList<TelepathyAccount*> accounts;
 
 signals:
-        void databaseAddition(ChatMessage *msg);
+    void databaseAddition(ChatMessage *msg);
+    void accountManagerReady();
 
-        public slots:
-            void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
-        void onDatabaseAddition(ChatMessage *msg);
+public slots:
+    void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
+    void onDatabaseAddition(ChatMessage *msg);
 
-        private slots:
-            void onAccountManagerReady(Tp::PendingOperation *op);
+private slots:
+    void onAccountManagerReady(Tp::PendingOperation *op);
 
-    private:
-        QList<MyAccount*> accs;
-
-        Tp::ClientRegistrarPtr registrar;
-        Tp::AccountManagerPtr m_accountmanager;
-        Tp::AbstractClientPtr clienthandler;
+private:
+    Tp::ClientRegistrarPtr registrar;
+    Tp::AccountManagerPtr m_accountmanager;
+    Tp::AbstractClientPtr clienthandler;
 };
 
 

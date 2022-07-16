@@ -9,11 +9,80 @@ Rectangle {
     id: root
     property string highlight: "#00a2ff"
     property int itemHeight: 76 * ctx.scaleFactor
+    property int topBarHeight: 54 * ctx.scaleFactor
     color: "black"
 
     ListView {
+        height: root.topBarHeight
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+
+        model: overviewServiceModel
+        orientation: Qt.Horizontal
+        layoutDirection: Qt.LeftToRight
+
+        delegate: Item {
+            width: text.implicitWidth + 75
+            height: root.topBarHeight
+
+            ColumnLayout {
+                anchors.centerIn: parent
+                width: parent.width * 0.8
+                height: parent.height * 0.7
+                spacing: 0
+
+                Item {
+                    Layout.preferredHeight: parent.height * 0.8
+                    Layout.fillWidth: true
+
+                    Text {
+                        id: text
+                        text: name || "";
+                        font.pointSize: 18 * ctx.scaleFactor
+                        color: "white"
+                        anchors.centerIn: parent
+                    }
+                }
+
+                Rectangle {
+                    Layout.preferredHeight: 4
+                    Layout.fillWidth: true
+                    color: "transparent"
+                    visible: overviewServiceModel.activeIndex == index
+
+                    Image {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        horizontalAlignment: Image.AlignLeft
+
+                        height: parent.preferredHeight
+                        source: "qrc:///overviewdots.png"
+                        fillMode: Image.TileHorizontally
+                        smooth: false
+                    }
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                onClicked: {
+                    overviewServiceModel.changeActiveIndex(index);
+                }
+            }
+        }
+    }
+
+    ListView {
         anchors.fill: parent
-        anchors.topMargin: 12
+        anchors.topMargin: root.topBarHeight
         anchors.bottomMargin: 10
         anchors.leftMargin: 4
         anchors.rightMargin: 4
@@ -43,7 +112,7 @@ Rectangle {
                             parent.parent.color = "black";
                     }
                     onClicked: {
-                        appWindow.overviewRowClicked(group_uid, local_uid, remote_uid, "");
+                        appWindow.overviewRowClicked(group_uid, local_uid, remote_uid, "", service_id);
                     }
                 }
             }
@@ -85,7 +154,7 @@ Rectangle {
                         Layout.preferredHeight: root.itemHeight / 2
 
                         Components.PlainText {
-                            text: remote_name
+                            text: name
                             color: "white"
                             font.pointSize: 18 * ctx.scaleFactor
                             Layout.alignment: Qt.AlignTop

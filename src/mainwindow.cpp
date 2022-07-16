@@ -50,6 +50,8 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx, &Conversations::hideApplication, this, &MainWindow::onHideApplication);
   connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::onOpenSettingsWindow);
   connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::requestOverviewSearchWindow);
+
+  connect(m_ctx->telepathy, &Telepathy::accountManagerReady, this, &MainWindow::onTPAccountManagerReady);
 }
 
 void MainWindow::createQml() {
@@ -62,15 +64,18 @@ void MainWindow::createQml() {
   qctx->setContextProperty("mainWindow", this);
   qctx->setContextProperty("chatOverviewModel", m_ctx->chatOverviewModel);
   qctx->setContextProperty("chatSearchModel", m_ctx->chatSearchModel);
+  qctx->setContextProperty("overviewServiceModel", m_ctx->overviewServiceModel);
 
   m_quickWidget->setSource(QUrl("qrc:/qml/Main.qml"));
   m_quickWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
 
-  connect((QObject*)m_quickWidget->rootObject(), SIGNAL(overviewRowClicked(QString, QString, QString, QString)),
-      this, SLOT(onOpenChatWindow(QString, QString, QString, QString)));
+  connect((QObject*)m_quickWidget->rootObject(), SIGNAL(overviewRowClicked(QString, QString, QString, QString, QString)),
+      this, SLOT(onOpenChatWindow(QString, QString, QString, QString, QString)));
 
   ui->centralWidget->layout()->addWidget(m_quickWidget);
 }
+
+void MainWindow::onTPAccountManagerReady() {}
 
 void MainWindow::destroyQml() {
   if(m_quickWidget == nullptr) return;
@@ -80,11 +85,11 @@ void MainWindow::destroyQml() {
 }
 
 void MainWindow::onOpenChatWindow(const QString &remote_uid) {
-  this->onOpenChatWindow("", "", remote_uid, "");
+  this->onOpenChatWindow("", "", remote_uid, "", "");
 }
 
-void MainWindow::onOpenChatWindow(const QString &group_uid, const QString &local_uid, const QString &remote_uid, const QString &event_id) {
-  m_chatWindow = new ChatWindow(m_ctx, group_uid, local_uid, remote_uid, event_id, this);
+void MainWindow::onOpenChatWindow(const QString &group_uid, const QString &local_uid, const QString &remote_uid, const QString &event_id, const QString &service_id) {
+  m_chatWindow = new ChatWindow(m_ctx, group_uid, local_uid, remote_uid, event_id, service_id, this);
   m_chatWindow->show();
 
   connect(m_chatWindow, &ChatWindow::sendMessage, this->m_ctx, &Conversations::onSendOutgoingMessage);

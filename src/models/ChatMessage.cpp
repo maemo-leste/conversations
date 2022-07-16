@@ -3,7 +3,7 @@
 
 #include "models/ChatMessage.h"
 
-ChatMessage::ChatMessage(
+ChatMessage::ChatMessage(  // @TODO: cleanup constructor
     const int event_id, const QString &service, const QString &group_uid,
     const QString &local_uid, const QString &remote_uid, const QString &remote_name,
     const QString &remote_ebook_uid, const QString &text, const QString &icon_name,
@@ -46,6 +46,10 @@ QString ChatMessage::cid() const { return m_cid; }
 QDateTime ChatMessage::date() const { return m_date; }
 QString ChatMessage::hourstr() const { return m_date.toString("hh:mm"); }
 QString ChatMessage::datestr() const { return m_date.toString("dd/MM/yyyy"); }
+QString ChatMessage::name() const {
+  if(!m_remote_name.isEmpty()) return m_remote_name;
+  return m_remote_uid;
+}
 bool ChatMessage::isHead() const {
   if(previous == nullptr) return true;
   if(previous->cid() == m_cid) return false;

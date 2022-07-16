@@ -28,7 +28,7 @@ class ChatWindow : public QMainWindow {
 
 public:
     Ui::ChatWindow *ui;
-    explicit ChatWindow(Conversations *ctx, const QString &group_uid, const QString &local_uid, const QString &remote_uid, const QString &event_id, QWidget *parent = nullptr);
+    explicit ChatWindow(Conversations *ctx, const QString &group_uid, const QString &local_uid, const QString &remote_uid, const QString &event_id, const QString &service_id, QWidget *parent = nullptr);
     static Conversations *getContext();
     ~ChatWindow() override;
 
@@ -50,6 +50,7 @@ private:
     static ChatWindow *pChatWindow;
     QString m_remote_uid;
     QString m_local_uid;
+    QString m_service_uid;
     QString m_group_uid;
     void closeEvent(QCloseEvent *event) override;
 };

@@ -20,7 +20,7 @@ if(MAEMO)
     find_package(Qt5 REQUIRED COMPONENTS Maemo5)
 endif()
 
-find_package(TelepathyQt5 0.9.6 REQUIRED)
+find_package(TelepathyQt5 0.9.7 REQUIRED)
 
 qtquick_compiler_add_resources(RESOURCES
         assets.qrc
@@ -69,7 +69,6 @@ target_include_directories(conversations PUBLIC
         ${Qt5Svg_INCLUDE_DIRS}
         ${Qt5Xml_INCLUDE_DIRS}
         ${TELEPATHY_QT5_INCLUDE_DIR}
-        /usr/include/telepathy-qt5/
         ${GLIB_INCLUDE_DIRS}
         ${RTCOM-EVENTLOGGER_INCLUDE_DIRS}
         )

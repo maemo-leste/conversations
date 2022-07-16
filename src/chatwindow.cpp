@@ -17,18 +17,19 @@
 
 ChatWindow * ChatWindow::pChatWindow = nullptr;
 
-ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QString &local_uid, const QString &remote_uid, const QString &event_id, QWidget *parent) :
+ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QString &local_uid, const QString &remote_uid, const QString &event_id, const QString &service_id, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::ChatWindow),
     m_group_uid(group_uid),
     m_local_uid(local_uid),
     m_remote_uid(remote_uid),
+    m_service_uid(service_id),
     m_ctx(ctx) {
   pChatWindow = this;
   ui->setupUi(this);
 
   this->chatModel = new ChatModel(this);
-  this->chatModel->getMessages(remote_uid);
+  this->chatModel->getMessages(service_id, remote_uid);
 
 #ifdef MAEMO
   setProperty("X-Maemo-StackedWindow", 1);
@@ -51,10 +52,10 @@ ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QStri
     ui->quick->setSource(QUrl("qrc:/whatsthat/whatsthat.qml"));
 
   connect(this->ui->btnSend, &QPushButton::clicked, this, &ChatWindow::onGatherMessage);
-
-  connect(m_ctx->telepathy, &Sender::databaseAddition, this, &ChatWindow::onDatabaseAddition);
+  connect(m_ctx->telepathy, &Telepathy::databaseAddition, this, &ChatWindow::onDatabaseAddition);
 
   if(!event_id.isEmpty()) {
+    // @TODO: replace this if with something better
     qDebug() << "jump to message " << event_id;
     this->jumpToMessage(event_id);
   }

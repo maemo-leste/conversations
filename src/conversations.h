@@ -12,6 +12,7 @@
 #include "lib/tp.h"
 #include "models/ChatModel.h"
 #include "models/ChatMessage.h"
+#include "models/OverviewServiceModel.h"
 
 class Conversations : public QObject {
     Q_OBJECT
@@ -44,7 +45,8 @@ public:
 
     ChatModel *chatOverviewModel;
     ChatModel *chatSearchModel;
-    Sender *telepathy;
+    OverviewServiceModel *overviewServiceModel;
+    Telepathy *telepathy;
 
     void setWindowTitle(const QString &title);
     Q_INVOKABLE QString ossoIconLookup(const QString &filename); // /usr/share/icons/hicolor/48x48/hildon/

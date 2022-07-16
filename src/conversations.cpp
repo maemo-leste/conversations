@@ -10,8 +10,10 @@
 #include "lib/utils.h"
 #include "lib/globals.h"
 
-Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) :
-      telepathy(new Sender(this)) {
+Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
+  this->telepathy =new Telepathy(this);
+  this->overviewServiceModel = new OverviewServiceModel(this);
+
   this->cmdargs = cmdargs;
 
   this->ipc = ipc;
@@ -41,9 +43,11 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) :
 
   chatOverviewModel = new ChatModel();
   chatSearchModel = new ChatModel();
+
   this->chatOverviewModel->onGetOverviewMessages();
 
-  connect(telepathy, &Sender::databaseAddition, this, &Conversations::onDatabaseAddition);
+  connect(telepathy, &Telepathy::databaseAddition, this, &Conversations::onDatabaseAddition);
+  connect(overviewServiceModel, &OverviewServiceModel::protocolFilterChanged, chatOverviewModel, &ChatModel::onProtocolFilter);
 }
 
 void Conversations::onDatabaseAddition(ChatMessage *msg) {
