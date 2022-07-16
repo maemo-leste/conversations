@@ -19,6 +19,7 @@ Build-Depends: debhelper (>= 10),
     librtcom-eventlogger-plugins-dev,
     qtdeclarative5-dev,
     qtdeclarative5-dev-tools,
+    libtelepathy-qt5-dev,
 Homepage: https://github.com/maemo-leste/conversations
 XSBC-Bugtracker: https://github.com/maemo-leste/conversations/issues
 Vcs-Git: https://github.com/maemo-leste/conversations/
@@ -39,4 +40,5 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
     librtcom-eventlogger1,
     librtcom-eventlogger-plugins1,
     libosso-abook,
+    libtelepathy-qt5-0,
 Description: Maemo Conversations UI with RTCOM and Telepathy integration
