@@ -72,15 +72,14 @@ QList<ChatMessage*> rtcomIterateResults(rtcom_query *query_struct) {
   return results;
 }
 
-
-void create_event(time_t start_time, const char* self_name, const char* backend_name, const char *remote_uid, const char *remote_name, const char* text, bool is_outgoing, bool is_sms) {
+void create_event(time_t start_time, const char* self_name, const char* backend_name, const char *remote_uid, const char *remote_name, const char* text, bool is_outgoing, const char* protocol) {
   qDebug() << "create_event";
   if(evlog == NULL)
     evlog = rtcom_el_new();
 
   RTComElEvent *ev = rtcom_el_event_new();
 
-  if (is_sms) {
+  if (strcmp(protocol, "sms") == 0 || strcmp(protocol, "tel") == 0) {
     RTCOM_EL_EVENT_SET_FIELD(ev, service, g_strdup("RTCOM_EL_SERVICE_SMS"));
     RTCOM_EL_EVENT_SET_FIELD(ev, event_type,  g_strdup("RTCOM_EL_EVENTTYPE_SMS_MESSAGE"));
   } else {
@@ -105,4 +104,26 @@ void create_event(time_t start_time, const char* self_name, const char* backend_
   } else {
     qDebug() << "create_event SUCCESS";
   }
+}
+
+QList<QString> rtcomGetLocalUids() {
+  QList<QString> protocols;
+  rtcom_query* query_struct = rtcomStartQuery(0, 0, RTCOM_EL_QUERY_GROUP_BY_EVENTS_LOCAL_UID);
+  if(!rtcom_el_query_prepare(query_struct->query, NULL)) {
+    qCritical() << __FUNCTION__ << "Could not prepare query";
+    g_object_unref(query_struct->query);
+    delete query_struct;
+    return protocols;
+  }
+
+  for(auto *item: rtcomIterateResults(query_struct)) {
+    auto local_uid = item->local_uid();
+    if(local_uid.count("/") != 2) continue;
+    auto protocol = local_uid.split("/").at(1);
+    protocols << protocol;
+  }
+
+  g_object_unref(query_struct->query);
+  delete query_struct;
+  return protocols;
 }

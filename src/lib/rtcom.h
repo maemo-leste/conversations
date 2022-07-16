@@ -23,6 +23,7 @@ struct rtcom_query {
 
 rtcom_query* rtcomStartQuery(int limit, int offset, RTComElQueryGroupBy group_by);
 QList<ChatMessage*> rtcomIterateResults(rtcom_query *query_struct);
-void create_event(time_t start_time, const char* self_name, const char* backend_name, const char *remote_uid, const char *remote_name, const char* text, bool is_outgoing, bool is_sms);
+void create_event(time_t start_time, const char* self_name, const char* backend_name, const char *remote_uid, const char *remote_name, const char* text, bool is_outgoing, const char* protocol);
+QList<QString> rtcomGetLocalUids();
 
 #endif

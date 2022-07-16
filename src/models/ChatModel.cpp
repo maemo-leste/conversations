@@ -78,6 +78,8 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
     return message->icon_name();
   else if (role == EventIDRole)
     return message->event_id();
+  else if (role == ServiceIDRole)
+    return message->service();
   return QVariant();
 }
 
@@ -96,6 +98,7 @@ QHash<int, QByteArray> ChatModel::roleNames() const {
   roles[OutgoingRole] = "outgoing";
   roles[IconNameRole] = "icon_name";
   roles[EventIDRole] = "event_id";
+  roles[ServiceIDRole] = "service_id";
   return roles;
 }
 
@@ -110,16 +113,32 @@ void ChatModel::clear() {
   this->countChanged();
 }
 
+void ChatModel::onProtocolFilter(QString protocol) {
+  m_filterProtocol = protocol;
+  onGetOverviewMessages();
+}
+
 void ChatModel::onGetOverviewMessages(const int limit, const int offset) {
   this->clear();
 
 #ifdef RTCOM
   rtcom_query* query_struct = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_CONTACT);
-  gint rtcom_sms_service_id = rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_SMS");
   bool query_prepared = FALSE;
 
-  query_prepared = rtcom_el_query_prepare(query_struct->query,
-                                          "service-id", rtcom_sms_service_id, RTCOM_EL_OP_EQUAL, NULL);
+  if(m_filterProtocol.isEmpty()) {
+    gint service_id = rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_CALL");
+    query_prepared = rtcom_el_query_prepare(query_struct->query, "service-id", service_id, RTCOM_EL_OP_NOT_EQUAL,  NULL);
+  } else {
+    gint service_id = (m_filterProtocol == "sms" || m_filterProtocol == "tel") ?
+                      rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_SMS") :
+                      rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_CHAT");
+
+    QString filterProtocol = QString("%%/" + m_filterProtocol + "/%%");
+    query_prepared = rtcom_el_query_prepare(query_struct->query,
+                                            "service-id", service_id, RTCOM_EL_OP_EQUAL,
+                                            "local-uid", filterProtocol.toStdString().c_str(), RTCOM_EL_OP_STR_LIKE, NULL);
+  }
+
   if(!query_prepared) {
     qCritical() << "Couldn't prepare query";
     g_object_unref(query_struct->query);
@@ -133,8 +152,8 @@ void ChatModel::onGetOverviewMessages(const int limit, const int offset) {
 #endif
 }
 
-unsigned int ChatModel::getMessages(const QString &remote_uid) {
-  auto count = this->getMessages(remote_uid, m_limit, m_offset);
+unsigned int ChatModel::getMessages(const QString &service_id, const QString &remote_uid) {
+  auto count = this->getMessages(service_id, remote_uid, m_limit, m_offset);
   if(count < m_limit) {
     m_exhausted = true;
     emit exhaustedChanged();
@@ -188,18 +207,19 @@ unsigned int ChatModel::searchMessages(const QString &search, const QString &rem
 #endif
 }
 
-unsigned int ChatModel::getMessages(const QString &remote_uid, const int limit, const int offset) {
+unsigned int ChatModel::getMessages(const QString &service_id, const QString &remote_uid, const int limit, const int offset) {
 #ifndef RTCOM
   return 0;
 #else
   m_remote_uid = remote_uid;
+  m_service_id = service_id;
 
   rtcom_query* query_struct = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_NONE);
-  gint rtcom_sms_service_id = rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_SMS");
+  gint sid = rtcom_el_get_service_id(query_struct->el, m_service_id.toStdString().c_str());
   bool query_prepared = FALSE;
   query_prepared = rtcom_el_query_prepare(query_struct->query,
                                           "remote-uid", remote_uid.toStdString().c_str(), RTCOM_EL_OP_EQUAL,
-                                          "service-id", rtcom_sms_service_id, RTCOM_EL_OP_EQUAL,
+                                          "service-id", sid, RTCOM_EL_OP_EQUAL,
                                           NULL);
 
   if(!query_prepared) {
@@ -239,7 +259,7 @@ unsigned int ChatModel::getPage() {
 
   qDebug() << __FUNCTION__ << "limit:" << m_limit << " offset:" << m_offset;
 
-  auto count = this->getMessages(m_remote_uid, m_limit, m_offset);
+  auto count = this->getMessages(m_service_id, m_remote_uid, m_limit, m_offset);
   if(count < m_limit) {
     m_exhausted = true;
     emit exhaustedChanged();

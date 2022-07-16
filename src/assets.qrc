@@ -13,6 +13,7 @@
         <file alias="uvos.png">assets/images/uvos.png</file>
         <file alias="back.png">assets/images/back.png</file>
         <file alias="close.png">assets/images/close.png</file>
+        <file alias="overviewdots.png">assets/images/overviewdots.png</file>
         <file alias="glass.png">assets/images/glass.png</file>
         <file alias="hamburger.png">assets/images/hamburger.png</file>
     </qresource>

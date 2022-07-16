@@ -28,7 +28,8 @@ public:
         RemoteUIDRole,
         RemoteNameRole,
         IconNameRole,
-        EventIDRole
+        EventIDRole,
+        ServiceIDRole
     };
 
     explicit ChatModel(QObject *parent = nullptr);
@@ -54,8 +55,8 @@ public:
     }
 
     Q_INVOKABLE unsigned int getPage();
-    unsigned int getMessages(const QString &remote_uid);
-    unsigned int getMessages(const QString &remote_uid, int limit, int offset);
+    unsigned int getMessages(const QString &service_id, const QString &remote_uid);
+    unsigned int getMessages(const QString &service_id, const QString &remote_uid, int limit, int offset);
     Q_INVOKABLE unsigned int searchMessages(const QString &search);
     unsigned int searchMessages(const QString &search, const QString &remote_uid);
 
@@ -63,6 +64,7 @@ public:
 
 public slots:
   void onGetOverviewMessages(int limit = 9999, int offset = 0);
+  void onProtocolFilter(QString protocol);
 
 signals:
     void exhaustedChanged();
@@ -75,11 +77,15 @@ protected:
 
 private:
     QString m_remote_uid;
+    QString m_service_id;
+
     int m_page = 0;
     int m_limit = 20;
     int m_offset = 0;
     int m_count = 0;
     bool m_exhausted = false;
+    QMap<QString, QString> m_lol;
+    QString m_filterProtocol;
 };
 
 #endif

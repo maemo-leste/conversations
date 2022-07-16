@@ -8,18 +8,18 @@
 #include "lib/utils.h"
 
 
-Sender::Sender(QObject *parent) : QObject(parent) {
+Telepathy::Telepathy(QObject *parent) : QObject(parent) {
     m_accountmanager = Tp::AccountManager::create(Tp::AccountFactory::create(QDBusConnection::sessionBus(), Tp::Account::FeatureCore));
-    connect(m_accountmanager->becomeReady(), &Tp::PendingReady::finished, this, &Sender::onAccountManagerReady);
+    connect(m_accountmanager->becomeReady(), &Tp::PendingReady::finished, this, &Telepathy::onAccountManagerReady);
 
     registrar = Tp::ClientRegistrar::create();
     Tp::AbstractClientPtr handler = Tp::AbstractClientPtr::dynamicCast(
-            Tp::SharedPtr<MyHandler>(new MyHandler(
+            Tp::SharedPtr<TelepathyHandler>(new TelepathyHandler(
                     Tp::ChannelClassSpecList() << Tp::ChannelClassSpec::textChat())));
     registrar->registerClient(handler, "myhandler");
 }
 
-void Sender::onAccountManagerReady(Tp::PendingOperation *op) {
+void Telepathy::onAccountManagerReady(Tp::PendingOperation *op) {
     qDebug() << "onAccountManagerReady";
 
     auto validaccounts = m_accountmanager->validAccounts();
@@ -31,21 +31,23 @@ void Sender::onAccountManagerReady(Tp::PendingOperation *op) {
 
     for (int i = 0; i < l.count(); i++) {
         acc = l[i];
-        auto myacc = new MyAccount(acc);
-        accs << myacc;
+        auto myacc = new TelepathyAccount(acc);
+        accounts << myacc;
 
         connect(myacc, SIGNAL(databaseAddition(ChatMessage *)), SLOT(onDatabaseAddition(ChatMessage *)));
     }
+
+    emit accountManagerReady();
 }
 
-void Sender::onDatabaseAddition(ChatMessage *msg) {
+void Telepathy::onDatabaseAddition(ChatMessage *msg) {
     emit databaseAddition(msg);
 }
 
-void Sender::sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message) {
+void Telepathy::sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message) {
     qDebug() << local_uid << remote_uid;
 
-    for (MyAccount *ma : accs) {
+    for (TelepathyAccount *ma : accounts) {
         auto acc = ma->acc;
 
         QByteArray backend_name = (acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName()).toLocal8Bit();
@@ -57,37 +59,30 @@ void Sender::sendMessage(const QString &local_uid, const QString &remote_uid, co
     }
 }
 
-Sender::~Sender()
+Telepathy::~Telepathy()
 {
 }
 
-
-
-MyHandler::MyHandler(const Tp::ChannelClassSpecList &channelFilter)
+TelepathyHandler::TelepathyHandler(const Tp::ChannelClassSpecList &channelFilter)
     : Tp::AbstractClientHandler(channelFilter) { }
 
-    bool MyHandler::bypassApproval() const {
+    bool TelepathyHandler::bypassApproval() const {
         return false;
     }
 
-void MyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &context,
-        const Tp::AccountPtr &account,
-        const Tp::ConnectionPtr &connection,
-        const QList<Tp::ChannelPtr> &channels,
-        const QList<Tp::ChannelRequestPtr> &requestsSatisfied,
-        const QDateTime &userActionTime,
-        const Tp::AbstractClientHandler::HandlerInfo &handlerInfo)
-{
+void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &context,
+                                      const Tp::AccountPtr &account,
+                                      const Tp::ConnectionPtr &connection,
+                                      const QList<Tp::ChannelPtr> &channels,
+                                      const QList<Tp::ChannelRequestPtr> &requestsSatisfied,
+                                      const QDateTime &userActionTime,
+                                      const Tp::AbstractClientHandler::HandlerInfo &handlerInfo) {
     // do something
     context->setFinished();
 }
 
-
-
-
-MyAccount::MyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
+TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
     acc = macc;
-
     observer = Tp::SimpleTextObserver::create(acc);
 
     connect(acc.data(),
@@ -105,27 +100,32 @@ MyAccount::MyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
     connect(observer.data(), SIGNAL(messageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)),
             SLOT(onMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)));
 
-
+    m_nickname = acc->nickname();
+    m_local_uid = acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName();
+    m_protocol_name = acc->protocolName();
 }
 
-void MyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel) {
+void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel) {
     qDebug() << "onMessageSent" << message.text();
-
-    auto self_name = acc->nickname().toLocal8Bit();
-    auto backend_name = (acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName()).toLocal8Bit();
 
     auto remote_uid = channel->targetContact()->id().toLocal8Bit();
     auto text = message.text().toLocal8Bit();
 
     // TODO: remote_name != remote_uid, we shouldn't make them equal, but let's do it for now
     auto epoch = message.sent().toTime_t();
-    create_event(epoch, self_name.data(), backend_name.data(), remote_uid, remote_uid, text, true, true);
+    create_event(epoch,
+                 m_nickname.toLocal8Bit().data(),
+                 m_local_uid.toLocal8Bit().data(),
+                 remote_uid,
+                 remote_uid,
+                 text, true,
+                 m_protocol_name.toStdString().c_str());
 
-    auto *item = new ChatMessage(1, "3", "", backend_name, remote_uid, remote_uid, "", text, "", epoch, 0, "", "11", true, 0);
+    auto *item = new ChatMessage(1, "-1", "", m_local_uid, remote_uid, remote_uid, "", text, "", epoch, 0, "", "-1", true, 0);
     emit databaseAddition(item);
 }
 
-void MyAccount::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel) {
+void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel) {
     qDebug() << "onMessageReceived" << message.received() << message.senderNickname() << message.text();
     qDebug() << "isDeliveryReport" << message.isDeliveryReport();
 
@@ -138,47 +138,43 @@ void MyAccount::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::
     QByteArray self_name = acc->nickname().toLocal8Bit();
     QByteArray backend_name = (acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName()).toLocal8Bit();
     QByteArray remote_uid = message.senderNickname().toLocal8Bit();
-    //QByteArray remote_uid = message.sender()->id().toLocal8Bit();
     QByteArray text = message.text().toLocal8Bit();
 
     // TODO: remote_name != remote_uid, we shouldn't make them equal, but let's do it for now
     auto epoch = message.received().toTime_t();
-    create_event(epoch, self_name.data(), backend_name.data(), remote_uid, remote_uid, text, false, true);
+    create_event(epoch, self_name.data(), backend_name.data(), remote_uid, remote_uid, text, false, m_protocol_name.toStdString().c_str());
 
-    auto *item = new ChatMessage(1, "3", "", backend_name, remote_uid, remote_uid, "", text, "", epoch, 0, "", "11", false, 0);
+    auto *item = new ChatMessage(1, "-1", "", backend_name, remote_uid, remote_uid, "", text, "", epoch, 0, "", "-1", false, 0);
     emit databaseAddition(item);
 }
 
-void MyAccount::onOnline(bool online)
-{
+void TelepathyAccount::onOnline(bool online) {
     qDebug() << "onOnline: " << online;
-
-    if (online) {
-    }
 }
 
-void MyAccount::onAccReady(Tp::PendingOperation *op)
-{
+void TelepathyAccount::onAccReady(Tp::PendingOperation *op) {
     qDebug() << "onAccReady, isError:" << op->isError();
     qDebug() << "onAccReady, connection:" << acc->connection();
     qDebug() << "Display name:" << acc->displayName();
     qDebug() << "connectsAutomatically" << acc->connectsAutomatically();
     qDebug() << "isOnline" << acc->isOnline();
+    qDebug() << "serviceName" << acc->serviceName();
 
     // XXX: note that the account is ready, use that for some guards
 }
 
-void MyAccount::sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message) {
+void TelepathyAccount::sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message) {
     auto *pending = acc->ensureTextChat(remote_uid);
 
     connect(pending, &Tp::PendingChannelRequest::finished, [=](Tp::PendingOperation *op){
             auto *_pending = (Tp::PendingChannelRequest*)op;
             auto chanrequest = _pending->channelRequest();
-            auto lolchan = (Tp::TextChannel*)chanrequest->channel().data();
-            lolchan->send(message);
+            auto channel = chanrequest->channel();
+            auto text_channel = (Tp::TextChannel*)channel.data();
+            text_channel->send(message);
             });
 }
 
-MyAccount::~MyAccount()
+TelepathyAccount::~TelepathyAccount()
 {
 }

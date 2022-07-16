@@ -8,21 +8,7 @@ Rectangle {
     id: root
     color: "black"
 
-    signal itemClicked(string group_uid, string local_uid, string remote_uid, string event_id);
-
-    ListModel {
-        id: testModel
-        ListElement {
-            name: "John Brown"
-            datestr: "18 Apr"
-            msg: "hello bla, <span style=\"background: white;color:#056162\">dolor</span> bla"
-        }
-        ListElement {
-            name: "Sam Wise"
-            datestr: "14 Apr"
-            msg: "Lorem ipsum <span style=\"background: white;color:#056162\">dolor</span> sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-        }
-    }
+    signal itemClicked(string group_uid, string local_uid, string remote_uid, string event_id, string service_id);
 
     ColumnLayout {
         anchors.fill: parent
@@ -191,7 +177,7 @@ Rectangle {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            root.itemClicked(group_uid, local_uid, remote_uid, event_id);
+                            root.itemClicked(group_uid, local_uid, remote_uid, event_id, service_id);
                         }
                     }
                 }
