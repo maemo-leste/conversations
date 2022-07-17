@@ -114,6 +114,7 @@ target_link_libraries(conversations PUBLIC
         ${TELEPATHY_QT5_LIBRARIES}
         ${GLIB_LIBRARIES}
         ${RTCOM-EVENTLOGGER_LIBRARIES}
+        -lrtcom-el-plugin-chat
 )
 
 if(MAEMO)
