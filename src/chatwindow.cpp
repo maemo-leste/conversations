@@ -62,7 +62,7 @@ ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QStri
 }
 
 void ChatWindow::onDatabaseAddition(ChatMessage *msg) {
-  if(m_local_uid == msg->local_uid()) {
+  if(m_local_uid == msg->local_uid() && m_remote_uid == msg->remote_uid()) {
     this->chatModel->appendMessage(msg);
   }
 }
