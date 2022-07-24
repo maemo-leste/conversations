@@ -15,8 +15,8 @@ Telepathy::Telepathy(QObject *parent) : QObject(parent) {
     registrar = Tp::ClientRegistrar::create();
     Tp::AbstractClientPtr handler = Tp::AbstractClientPtr::dynamicCast(
             Tp::SharedPtr<TelepathyHandler>(new TelepathyHandler(
-                    Tp::ChannelClassSpecList() << Tp::ChannelClassSpec::textChat())));
-    registrar->registerClient(handler, "myhandler");
+                    Tp::ChannelClassSpecList() << Tp::ChannelClassSpec::textChat() << Tp::ChannelClassSpec::textChatroom())));
+    registrar->registerClient(handler, "Conversations");
 }
 
 void Telepathy::onAccountManagerReady(Tp::PendingOperation *op) {
