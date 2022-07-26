@@ -9,13 +9,57 @@
 
 
 Telepathy::Telepathy(QObject *parent) : QObject(parent) {
-    m_accountmanager = Tp::AccountManager::create(Tp::AccountFactory::create(QDBusConnection::sessionBus(), Tp::Account::FeatureCore));
+#if 0
+    m_accountmanager = Tp::AccountManager::create(Tp::AccountFactory::create(QDBusConnection::sessionBus(), Tp::Account::FeatureCore),
+        Tp::ConnectionFactory::create(QDBusConnection::sessionBus(), Tp::Connection::FeatureCore | Tp::Connection::FeatureSelfContact)
+            );
+#endif
+
+
+    Tp::AccountFactoryPtr accountFactory = Tp::AccountFactory::create(
+                QDBusConnection::sessionBus(),
+                Tp::Features()
+                    << Tp::Account::FeatureCore
+                );
+
+    Tp::ConnectionFactoryPtr connectionFactory = Tp::ConnectionFactory::create(
+                QDBusConnection::sessionBus(),
+                Tp::Features()
+                    << Tp::Connection::FeatureCore
+                    << Tp::Connection::FeatureSelfContact
+                );
+
+    Tp::ChannelFactoryPtr channelFactory = Tp::ChannelFactory::create(QDBusConnection::sessionBus());
+
+    channelFactory->addCommonFeatures(Tp::Channel::FeatureCore);
+
+    channelFactory->addFeaturesForTextChatrooms(
+            Tp::Features()
+            << Tp::TextChannel::FeatureMessageQueue
+            << Tp::TextChannel::FeatureMessageSentSignal
+            );
+
+    Tp::ContactFactoryPtr contactFactory = Tp::ContactFactory::create(
+                Tp::Features()
+                    << Tp::Contact::FeatureAlias
+                    << Tp::Contact::FeatureAvatarData
+                );
+
+    m_accountmanager = Tp::AccountManager::create(accountFactory);
     connect(m_accountmanager->becomeReady(), &Tp::PendingReady::finished, this, &Telepathy::onAccountManagerReady);
 
-    registrar = Tp::ClientRegistrar::create();
+    registrar = Tp::ClientRegistrar::create(accountFactory,
+                                            connectionFactory,
+                                            channelFactory,
+                                            contactFactory);
+
+    auto tphandler = new TelepathyHandler(Tp::ChannelClassSpecList() << Tp::ChannelClassSpec::textChat() << Tp::ChannelClassSpec::textChatroom());
+
     Tp::AbstractClientPtr handler = Tp::AbstractClientPtr::dynamicCast(
-            Tp::SharedPtr<TelepathyHandler>(new TelepathyHandler(
-                    Tp::ChannelClassSpecList() << Tp::ChannelClassSpec::textChat() << Tp::ChannelClassSpec::textChatroom())));
+            Tp::SharedPtr<TelepathyHandler>(tphandler));
+
+    tphandler->setTelepathyParent(this);
+
     registrar->registerClient(handler, "Conversations");
 }
 
@@ -64,11 +108,19 @@ Telepathy::~Telepathy()
 }
 
 TelepathyHandler::TelepathyHandler(const Tp::ChannelClassSpecList &channelFilter)
-    : Tp::AbstractClientHandler(channelFilter) { }
+    : Tp::AbstractClientHandler(channelFilter) {
+    // XXX: Do we want to do anything here?
 
-    bool TelepathyHandler::bypassApproval() const {
-        return false;
-    }
+}
+
+void TelepathyHandler::setTelepathyParent(Telepathy* parent) {
+    m_telepathy_parent = parent;
+    return;
+}
+
+bool TelepathyHandler::bypassApproval() const {
+    return false;
+}
 
 void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &context,
                                       const Tp::AccountPtr &account,
@@ -77,13 +129,32 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
                                       const QList<Tp::ChannelRequestPtr> &requestsSatisfied,
                                       const QDateTime &userActionTime,
                                       const Tp::AbstractClientHandler::HandlerInfo &handlerInfo) {
-    // do something
+    // XXX: this stub needs implementing
+    auto channelptr = channels[0];
+    Tp::TextChannel* channel_ = (Tp::TextChannel*)channelptr.data();
+
+    qDebug() << "HANDLECHANNELS" << channel_;
+
+    for (TelepathyAccount *ma : m_telepathy_parent->accounts) {
+        qDebug() << "CMP" << ma->acc << "|" <<  account;
+        qDebug() << "CMP2" << ma->nickname() << ma->localUid() << ma->protocolName();
+        if (ma->nickname() == "wizzupvm") {
+        //if (ma->nickname() == "merlijn@xmpp.wajer.org") {
+            //if (ma->acc == account) {
+
+            ma->m_testchan = channelptr;
+            ma->connect(channel_->becomeReady(),
+                        SIGNAL(finished(Tp::PendingOperation*)),
+                        SLOT(onChannelReady(Tp::PendingOperation*)));
+        }
+    }
+
     context->setFinished();
 }
 
 TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
     acc = macc;
-    observer = Tp::SimpleTextObserver::create(acc);
+    textobserver = Tp::SimpleTextObserver::create(acc);
 
     connect(acc.data(),
             SIGNAL(onlinenessChanged(bool)),
@@ -93,16 +164,29 @@ TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onAccReady(Tp::PendingOperation*)));
 
-    connect(observer.data(),
+    connect(textobserver.data(),
             SIGNAL(messageReceived(const Tp::ReceivedMessage&, const Tp::TextChannelPtr&)),
             SLOT(onMessageReceived(const Tp::ReceivedMessage&, const Tp::TextChannelPtr&)));
 
-    connect(observer.data(), SIGNAL(messageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)),
+    connect(textobserver.data(), SIGNAL(messageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)),
             SLOT(onMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)));
+
+    channelobserver = Tp::SimpleObserver::create(acc, Tp::ChannelClassSpec::textChatroom());
+    connect(channelobserver.data(),
+            SIGNAL(newChannels(const QList< Tp::ChannelPtr > &)),
+            SLOT(onNewChannels(const QList< Tp::ChannelPtr > &)));
+
 
     m_nickname = acc->nickname();
     m_local_uid = acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName();
     m_protocol_name = acc->protocolName();
+}
+
+void TelepathyAccount::onNewChannels(const QList< Tp::ChannelPtr > &channels) {
+    Tp::TextChannel* channel_ = (Tp::TextChannel*)channels[0].data();
+    qDebug() << "onNewChannels" << channel_;
+
+    //channel_->send("Maemo conversations says hi");
 }
 
 void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel) {
@@ -125,6 +209,21 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
     auto *msg = new ChatMessage(1, service, "", m_local_uid, remote_uid, remote_uid, "", text, "", epoch, 0, "", "-1", true, 0);
     QSharedPointer<ChatMessage> ptr(msg);
     emit databaseAddition(ptr);
+}
+
+void TelepathyAccount::onChanMessageReceived(const Tp::ReceivedMessage &message) {
+    qDebug() << "onChanMessageReceived" << message.received() << message.senderNickname() << message.text();
+
+    Tp::TextChannel* channel = (Tp::TextChannel*) m_testchan.data();
+    channel->send("Echo: " + message.text());
+}
+
+void TelepathyAccount::onChanPendingMessageRemoved(const Tp::ReceivedMessage &message) {
+    qDebug() << "onChanPendingMessageRemoved" << message.received() << message.senderNickname() << message.text();
+}
+
+void TelepathyAccount::onChanMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken) {
+    qDebug() << "onChanMessageSent";
 }
 
 void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel) {
@@ -156,6 +255,48 @@ void TelepathyAccount::onOnline(bool online) {
     qDebug() << "onOnline: " << online;
 }
 
+void TelepathyAccount::onChannelReady(Tp::PendingOperation *op) {
+    qDebug() << "onChannelReady, isError:" << op->isError();
+    if (op->isError()) {
+        qDebug() << "onChannelReady, errorName:" << op->errorName();
+        qDebug() << "onChannelReady, errorMessage:" << op->errorMessage();
+    }
+
+    Tp::TextChannel* channel = (Tp::TextChannel*) m_testchan.data();
+
+    qDebug() << "Calling groupAddContacts";
+    auto pending = channel->groupAddContacts(QList<Tp::ContactPtr>() << channel->connection()->selfContact());
+    connect(pending,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onGroupAddContacts(Tp::PendingOperation*)));
+}
+
+void TelepathyAccount::onGroupAddContacts(Tp::PendingOperation *op) {
+    qDebug() << "onGroupAddContacts, isError:" << op->isError();
+    if (op->isError()) {
+        qDebug() << "onGroupAddContacts, errorName:" << op->errorName();
+        qDebug() << "onGroupAddContacts, errorMessage:" << op->errorMessage();
+    }
+
+    // XXX: We need the channel object here to set up the signals
+    //Tp::ChannelPtr chan = op->object();
+
+    Tp::TextChannel* channel = (Tp::TextChannel*) m_testchan.data();
+
+    connect(channel,
+            SIGNAL(messageReceived(const Tp::ReceivedMessage&)),
+            SLOT(onChanMessageReceived(const Tp::ReceivedMessage&)));
+
+    connect(channel,
+            SIGNAL(pendingMessageRemoved(const Tp::ReceivedMessage&)),
+            SLOT(onChanPendingMessageRemoved(const Tp::ReceivedMessage&)));
+
+    connect(channel,
+            SIGNAL(messageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &)),
+            SLOT(onChanMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &)));
+
+}
+
 void TelepathyAccount::onAccReady(Tp::PendingOperation *op) {
     qDebug() << "onAccReady, isError:" << op->isError();
     qDebug() << "onAccReady, connection:" << acc->connection();
@@ -163,6 +304,16 @@ void TelepathyAccount::onAccReady(Tp::PendingOperation *op) {
     qDebug() << "connectsAutomatically" << acc->connectsAutomatically();
     qDebug() << "isOnline" << acc->isOnline();
     qDebug() << "serviceName" << acc->serviceName();
+
+    qDebug() << "channelObserver channels" << channelobserver->channels();
+
+    if (acc->isOnline()) {
+        qDebug() << "requested ##maemotest";
+        //auto *pending = acc->ensureTextChatroom("test@conference.xmpp.wajer.org");
+        //auto *pending = acc->ensureTextChatroom("#maemo-leste");
+        auto *pending = acc->ensureTextChatroom("##maemotest");
+    }
+
 
     // XXX: note that the account is ready, use that for some guards
 }
