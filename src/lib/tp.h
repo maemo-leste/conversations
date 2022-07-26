@@ -17,10 +17,13 @@
 #include <TelepathyQt/ContactMessenger>
 #include <TelepathyQt/ContactManager>
 #include <TelepathyQt/PendingSendMessage>
+#include <TelepathyQt/SimpleObserver>
+#include <TelepathyQt/ChannelClassSpec>
 #include <TelepathyQt/SimpleTextObserver>
 #include <TelepathyQt/PendingStringList>
 #include <TelepathyQt/PendingChannelRequest>
 #include <TelepathyQt/PendingHandles>
+#include <TelepathyQt/PendingChannel>
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/PendingOperation>
 #include <TelepathyQt/PendingContacts>
@@ -34,7 +37,6 @@
 #include <TelepathyQt/Types>
 #include <TelepathyQt/ReceivedMessage>
 #include <TelepathyQt/AbstractClientHandler>
-#include <TelepathyQt/TextChannel>
 #include <TelepathyQt/Account>
 #include <TelepathyQt/Contact>
 #include <TelepathyQt/Debug>
@@ -66,20 +68,6 @@
 #endif
 
 
-class TelepathyHandler : public Tp::AbstractClientHandler {
-public:
-    TelepathyHandler(const Tp::ChannelClassSpecList &channelFilter);
-    ~TelepathyHandler() { }
-    bool bypassApproval() const;
-    void handleChannels(const Tp::MethodInvocationContextPtr<> &context,
-        const Tp::AccountPtr &account,
-        const Tp::ConnectionPtr &connection,
-        const QList<Tp::ChannelPtr> &channels,
-        const QList<Tp::ChannelRequestPtr> &requestsSatisfied,
-        const QDateTime &userActionTime,
-        const Tp::AbstractClientHandler::HandlerInfo &handlerInfo);
-};
-
 
 class TelepathyAccount : public QObject {
 Q_OBJECT
@@ -101,19 +89,30 @@ public slots:
 private slots:
     void onOnline(bool online);
     void onAccReady(Tp::PendingOperation *op);
+    void onGroupAddContacts(Tp::PendingOperation *op);
+    void onChannelReady(Tp::PendingOperation *op);
 
     void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
+    void onChanMessageReceived(const Tp::ReceivedMessage &message);
+    void onChanPendingMessageRemoved(const Tp::ReceivedMessage &message);
+    void onChanMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &);
     void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
+
+    void onNewChannels(const QList< Tp::ChannelPtr > &channels);
 
 public:
     Tp::AccountPtr acc;
+
+    Tp::ChannelPtr m_testchan;
+    //Tp::TextChannel * m_testchan;
 
 private:
     QString m_nickname;
     QString m_local_uid;
     QString m_protocol_name;
 
-    Tp::SimpleTextObserverPtr observer;
+    Tp::SimpleTextObserverPtr textobserver;
+    Tp::SimpleObserverPtr channelobserver;
     Tp::ContactMessengerPtr messenger;
     Tp::TextChannel *hgbchan;
     Tp::AccountManagerPtr m_accountmanager;
@@ -147,6 +146,27 @@ private:
     Tp::AccountManagerPtr m_accountmanager;
     Tp::AbstractClientPtr clienthandler;
 };
+
+
+class TelepathyHandler : public Tp::AbstractClientHandler {
+public:
+    TelepathyHandler(const Tp::ChannelClassSpecList &channelFilter);
+    ~TelepathyHandler() { }
+    bool bypassApproval() const;
+    void handleChannels(const Tp::MethodInvocationContextPtr<> &context,
+        const Tp::AccountPtr &account,
+        const Tp::ConnectionPtr &connection,
+        const QList<Tp::ChannelPtr> &channels,
+        const QList<Tp::ChannelRequestPtr> &requestsSatisfied,
+        const QDateTime &userActionTime,
+        const Tp::AbstractClientHandler::HandlerInfo &handlerInfo);
+
+    void setTelepathyParent(Telepathy* parent);
+public:
+    Telepathy* m_telepathy_parent;
+
+};
+
 
 
 #endif // CONVTP_H
