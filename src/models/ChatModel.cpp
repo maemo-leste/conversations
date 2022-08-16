@@ -129,7 +129,7 @@ void ChatModel::onGetOverviewMessages(const int limit, const int offset) {
     gint service_id = rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_CALL");
     query_prepared = rtcom_el_query_prepare(query_struct->query, "service-id", service_id, RTCOM_EL_OP_NOT_EQUAL,  NULL);
   } else {
-    gint service_id = (m_filterProtocol == "sms" || m_filterProtocol == "tel") ?
+    gint service_id = (m_filterProtocol == "sms" || m_filterProtocol == "tel" || m_filterProtocol == "ofono") ?
                       rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_SMS") :
                       rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_CHAT");
 

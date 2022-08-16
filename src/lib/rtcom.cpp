@@ -79,7 +79,7 @@ void create_event(time_t start_time, const char* self_name, const char* backend_
 
   RTComElEvent *ev = rtcom_el_event_new();
 
-  if (strcmp(protocol, "sms") == 0 || strcmp(protocol, "tel") == 0) {
+  if (strcmp(protocol, "sms") == 0 || strcmp(protocol, "tel") == 0 || strcmp(protocol, "ofono") == 0) {
     RTCOM_EL_EVENT_SET_FIELD(ev, service, g_strdup("RTCOM_EL_SERVICE_SMS"));
     RTCOM_EL_EVENT_SET_FIELD(ev, event_type,  g_strdup("RTCOM_EL_EVENTTYPE_SMS_MESSAGE"));
   } else {
