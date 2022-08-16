@@ -1,3 +1,9 @@
+conversations (0.4.3) unstable; urgency=medium
+
+  * Render sphone/ofono added messages
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Tue, 16 Aug 2022 19:50:14 +0200
+
 conversations (0.4.2) unstable; urgency=medium
 
   * Ensure new messages do not render in the active window if they aren't for
