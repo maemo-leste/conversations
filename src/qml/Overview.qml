@@ -17,12 +17,14 @@ Rectangle {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
+        z: parent.z + 1
 
         model: overviewServiceModel
         orientation: Qt.Horizontal
         layoutDirection: Qt.LeftToRight
 
-        delegate: Item {
+        delegate: Rectangle {
+            color: "black"
             width: text.implicitWidth + 75
             height: root.topBarHeight
 
