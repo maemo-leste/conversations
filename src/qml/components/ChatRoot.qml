@@ -13,6 +13,7 @@ Rectangle {
     property string historyPopupBackgroundColor: "#b2b2b2"
     property string historyPopupTextColor: "#393939"
     property string highlightEventId: ""
+    property int atTopHeight: 0
     signal scrollToBottom()
     signal fetchHistory()
 
@@ -51,7 +52,14 @@ Rectangle {
         }
 
         Item {
-            visible: chatList.chatScroll.position <= -0.1
+            // endless-scroll: fetch new historic messages when user scrolls up
+            visible: {
+                var heightMargin = chatRoot.height / 8;
+                return chatList.atTop &&
+                       root.atTopHeight != 0 &&
+                       chatRoot.height >= 0 &&
+                       chatList.childrenRect.height >= (root.atTopHeight + heightMargin)
+            }
             onVisibleChanged: {
                 if(visible && !chatModel.exhausted && chatListView.count >= chatModel.limit)
                     fetchHistory();
@@ -133,6 +141,13 @@ Rectangle {
 
             Components.PlainText {
                 color: "lime"
+                text: "atTopHeight: " + root.atTopHeight
+                font.pointSize: parent.pointSize
+                font.bold: true
+            }
+
+            Components.PlainText {
+                color: "lime"
                 text: "scaling: " + ctx.scaleFactor
                 font.pointSize: parent.pointSize
                 font.bold: true
@@ -145,7 +160,10 @@ Rectangle {
         interval: 10
         repeat: false
         running: false
-        onTriggered: chatList.positionViewAtEnd();
+        onTriggered: {
+            console.log('scrollBottomTimer() fired');
+            chatList.positionViewAtEnd();
+        }
     }
 
     onFetchHistory: {
@@ -162,6 +180,14 @@ Rectangle {
         chatList.visible = true;
     }
 
+    Item {
+        // hack to emit signal when root.atTop changes
+        visible: chatListView.atTop
+        onVisibleChanged: {
+            console.log('atTop', chatListView.atTop);
+            root.atTopHeight = chatList.childrenRect.height;
+        }
+    }
 
     Connections {
         target: chatWindow

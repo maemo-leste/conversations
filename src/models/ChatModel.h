@@ -80,7 +80,7 @@ private:
     QString m_service_id;
 
     int m_page = 0;
-    int m_limit = 20;
+    int m_limit = 10;
     int m_offset = 0;
     int m_count = 0;
     bool m_exhausted = false;

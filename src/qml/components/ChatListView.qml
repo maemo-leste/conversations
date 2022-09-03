@@ -18,7 +18,7 @@ ListView {
 
     onCountChanged: {  // scroll to bottom
         //if(chatListView.mayAutoScroll)
-        scrollToBottom();
+        //scrollToBottom();
     }
 
     ScrollBar.vertical: ScrollBar {
