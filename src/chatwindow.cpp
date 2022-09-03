@@ -52,6 +52,7 @@ ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QStri
     ui->quick->setSource(QUrl("qrc:/whatsthat/whatsthat.qml"));
 
   connect(this->ui->btnSend, &QPushButton::clicked, this, &ChatWindow::onGatherMessage);
+  connect(this->ui->chatBox, &QLineEdit::returnPressed, this, &ChatWindow::onGatherMessage);
   connect(m_ctx->telepathy, &Telepathy::databaseAddition, this, &ChatWindow::onDatabaseAddition);
 
   if(!event_id.isEmpty()) {
