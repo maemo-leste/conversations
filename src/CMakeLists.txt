@@ -55,6 +55,10 @@ if(RTCOM)
     target_compile_definitions(conversations PRIVATE RTCOM=1)
 endif()
 
+if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
+    target_compile_definitions(conversations PRIVATE DEBUG=1)
+endif()
+
 message(STATUS "xxx ${TELEPATHY_QT5_INCLUDE_DIR}")
 
 target_include_directories(conversations PUBLIC
