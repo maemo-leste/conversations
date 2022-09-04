@@ -54,7 +54,7 @@
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout" name="chatControlsLayout">
       <property name="leftMargin">
        <number>14</number>
       </property>
@@ -62,12 +62,19 @@
        <number>14</number>
       </property>
       <item>
-       <widget class="QLineEdit" name="chatBox"/>
+       <widget class="QTextEdit" name="chatBox">
+        <property name="acceptRichText">
+         <bool>false</bool>
+        </property>
+        <property name="placeholderText">
+         <string>Message</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="btnSend">
         <property name="text">
-         <string>Enter</string>
+         <string>Send</string>
         </property>
        </widget>
       </item>
@@ -97,7 +104,7 @@
   <customwidget>
    <class>QQuickWidget</class>
    <extends>QWidget</extends>
-   <header>QtQuickWidgets/QQuickWidget</header>
+   <header location="global">QtQuickWidgets/QQuickWidget</header>
   </customwidget>
  </customwidgets>
  <resources>

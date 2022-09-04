@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
   // /bin/sh -c 'nohup /tmp/tmp.fCTLrJeUgW/cmake-build-debug/bin/conversations >/dev/null 2>&1 &'; sleep 2; cat "/proc/`pidof conversations`/environ" | tr "\0" "\n" > /home/user/env.sh; kill -9 "`pidof conversations`"
   setuid(1000);
   QString path_env_file = "/home/user/env.sh";
-  qDebug() << "trying to read ENV from '" << path_env_file << "', if it exists";
+  qDebug() << "trying to read ENV from" << path_env_file << ", if it exists";
   auto env_file = Utils::fileOpen(path_env_file);
   for(auto &line: Utils::barrayToString(env_file).split("\n")) {
     line = line.replace("export ", "");

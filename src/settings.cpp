@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QGroupBox>
 #include <QFileDialog>
+#include <QCheckBox>
 
 #include "settings.h"
 #include "config-conversations.h"
@@ -52,6 +53,12 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
       } else if(name == "radio_theme_irssi") {
         config()->set(ConfigKeys::ChatTheme, "irssi");
       }
+  });
+
+  // Enter key sends chat message toggle
+  ui->checkBox_enterKeySendsChat->setChecked(config()->get(ConfigKeys::EnterKeySendsChat).toBool());
+  connect(ui->checkBox_enterKeySendsChat, &QCheckBox::toggled, [](bool toggled){
+    config()->set(ConfigKeys::EnterKeySendsChat, toggled);
   });
 
   // text scaling

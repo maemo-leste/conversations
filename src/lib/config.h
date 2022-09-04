@@ -13,7 +13,8 @@ namespace ConfigKeys
     enum ConfigKey {
         MaemoTest,
         ChatTheme,
-        TextScaling
+        TextScaling,
+        EnterKeySendsChat
     };
     Q_ENUM_NS(ConfigKey)
 }

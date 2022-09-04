@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QGroupBox>
 #include <QFileDialog>
+#include <QTextEdit>
 
 #include "chatwindow.h"
 #include "config-conversations.h"
@@ -27,6 +28,16 @@ ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QStri
     m_ctx(ctx) {
   pChatWindow = this;
   ui->setupUi(this);
+
+  // [chatBox]
+  // force chatEdit widget to 1 line (visually)
+  QFontMetrics metrics(ui->chatBox->font());
+  int lineHeight = metrics.lineSpacing();
+  int margins = 25;  // ew, hardcoded.
+  ui->chatBox->setFixedHeight(lineHeight + (margins*2));
+  // catch Enter/RETURN
+  ui->chatBox->installEventFilter(this);
+  m_enterKeySendsChat = config()->get(ConfigKeys::EnterKeySendsChat).toBool();
 
   this->chatModel = new ChatModel(this);
   this->chatModel->getMessages(service_id, remote_uid);
@@ -52,7 +63,6 @@ ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QStri
     ui->quick->setSource(QUrl("qrc:/whatsthat/whatsthat.qml"));
 
   connect(this->ui->btnSend, &QPushButton::clicked, this, &ChatWindow::onGatherMessage);
-  connect(this->ui->chatBox, &QLineEdit::returnPressed, this, &ChatWindow::onGatherMessage);
   connect(m_ctx->telepathy, &Telepathy::databaseAddition, this, &ChatWindow::onDatabaseAddition);
 
   if(!event_id.isEmpty()) {
@@ -69,7 +79,7 @@ void ChatWindow::onDatabaseAddition(ChatMessage *msg) {
 }
 
 void ChatWindow::onGatherMessage() {
-  QString _msg = this->ui->chatBox->text();
+  QString _msg = this->ui->chatBox->toPlainText();
   _msg = _msg.trimmed();
   if(_msg.isEmpty())
     return;
@@ -80,6 +90,18 @@ void ChatWindow::onGatherMessage() {
 
 Conversations *ChatWindow::getContext(){
   return pChatWindow->m_ctx;
+}
+
+bool ChatWindow::eventFilter(QObject *watched, QEvent *event) {
+  if(event->type() == QKeyEvent::KeyPress) {
+    auto *ke = static_cast<QKeyEvent*>(event);
+    if(m_enterKeySendsChat &&
+       (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter)) {
+      this->onGatherMessage();
+      return true;
+    }
+  }
+  return QMainWindow::eventFilter(watched, event);
 }
 
 void ChatWindow::closeEvent(QCloseEvent *event) {

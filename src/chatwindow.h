@@ -52,6 +52,10 @@ private:
     QString m_local_uid;
     QString m_service_uid;
     QString m_group_uid;
+    bool m_enterKeySendsChat = false;
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
 };
 
