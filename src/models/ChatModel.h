@@ -43,12 +43,10 @@ public:
 
     // endless scroll exhausted
     Q_PROPERTY(bool exhausted READ is_exhausted NOTIFY exhaustedChanged);
-    Q_PROPERTY(int limit READ limit NOTIFY limitChanged);
-    Q_PROPERTY(int offset READ offset NOTIFY offsetChanged);
+    Q_PROPERTY(int limit MEMBER m_limit NOTIFY limitChanged);
+    Q_PROPERTY(int offset MEMBER m_offset NOTIFY offsetChanged);
     Q_PROPERTY(int count READ count NOTIFY countChanged);
     Q_PROPERTY(QString remote_uid MEMBER m_remote_uid CONSTANT);
-    int limit() const { return m_limit; }
-    int offset() const { return m_offset; }
     int count() const { return m_count; }
     bool is_exhausted() {
       return m_exhausted;
@@ -79,7 +77,6 @@ private:
     QString m_remote_uid;
     QString m_service_id;
 
-    int m_page = 0;
     int m_limit = 10;
     int m_offset = 0;
     int m_count = 0;

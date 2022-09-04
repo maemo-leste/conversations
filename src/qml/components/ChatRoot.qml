@@ -55,10 +55,11 @@ Rectangle {
             // endless-scroll: fetch new historic messages when user scrolls up
             visible: {
                 var heightMargin = chatRoot.height / 8;
-                return chatList.atTop &&
+                return chatList.chatScroll.position <= -0.06 || (
+                       chatList.atTop &&
                        root.atTopHeight != 0 &&
                        chatRoot.height >= 0 &&
-                       chatList.childrenRect.height >= (root.atTopHeight + heightMargin)
+                       chatList.childrenRect.height >= (root.atTopHeight + heightMargin))
             }
             onVisibleChanged: {
                 if(visible && !chatModel.exhausted && chatListView.count >= chatModel.limit)
@@ -173,8 +174,8 @@ Rectangle {
         chatList.visible = false;
         var count_results = chatModel.getPage();
         if(!chatList.atBottom) {
-            var jump_to = count_results <= 1 ? 0 : count_results - 1
-            chatList.positionViewAtIndex(jump_to, ListView.Beginning)
+            var jump_to = count_results <= 1 ? 0 : count_results - 1;
+            chatList.positionViewAtIndex(jump_to, ListView.Beginning);
         }
 
         chatList.visible = true;

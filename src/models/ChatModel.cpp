@@ -25,6 +25,7 @@ void ChatModel::prependMessage(ChatMessage *message) {
   endInsertRows();
 
   m_count += 1;
+  m_offset += 1;
   this->countChanged();
 }
 
@@ -41,6 +42,7 @@ void ChatModel::appendMessage(ChatMessage *message) {
   endInsertRows();
 
   m_count += 1;
+  m_offset += 1;
   this->countChanged();
 }
 
@@ -252,14 +254,12 @@ unsigned int ChatModel::getMessages(const QString &service_id, const QString &re
 }
 
 unsigned int ChatModel::getPage() {
-  // called from QML for endless scroll, advances m_offset
-  m_page += 1;
-  m_offset = m_page * m_limit;
-  emit offsetChanged();
-
+  // called from QML for endless scroll
   qDebug() << __FUNCTION__ << "limit:" << m_limit << " offset:" << m_offset;
 
   auto count = this->getMessages(m_service_id, m_remote_uid, m_limit, m_offset);
+  emit offsetChanged();
+
   if(count < m_limit) {
     m_exhausted = true;
     emit exhaustedChanged();
