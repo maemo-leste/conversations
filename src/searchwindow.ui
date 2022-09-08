@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ChatWindow</class>
- <widget class="QMainWindow" name="ChatWindow">
+ <class>SearchWindow</class>
+ <widget class="QMainWindow" name="SearchWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -53,73 +53,8 @@
       </property>
      </widget>
     </item>
-    <item>
-     <layout class="QHBoxLayout" name="chatControlsLayout">
-      <property name="leftMargin">
-       <number>14</number>
-      </property>
-      <property name="rightMargin">
-       <number>14</number>
-      </property>
-      <item>
-       <widget class="QTextEdit" name="chatBox">
-        <property name="acceptRichText">
-         <bool>false</bool>
-        </property>
-        <property name="placeholderText">
-         <string>Message</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btnSend">
-        <property name="text">
-         <string>Send</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Maximum</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>30</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>607</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuw00t">
-    <property name="title">
-     <string>w00t</string>
-    </property>
-    <addaction name="actionSearchChat"/>
-   </widget>
-   <addaction name="menuw00t"/>
-  </widget>
-  <action name="actionSearchChat">
-   <property name="text">
-    <string>Search chat</string>
-   </property>
-  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

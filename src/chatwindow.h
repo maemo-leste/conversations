@@ -16,6 +16,7 @@
 
 #include "conversations.h"
 #include "lib/config.h"
+#include "searchwindow.h"
 #include "models/ChatModel.h"
 #include "models/ChatMessage.h"
 
@@ -28,7 +29,7 @@ class ChatWindow : public QMainWindow {
 
 public:
     Ui::ChatWindow *ui;
-    explicit ChatWindow(Conversations *ctx, const QString &group_uid, const QString &local_uid, const QString &remote_uid, const QString &event_id, const QString &service_id, QWidget *parent = nullptr);
+    explicit ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWidget *parent = nullptr);
     static Conversations *getContext();
     ~ChatWindow() override;
 
@@ -38,21 +39,28 @@ public slots:
   void onDatabaseAddition(ChatMessage *msg);
 
 private slots:
+    void onChatPreReady();
     void onGatherMessage();
+    void onOpenSearchWindow();
+    void onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg);
+    void onSearchResultClicked(const QSharedPointer<ChatMessage> &msg);
 
 signals:
     void closed();
     void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
-    void jumpToMessage(const QString &event_id);
+    void jumpToMessage(int event_id);
+    void scrollDown();
+    void chatPostReady();
+    void chatPreReady();
 
 private:
     Conversations *m_ctx;
     static ChatWindow *pChatWindow;
-    QString m_remote_uid;
-    QString m_local_uid;
-    QString m_service_uid;
-    QString m_group_uid;
+    QSharedPointer<ChatMessage> m_chatMessage;
     bool m_enterKeySendsChat = false;
+    SearchWindow *m_searchWindow = nullptr;
+
+    void fillBufferUntil(const QSharedPointer<ChatMessage> &msg) const;
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;

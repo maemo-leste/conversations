@@ -14,14 +14,16 @@ ChatModel::ChatModel(QObject *parent)
 }
 
 void ChatModel::prependMessage(ChatMessage *message) {
+  QSharedPointer<ChatMessage> ptr(message);
+
   if(!chats.isEmpty()) {
-    auto *n = chats.at(0);
-    message->next = n;
-    n->previous = message;
+    auto n = chats.at(0);
+    ptr->next = n;
+    n->previous = ptr;
   }
 
   beginInsertRows(QModelIndex(), 0, 0);
-  chats.prepend(message);
+  chats.prepend(ptr);
   endInsertRows();
 
   m_count += 1;
@@ -30,15 +32,17 @@ void ChatModel::prependMessage(ChatMessage *message) {
 }
 
 void ChatModel::appendMessage(ChatMessage *message) {
+  QSharedPointer<ChatMessage> ptr(message);
+
   const int idx = rowCount();
   if(idx != 0 && !chats.isEmpty()) {
-    auto *prev = chats.at(idx - 1);
-    prev->next = message;
-    message->previous = prev;
+    auto prev = chats.at(idx - 1);
+    prev->next = ptr;
+    ptr->previous = prev;
   }
 
   beginInsertRows(QModelIndex(), idx, rowCount());
-  chats.append(message);
+  chats.append(ptr);
   endInsertRows();
 
   m_count += 1;
@@ -55,7 +59,7 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
   if (index.row() < 0 || index.row() >= chats.count())
     return QVariant();
 
-  const ChatMessage *message = chats[index.row()];
+  const QSharedPointer<ChatMessage> message = chats[index.row()];
   if (role == GroupUIDRole)
     return message->group_uid();
   else if (role == LocalUIDRole)
@@ -108,7 +112,11 @@ void ChatModel::clear() {
   qDebug() << "Clearing chatModel";
   beginResetModel();
 
-  qDeleteAll(this->chats.begin(), this->chats.end());
+  for(const QSharedPointer<ChatMessage> &msg: this->chats) {
+    msg->next.clear();
+    msg->previous.clear();
+  }
+
   this->chats.clear();
   m_count = 0;
   endResetModel();
@@ -181,7 +189,7 @@ unsigned int ChatModel::searchMessages(const QString &search, const QString &rem
     query_prepared = rtcom_el_query_prepare(
       query_struct->query,
       "free-text", search.toStdString().c_str(), RTCOM_EL_OP_STR_LIKE,
-      "service-id", rtcom_sms_service_id, RTCOM_EL_OP_EQUAL,
+//      "service-id", rtcom_sms_service_id, RTCOM_EL_OP_EQUAL,
       NULL);
   } else {
     m_remote_uid = remote_uid;
@@ -189,7 +197,7 @@ unsigned int ChatModel::searchMessages(const QString &search, const QString &rem
       query_struct->query,
       "free-text", search.toStdString().c_str(), RTCOM_EL_OP_STR_LIKE,
       "remote-uid", remote_uid.toStdString().c_str(), RTCOM_EL_OP_EQUAL,
-      "service-id", rtcom_sms_service_id, RTCOM_EL_OP_EQUAL,
+//      "service-id", rtcom_sms_service_id, RTCOM_EL_OP_EQUAL,
       NULL);
   }
 
@@ -253,14 +261,25 @@ unsigned int ChatModel::getMessages(const QString &service_id, const QString &re
 #endif
 }
 
-unsigned int ChatModel::getPage() {
-  // called from QML for endless scroll
+int ChatModel::eventIdToIdx(int event_id) {
+  for(int i = 0; i != chats.length(); i++)
+    if(chats[i]->event_id() == event_id)
+      return i;
+  return -1;
+}
+
+unsigned int ChatModel::getPage(int custom_limit) {
+  // Query database and prepend additional message(s)
   qDebug() << __FUNCTION__ << "limit:" << m_limit << " offset:" << m_offset;
 
-  auto count = this->getMessages(m_service_id, m_remote_uid, m_limit, m_offset);
+  int limit = m_limit;
+  if(custom_limit)
+    limit = custom_limit;
+
+  auto count = this->getMessages(m_service_id, m_remote_uid, limit, m_offset);
   emit offsetChanged();
 
-  if(count < m_limit) {
+  if(count < limit) {
     m_exhausted = true;
     emit exhaustedChanged();
   }

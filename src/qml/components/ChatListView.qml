@@ -14,15 +14,22 @@ ListView {
     property bool scrollable: root.childrenRect.height > parent.height
     property bool atBottom: (chatScroll.position + chatScroll.size) >= 1
     property bool atTop: chatScroll.position <= 0.01
-    property bool mayAutoScroll: atBottom && scrollable
+    property bool mayAutoScroll: atBottom && scrollable && chatPostReady
 
     onCountChanged: {  // scroll to bottom
-        if(chatListView.mayAutoScroll)
+        if(chatListView.mayAutoScroll) {
+            console.log('onCountChanged(); scrollToBottom();');
             scrollToBottom();
+        }
     }
 
     ScrollBar.vertical: ScrollBar {
         id: chatScroll
         visible: false
+    }
+
+    Component.onCompleted: {
+        console.log('ChatListView onCompleted()');
+        console.log('listview count', root.count);
     }
 }

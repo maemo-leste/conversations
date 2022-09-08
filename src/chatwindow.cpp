@@ -17,19 +17,28 @@
 
 
 ChatWindow * ChatWindow::pChatWindow = nullptr;
-
-ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QString &local_uid, const QString &remote_uid, const QString &event_id, const QString &service_id, QWidget *parent) :
+ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::ChatWindow),
-    m_group_uid(group_uid),
-    m_local_uid(local_uid),
-    m_remote_uid(remote_uid),
-    m_service_uid(service_id),
+    m_chatMessage(msg),
     m_ctx(ctx) {
   pChatWindow = this;
   ui->setupUi(this);
 
+  // [window]
+  // title
+  QString protocol = "Unknown";
+  if(m_chatMessage->local_uid().count('/') == 2)
+    protocol = m_chatMessage->local_uid().split("/").at(1);
+  this->setWindowTitle(QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->remote_uid()));
+  // properties
+#ifdef MAEMO
+  setProperty("X-Maemo-StackedWindow", 1);
+  setProperty("X-Maemo-Orientation", 2);
+#endif
+
   // [chatBox]
+  ui->chatBox->setFocus();
   // force chatEdit widget to 1 line (visually)
   QFontMetrics metrics(ui->chatBox->font());
   int lineHeight = metrics.lineSpacing();
@@ -40,12 +49,9 @@ ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QStri
   m_enterKeySendsChat = config()->get(ConfigKeys::EnterKeySendsChat).toBool();
 
   this->chatModel = new ChatModel(this);
-  this->chatModel->getMessages(service_id, remote_uid);
-
-#ifdef MAEMO
-  setProperty("X-Maemo-StackedWindow", 1);
-  setProperty("X-Maemo-Orientation", 2);
-#endif
+  this->chatModel->getMessages(m_chatMessage->service(), m_chatMessage->remote_uid());
+  if(m_chatMessage->isSearchResult)
+    fillBufferUntil(m_chatMessage);
 
   auto *qctx = ui->quick->rootContext();
   qctx->setContextProperty("chatWindow", this);
@@ -65,15 +71,62 @@ ChatWindow::ChatWindow(Conversations *ctx, const QString &group_uid, const QStri
   connect(this->ui->btnSend, &QPushButton::clicked, this, &ChatWindow::onGatherMessage);
   connect(m_ctx->telepathy, &Telepathy::databaseAddition, this, &ChatWindow::onDatabaseAddition);
 
-  if(!event_id.isEmpty()) {
-    // @TODO: replace this if with something better
-    qDebug() << "jump to message " << event_id;
-    this->jumpToMessage(event_id);
+  connect(ui->actionSearchChat, &QAction::triggered, this, &ChatWindow::onOpenSearchWindow);
+  connect((QObject*)ui->quick->rootObject(),
+          SIGNAL(chatPreReady()), this,
+          SLOT(onChatPreReady()));
+}
+
+void ChatWindow::onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg) {
+  m_searchWindow->close();
+  m_searchWindow->deleteLater();
+}
+
+void ChatWindow::onOpenSearchWindow() {
+  m_searchWindow = new SearchWindow(m_ctx, m_chatMessage->remote_uid(), this);
+  m_searchWindow->show();
+
+  connect(m_searchWindow,
+          SIGNAL(searchResultClicked(QSharedPointer<ChatMessage>)), this,
+          SLOT(onSearchResultClicked(QSharedPointer<ChatMessage>)));
+
+  connect(m_searchWindow, &SearchWindow::searchResultClicked, this, &ChatWindow::onCloseSearchWindow);
+}
+
+void ChatWindow::onSearchResultClicked(const QSharedPointer<ChatMessage> &msg) {
+  m_chatMessage = msg;
+  this->onChatPreReady();
+}
+
+void ChatWindow::fillBufferUntil(const QSharedPointer<ChatMessage> &msg) const {
+  // fill the message buffer list until we find the relevant message
+  qDebug() << __FUNCTION__;
+  unsigned int limit = 0;
+  while(chatModel->eventIdToIdx(msg->event_id()) == -1 && limit <= 200) {
+    chatModel->getPage(50);
+    limit += 1;
   }
 }
 
+void ChatWindow::onChatPreReady() {
+  qDebug() << __FUNCTION__;
+  emit chatPreReady();
+
+  // check if we need to 'jump' to a 'requested' message;
+  if(m_chatMessage->isSearchResult) {
+    fillBufferUntil(m_chatMessage);
+    qDebug() << "jump to message " << m_chatMessage->event_id();
+    emit jumpToMessage(m_chatMessage->event_id());
+  } else {
+    qDebug() << "forcing scroll down";
+    emit scrollDown();
+  }
+
+  emit chatPostReady();
+}
+
 void ChatWindow::onDatabaseAddition(ChatMessage *msg) {
-  if(m_local_uid == msg->local_uid() && m_remote_uid == msg->remote_uid()) {
+  if(m_chatMessage->local_uid() == msg->local_uid() && m_chatMessage->remote_uid() == msg->remote_uid()) {
     this->chatModel->appendMessage(msg);
   }
 }
@@ -83,12 +136,12 @@ void ChatWindow::onGatherMessage() {
   _msg = _msg.trimmed();
   if(_msg.isEmpty())
     return;
-  emit sendMessage(m_local_uid, m_remote_uid, _msg);
+  emit sendMessage(m_chatMessage->local_uid(), m_chatMessage->remote_uid(), _msg);
 
   this->ui->chatBox->clear();
 }
 
-Conversations *ChatWindow::getContext(){
+Conversations *ChatWindow::getContext() {
   return pChatWindow->m_ctx;
 }
 

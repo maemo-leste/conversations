@@ -49,7 +49,8 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx, &Conversations::showApplication, this, &MainWindow::onShowApplication);
   connect(m_ctx, &Conversations::hideApplication, this, &MainWindow::onHideApplication);
   connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::onOpenSettingsWindow);
-  connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::requestOverviewSearchWindow);
+  connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::onOpenSearchWindow);
+  connect(ui->actionQuit_conversations, &QAction::triggered, this, &MainWindow::onQuitApplication);
 
   connect(m_ctx->telepathy, &Telepathy::accountManagerReady, this, &MainWindow::onTPAccountManagerReady);
 }
@@ -63,14 +64,12 @@ void MainWindow::createQml() {
   qctx->setContextProperty("ctx", m_ctx);
   qctx->setContextProperty("mainWindow", this);
   qctx->setContextProperty("chatOverviewModel", m_ctx->chatOverviewModel);
-  qctx->setContextProperty("chatSearchModel", m_ctx->chatSearchModel);
   qctx->setContextProperty("overviewServiceModel", m_ctx->overviewServiceModel);
 
-  m_quickWidget->setSource(QUrl("qrc:/qml/Main.qml"));
+  m_quickWidget->setSource(QUrl("qrc:/qml/Overview.qml"));
   m_quickWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
 
-  connect((QObject*)m_quickWidget->rootObject(), SIGNAL(overviewRowClicked(QString, QString, QString, QString, QString)),
-      this, SLOT(onOpenChatWindow(QString, QString, QString, QString, QString)));
+  connect((QObject*)m_quickWidget->rootObject(), SIGNAL(overviewRowClicked(int)), this, SLOT(onOpenChatWindow(int)));
 
   ui->centralWidget->layout()->addWidget(m_quickWidget);
 }
@@ -84,16 +83,43 @@ void MainWindow::destroyQml() {
   m_quickWidget = nullptr;
 }
 
-void MainWindow::onOpenChatWindow(const QString &remote_uid) {
-  this->onOpenChatWindow("", "", remote_uid, "", "");
+void MainWindow::onOpenChatWindow(int idx) {
+  auto msg = m_ctx->chatOverviewModel->chats.at(idx);
+  this->onOpenChatWindow(msg);
 }
 
-void MainWindow::onOpenChatWindow(const QString &group_uid, const QString &local_uid, const QString &remote_uid, const QString &event_id, const QString &service_id) {
-  m_chatWindow = new ChatWindow(m_ctx, group_uid, local_uid, remote_uid, event_id, service_id, this);
+void MainWindow::onOpenChatWindow(const QString &remote_uid) {
+  // @TODO: fix
+  //this->onOpenChatWindow("", "", remote_uid, "", "");
+}
+
+void MainWindow::onOpenChatWindow(const QSharedPointer<ChatMessage> &msg) {
+  m_chatWindow = new ChatWindow(m_ctx, msg, this);
   m_chatWindow->show();
 
   connect(m_chatWindow, &ChatWindow::sendMessage, this->m_ctx, &Conversations::onSendOutgoingMessage);
   connect(m_chatWindow, &ChatWindow::closed, this, &MainWindow::onChatWindowClosed);
+}
+
+void MainWindow::onQuitApplication() {
+  m_autoHideWindow = false;
+  this->close();
+}
+
+void MainWindow::onOpenSearchWindow() {
+  m_searchWindow = new SearchWindow(m_ctx, "", this);
+  m_searchWindow->show();
+
+  connect(m_searchWindow,
+          SIGNAL(searchResultClicked(QSharedPointer<ChatMessage>)), this,
+          SLOT(onOpenChatWindow(QSharedPointer<ChatMessage>)));
+
+  connect(m_searchWindow, &SearchWindow::searchResultClicked, this, &MainWindow::onCloseSearchWindow);
+}
+
+void MainWindow::onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg) {
+  m_searchWindow->close();
+  m_searchWindow->deleteLater();
 }
 
 void MainWindow::onOpenSettingsWindow() {
@@ -104,9 +130,12 @@ void MainWindow::onOpenSettingsWindow() {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-  // override close event, force hide window
-  this->onHideApplication();
-  event->ignore();
+  if(m_autoHideWindow) {
+    this->onHideApplication();
+    event->ignore();
+  } else {
+    QApplication::quit();
+  }
 }
 
 void MainWindow::onChatWindowClosed() {

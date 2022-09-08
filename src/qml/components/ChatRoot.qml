@@ -17,6 +17,9 @@ Rectangle {
     signal scrollToBottom()
     signal fetchHistory()
 
+    property bool chatPostReady: false
+    signal chatPreReady();
+
     onScrollToBottom: scrollBottomTimer.start()
 
     Components.ChatScrollToBottomButton {
@@ -157,6 +160,14 @@ Rectangle {
     }
 
     Timer {
+        id: chatPreReadyTimer
+        interval: 50
+        repeat: false
+        running: false
+        onTriggered: root.chatPreReady();
+    }
+
+    Timer {
         id: scrollBottomTimer
         interval: 10
         repeat: false
@@ -167,10 +178,33 @@ Rectangle {
         }
     }
 
+    Timer {
+        // we can get rid of this timer and call `positionViewAtIndex()` directly
+        // when this is looked into;
+        //   interesting stack window behavior ('X-Maemo-StackedWindow') where you have
+        //   window #1 and window #2, you close #2, ~400ms transition animation to #1, if
+        //   you 'change' something visually in window #1 during the transition, those changes
+        //   are not being shown after the transition completes. when you start interacting
+        //   with #1, by for example registering a touch gesture, the window 'refreshes' and
+        //   the change is there. So I was thinking maybe Maemo StackedWindow code needs to call
+        //   `refresh()` or `redraw()` on that #1 window when the transition is complete.
+        id: scrollIdxTimer
+        property int idx: -1
+        interval: 350
+        repeat: false
+        running: false
+        onTriggered: {
+            if(idx == -1) return;
+            console.log('scrollIdxTimer() fired, jumping to', idx);
+            chatListView.positionViewAtIndex(idx, ListView.Center);
+        }
+    }
+
     onFetchHistory: {
         // Prepend new items to the model by calling `getPage()`.
         // temp. disable visibility to 'break' the touch gesture,
         // if we dont the list scrolling bugs out by "jumping"
+        console.log('onFetchHistory();');
         chatList.visible = false;
         var count_results = chatModel.getPage();
         if(!chatList.atBottom) {
@@ -192,13 +226,31 @@ Rectangle {
 
     Connections {
         target: chatWindow
+        onScrollDown: {
+            console.log('Connections: onScrollDown()');
+            root.scrollToBottom();
+        }
         onJumpToMessage: {
-            console.log("received jumpToMessage: " + event_id);
+            console.log('Connections: onJumpToMessage()', event_id);
+
             chatRoot.highlightEventId = event_id;
+            var highlightIdx = chatModel.eventIdToIdx(event_id);
+
+            scrollIdxTimer.idx = highlightIdx;
+            scrollIdxTimer.start();
+        }
+        onChatPreReady: {
+            console.log('onChatPreReady()');
+            chatRoot.chatPostReady = false;
+        }
+        onChatPostReady: {
+            console.log('onChatPostReady()');
+            chatRoot.chatPostReady = true;
         }
     }
 
     Component.onCompleted: {
-        root.scrollToBottom();
+        console.log('ChatRoot onCompleted()');
+        chatPreReadyTimer.start();
     }
 }

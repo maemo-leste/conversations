@@ -19,6 +19,7 @@
 
 #include "conversations.h"
 #include "chatwindow.h"
+#include "searchwindow.h"
 #include "settings.h"
 #include "lib/config.h"
 
@@ -44,9 +45,13 @@ public:
     qreal screenRatio;
 
 public slots:
+    void onOpenChatWindow(int idx);
     void onOpenChatWindow(const QString &remote_uid);
-    void onOpenChatWindow(const QString &group_uid, const QString &local_uid, const QString &remote_uid, const QString &event_id, const QString &service_id);
+    void onOpenChatWindow(const QSharedPointer<ChatMessage> &msg);
     void onOpenSettingsWindow();
+    void onOpenSearchWindow();
+    void onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg);
+    void onQuitApplication();
     void onShowApplication();
     void onHideApplication();
     void onChatWindowClosed();
@@ -64,6 +69,8 @@ private:
     static MainWindow *pMainWindow;
     ChatWindow *m_chatWindow = nullptr;
     Settings *m_settings = nullptr;
+    SearchWindow *m_searchWindow = nullptr;
+    bool m_autoHideWindow = true;
 
     void createQml();
     void destroyQml();

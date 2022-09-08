@@ -33,13 +33,17 @@ public:
     };
 
     explicit ChatModel(QObject *parent = nullptr);
+    ~ChatModel() override {
+      this->clear();
+    }
+
     void prependMessage(ChatMessage *message);
     void appendMessage(ChatMessage *message);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
-    QList<ChatMessage*> chats;
+    QList<QSharedPointer<ChatMessage>> chats;
 
     // endless scroll exhausted
     Q_PROPERTY(bool exhausted READ is_exhausted NOTIFY exhaustedChanged);
@@ -52,11 +56,12 @@ public:
       return m_exhausted;
     }
 
-    Q_INVOKABLE unsigned int getPage();
+    Q_INVOKABLE unsigned int getPage(int custom_limit=0);
     unsigned int getMessages(const QString &service_id, const QString &remote_uid);
     unsigned int getMessages(const QString &service_id, const QString &remote_uid, int limit, int offset);
     Q_INVOKABLE unsigned int searchMessages(const QString &search);
-    unsigned int searchMessages(const QString &search, const QString &remote_uid);
+    Q_INVOKABLE unsigned int searchMessages(const QString &search, const QString &remote_uid);
+    Q_INVOKABLE int eventIdToIdx(int msg);
 
     Q_INVOKABLE void clear();
 

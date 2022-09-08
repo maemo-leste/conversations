@@ -58,6 +58,7 @@
     <addaction name="actionSettings"/>
     <addaction name="actionSearch"/>
     <addaction name="actionAbout"/>
+    <addaction name="actionQuit_conversations"/>
    </widget>
    <addaction name="menuw00t"/>
   </widget>
@@ -74,6 +75,11 @@
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionQuit_conversations">
+   <property name="text">
+    <string>Quit conversations</string>
    </property>
   </action>
  </widget>

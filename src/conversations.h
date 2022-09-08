@@ -44,7 +44,6 @@ public:
     static void createConfigDirectory(const QString &dir) ;
 
     ChatModel *chatOverviewModel;
-    ChatModel *chatSearchModel;
     OverviewServiceModel *overviewServiceModel;
     Telepathy *telepathy;
 

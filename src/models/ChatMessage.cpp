@@ -8,7 +8,8 @@ ChatMessage::ChatMessage(  // @TODO: cleanup constructor
     const QString &local_uid, const QString &remote_uid, const QString &remote_name,
     const QString &remote_ebook_uid, const QString &text, const QString &icon_name,
     const int timestamp, const int count, const QString &group_title,
-    const QString &event_type, bool outgoing, const int flags) :
+    const QString &event_type, bool outgoing, const int flags, QObject *parent) :
+    QObject(parent),
     m_event_id(event_id),
     m_service(service),
     m_group_uid(group_uid),
@@ -61,4 +62,10 @@ bool ChatMessage::isLast() const {
     return true;
   }
   return false;
+}
+
+ChatMessage::~ChatMessage() {
+//#ifdef DEBUG
+//  qDebug() << "ChatMessage::destructor";
+//#endif
 }

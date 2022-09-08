@@ -5,14 +5,18 @@
 #include <QDebug>
 #include <QDateTime>
 
-class ChatMessage
+class ChatMessage : public QObject
 {
+Q_OBJECT
+
 public:
-    ChatMessage(const int event_id, const QString &service, const QString &group_uid,
+    explicit ChatMessage(int event_id, const QString &service, const QString &group_uid,
                 const QString &local_uid, const QString &remote_uid, const QString &remote_name,
                 const QString &remote_ebook_uid, const QString &text, const QString &icon_name,
-                const int timestamp, const int count, const QString &group_title,
-                const QString &event_type, bool outgoing, const int flags);
+                int timestamp, int count, const QString &group_title,
+                const QString &event_type, bool outgoing, int flags, QObject *parent = nullptr);
+    ~ChatMessage() override;
+
     int event_id() const;
     QString service() const;
     QString group_uid() const;
@@ -36,8 +40,10 @@ public:
 
     bool isHead() const;
     bool isLast() const;
-    ChatMessage *previous = nullptr;
-    ChatMessage *next = nullptr;
+    QSharedPointer<ChatMessage> previous = nullptr;
+    QSharedPointer<ChatMessage> next = nullptr;
+
+    bool isSearchResult = false;
 
 private:
     int m_event_id;

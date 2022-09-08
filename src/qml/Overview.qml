@@ -7,10 +7,13 @@ import "../components" as Components
 
 Rectangle {
     id: root
+    color: "black"
+
     property string highlight: "#00a2ff"
     property int itemHeight: 76 * ctx.scaleFactor
     property int topBarHeight: 54 * ctx.scaleFactor
-    color: "black"
+
+    signal overviewRowClicked(int idx);
 
     ListView {
         height: root.topBarHeight
@@ -114,7 +117,7 @@ Rectangle {
                             parent.parent.color = "black";
                     }
                     onClicked: {
-                        appWindow.overviewRowClicked(group_uid, local_uid, remote_uid, "", service_id);
+                        overviewRowClicked(index);
                     }
                 }
             }
