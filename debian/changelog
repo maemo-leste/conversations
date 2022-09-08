@@ -1,3 +1,20 @@
+conversations (0.5) unstable; urgency=medium
+
+  * general: Introduced QSharedPointer while passing ChatMessage around the codebase. Easier than worrying about raw pointer ownership. This also 'cleans up' some function signatures to make it more readable.
+  * mainwindow: remove the QML 'Stackview' functionality (between overview & search) and use Maemo's stacked window behavior instead/
+  * mainwindow: introduced a QMenu button to 'hard quit' conversations (dont move into the background)
+  * chatWindow: refactored 'jumpToMessage', added fillBufferUntil() * fills chat message buffer list up until a certain point, needed for 'jump to message'
+  * chatwindow: refactored the way the chat QML detects that it is 'ready'. This is important for when we want to jump to to a certain message (after loading), or just scroll to the bottom. The QML logic to control the ListView is quite complicated but works better now.
+  * chatwindow: Introduced search for individual chats
+  * chatwindow: screen now has auto*focus to the input text area upon window spawn
+  * chatwindow: show protocol and remote name in the window title while chatting
+  * search: screen now has auto*focus to the input text area upon window spawn
+  * search: scrolling was previously broken when there were multiple items
+  * search: scrolling gets a scrollbar
+  * search: search results overlapping with the search header
+  * search: change Text {} to Components.PlainText{} for security reasons (richtext)
+  * search: fix searching through multiple (all) protocols
+
 conversations (0.4.3) unstable; urgency=medium
 
   * Render sphone/ofono added messages
