@@ -59,7 +59,6 @@
     <addaction name="actionSettings"/>
     <addaction name="actionSearch"/>
     <addaction name="actionAbout"/>
-    <addaction name="actionQuit_conversations"/>
    </widget>
    <addaction name="menuw00t"/>
   </widget>
