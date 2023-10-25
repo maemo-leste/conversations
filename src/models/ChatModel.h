@@ -38,7 +38,9 @@ public:
     }
 
     void prependMessage(ChatMessage *message);
+    void prependMessage(const QSharedPointer<ChatMessage> &message);
     void appendMessage(ChatMessage *message);
+    void appendMessage(const QSharedPointer<ChatMessage> &message);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;

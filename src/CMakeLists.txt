@@ -13,6 +13,8 @@ file(GLOB SOURCE_FILES
         "lib/*.cpp"
         "models/*.h"
         "models/*.cpp"
+        "lib/libnotify-qt/*.h"
+        "lib/libnotify-qt/*.cpp"
         )
 
 find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui Network DBus Svg Xml Quick QuickWidgets Qml QuickControls2 QuickCompiler)

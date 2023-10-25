@@ -37,6 +37,14 @@ QString ChatMessage::remote_uid() const { return m_remote_uid; }
 QString ChatMessage::remote_name() const { return m_remote_name; }
 QString ChatMessage::remote_ebook_uid() const { return m_remote_ebook_uid; }
 QString ChatMessage::text() const { return m_text; }
+QString ChatMessage::textSnippet() const {
+  auto max_length = 32;
+  if(m_text.length() >= max_length) {
+    QString snippet = m_text.mid(0, max_length) + "...";
+    return snippet;
+  }
+  return m_text;
+}
 QString ChatMessage::icon_name() const { return m_icon_name; }
 int ChatMessage::count() const { return m_count; }
 QString ChatMessage::group_title() const { return m_group_title; }

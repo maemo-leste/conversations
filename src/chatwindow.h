@@ -36,7 +36,7 @@ public:
     ChatModel *chatModel;
 
 public slots:
-  void onDatabaseAddition(ChatMessage *msg);
+  void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
 
 private slots:
     void onChatPreReady();

@@ -25,6 +25,7 @@ public:
     QString remote_name() const;
     QString remote_ebook_uid() const;
     QString text() const;
+    QString textSnippet() const;
     QString icon_name() const;
     QDateTime date() const;
     int count() const;

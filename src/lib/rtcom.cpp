@@ -116,12 +116,14 @@ QList<QString> rtcomGetLocalUids() {
     return protocols;
   }
 
-  for(auto *item: rtcomIterateResults(query_struct)) {
+  auto items = rtcomIterateResults(query_struct);
+  for(auto &item: items) {
     auto local_uid = item->local_uid();
     if(local_uid.count("/") != 2) continue;
     auto protocol = local_uid.split("/").at(1);
     protocols << protocol;
   }
+  qDeleteAll(items);
 
   g_object_unref(query_struct->query);
   delete query_struct;

@@ -61,6 +61,12 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
     config()->set(ConfigKeys::EnterKeySendsChat, toggled);
   });
 
+  // Enable notifications
+  ui->checkBox_enableNotifications->setChecked(config()->get(ConfigKeys::EnableNotifications).toBool());
+  connect(ui->checkBox_enableNotifications, &QCheckBox::toggled, [](bool toggled){
+    config()->set(ConfigKeys::EnableNotifications, toggled);
+  });
+
   // text scaling
   float textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
   if(textScaling < 1) textScaling = 1;

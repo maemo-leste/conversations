@@ -5,6 +5,7 @@
 
 #include "utils.h"
 #include "lib/config.h"
+#include "models/ChatMessage.h"
 
 bool Utils::fileExists(const QString &path) {
     QFileInfo check_file(path);
@@ -99,4 +100,16 @@ QMap<QString, QLocale> Utils::localeCache = {};
 double Utils::roundUp(double value, int decimal_places) {
     const double multiplier = std::pow(10.0, decimal_places);
     return std::ceil(value * multiplier) / multiplier;
+}
+Notification* Utils::notification(QString title, QString message, const QSharedPointer<ChatMessage> &msg) {
+    auto *notification = new Notification(msg, title, message, "general_sms", 0);  // auto-deleted after notification click/close
+    notification->show();
+    return notification;
+}
+
+QString Utils::protocolToRTCOMServiceID(const QString &protocol) {
+  if(protocol.contains("sms") || protocol.contains("tel") || protocol.contains("ofono")) {
+    return "RTCOM_EL_SERVICE_SMS";
+  }
+  return "RTCOM_EL_SERVICE_CHAT";
 }

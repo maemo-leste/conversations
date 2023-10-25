@@ -18,6 +18,7 @@ static const QHash<ConfigKeys::ConfigKey, ConfigDirective> configStrings = {
   {ConfigKeys::MaemoTest,{QS("MaemoTest"), ""}},
   {ConfigKeys::ChatTheme,{QS("ChatTheme"), "whatsthat"}},
   {ConfigKeys::TextScaling,{QS("TextScaling"), 1.0}},
+  {ConfigKeys::EnableNotifications,{QS("EnableNotifications"), true}},
   {ConfigKeys::EnterKeySendsChat,{QS("EnterKeySendsChat"), false}}
 };
 

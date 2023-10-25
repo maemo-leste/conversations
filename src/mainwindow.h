@@ -22,6 +22,7 @@
 #include "searchwindow.h"
 #include "settings.h"
 #include "lib/config.h"
+#include "lib/libnotify-qt/Notification.h"
 
 namespace Ui {
     class MainWindow;
@@ -56,6 +57,7 @@ public slots:
     void onHideApplication();
     void onChatWindowClosed();
     void onTPAccountManagerReady();
+    void onNotificationClicked(const QSharedPointer<ChatMessage> &msg);
 
 signals:
     void requestOverviewSearchWindow();

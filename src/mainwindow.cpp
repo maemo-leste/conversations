@@ -21,10 +21,8 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   pMainWindow = this;
   ui->setupUi(this);
   ui->menuBar->hide();
-#ifdef MAEMO
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
-#endif
 
   this->screenDpiRef = 128;
   this->screenGeo = QApplication::primaryScreen()->availableGeometry();
@@ -48,6 +46,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx, SIGNAL(openChatWindow(QString)), this, SLOT(onOpenChatWindow(QString)));
   connect(m_ctx, &Conversations::showApplication, this, &MainWindow::onShowApplication);
   connect(m_ctx, &Conversations::hideApplication, this, &MainWindow::onHideApplication);
+  connect(m_ctx, &Conversations::notificationClicked, this, &MainWindow::onNotificationClicked);
   connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::onOpenSettingsWindow);
   connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::onOpenSearchWindow);
   connect(ui->actionQuit_conversations, &QAction::triggered, this, &MainWindow::onQuitApplication);
@@ -129,6 +128,11 @@ void MainWindow::onOpenSettingsWindow() {
   connect(m_settings, &Settings::textScalingChanged, this->m_ctx, &Conversations::onTextScalingChanged);
 }
 
+void MainWindow::onNotificationClicked(const QSharedPointer<ChatMessage> &msg) {
+  this->onShowApplication();
+  this->onOpenChatWindow(msg);
+}
+
 void MainWindow::closeEvent(QCloseEvent *event) {
   if(m_autoHideWindow) {
     this->onHideApplication();
@@ -147,11 +151,17 @@ void MainWindow::onChatWindowClosed() {
 void MainWindow::onShowApplication() {
   this->createQml();
   this->show();
+
+  m_ctx->isBackground = false;
+
+  // clear notification cache
+  m_ctx->notificationMap.clear();
 }
 
 void MainWindow::onHideApplication() {
   this->hide();
   this->destroyQml();
+  m_ctx->isBackground = true;
 }
 
 MainWindow *MainWindow::getInstance() {

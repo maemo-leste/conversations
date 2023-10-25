@@ -93,7 +93,7 @@ public:
     QString protocolName() const { return m_protocol_name; }
 
 signals:
-    void databaseAddition(ChatMessage *msg);
+    void databaseAddition(const QSharedPointer<ChatMessage> &msg);
 
 public slots:
     void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
@@ -132,12 +132,12 @@ public:
     QList<TelepathyAccount*> accounts;
 
 signals:
-    void databaseAddition(ChatMessage *msg);
+    void databaseAddition(const QSharedPointer<ChatMessage> &msg);
     void accountManagerReady();
 
 public slots:
     void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
-    void onDatabaseAddition(ChatMessage *msg);
+    void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
 
 private slots:
     void onAccountManagerReady(Tp::PendingOperation *op);

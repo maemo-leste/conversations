@@ -125,7 +125,7 @@ void ChatWindow::onChatPreReady() {
   emit chatPostReady();
 }
 
-void ChatWindow::onDatabaseAddition(ChatMessage *msg) {
+void ChatWindow::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
   if(m_chatMessage->local_uid() == msg->local_uid() && m_chatMessage->remote_uid() == msg->remote_uid()) {
     this->chatModel->appendMessage(msg);
   }
@@ -159,6 +159,7 @@ bool ChatWindow::eventFilter(QObject *watched, QEvent *event) {
 
 void ChatWindow::closeEvent(QCloseEvent *event) {
   this->chatModel->clear();
+  m_chatMessage.clear();
   emit closed();
   QWidget::closeEvent(event);
 }

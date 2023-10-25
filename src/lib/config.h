@@ -14,6 +14,7 @@ namespace ConfigKeys
         MaemoTest,
         ChatTheme,
         TextScaling,
+        EnableNotifications,
         EnterKeySendsChat
     };
     Q_ENUM_NS(ConfigKey)

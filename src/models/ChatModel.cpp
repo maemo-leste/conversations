@@ -15,15 +15,17 @@ ChatModel::ChatModel(QObject *parent)
 
 void ChatModel::prependMessage(ChatMessage *message) {
   QSharedPointer<ChatMessage> ptr(message);
+}
 
+void ChatModel::prependMessage(const QSharedPointer<ChatMessage> &message) {
   if(!chats.isEmpty()) {
     auto n = chats.at(0);
-    ptr->next = n;
-    n->previous = ptr;
+    message->next = n;
+    n->previous = message;
   }
 
   beginInsertRows(QModelIndex(), 0, 0);
-  chats.prepend(ptr);
+  chats.prepend(message);
   endInsertRows();
 
   m_count += 1;
@@ -33,16 +35,19 @@ void ChatModel::prependMessage(ChatMessage *message) {
 
 void ChatModel::appendMessage(ChatMessage *message) {
   QSharedPointer<ChatMessage> ptr(message);
+  return this->appendMessage(ptr);
+}
 
+void ChatModel::appendMessage(const QSharedPointer<ChatMessage> &message) {
   const int idx = rowCount();
   if(idx != 0 && !chats.isEmpty()) {
     auto prev = chats.at(idx - 1);
-    prev->next = ptr;
-    ptr->previous = prev;
+    prev->next = message;
+    message->previous = prev;
   }
 
   beginInsertRows(QModelIndex(), idx, rowCount());
-  chats.append(ptr);
+  chats.append(message);
   endInsertRows();
 
   m_count += 1;
@@ -131,7 +136,6 @@ void ChatModel::onProtocolFilter(QString protocol) {
 void ChatModel::onGetOverviewMessages(const int limit, const int offset) {
   this->clear();
 
-#ifdef RTCOM
   rtcom_query* query_struct = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_CONTACT);
   bool query_prepared = FALSE;
 
@@ -159,7 +163,6 @@ void ChatModel::onGetOverviewMessages(const int limit, const int offset) {
   auto results = rtcomIterateResults(query_struct);
   for (const auto &message: results)
     this->appendMessage(message);
-#endif
 }
 
 unsigned int ChatModel::getMessages(const QString &service_id, const QString &remote_uid) {

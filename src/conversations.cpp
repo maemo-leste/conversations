@@ -11,6 +11,8 @@
 #include "lib/globals.h"
 
 Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
+  Notification::init(QApplication::applicationName());
+
   this->telepathy =new Telepathy(this);
   this->overviewServiceModel = new OverviewServiceModel(this);
 
@@ -49,8 +51,23 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   connect(overviewServiceModel, &OverviewServiceModel::protocolFilterChanged, chatOverviewModel, &ChatModel::onProtocolFilter);
 }
 
-void Conversations::onDatabaseAddition(ChatMessage *msg) {
+void Conversations::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
   this->chatOverviewModel->onGetOverviewMessages();
+
+  // chat message notification
+  auto notificationsEnabled = config()->get(ConfigKeys::EnableNotifications).toBool();
+  if(isBackground && notificationsEnabled && !notificationMap.contains(msg->remote_uid())) {
+    notificationMap[msg->remote_uid()] = msg;
+
+    auto title = QString("Conversations - New message from %1").arg(msg->remote_name());
+    auto *notification = Utils::notification(title, msg->textSnippet(), msg);
+    connect(notification, &Notification::clicked, this, &Conversations::onNotificationClicked);
+  }
+}
+
+void Conversations::onNotificationClicked(const QSharedPointer<ChatMessage> &msg) {
+  if(!isBackground) return;
+  emit notificationClicked(msg);
 }
 
 void Conversations::onIPCReceived(const QString &cmd) {

@@ -34,13 +34,13 @@ void Telepathy::onAccountManagerReady(Tp::PendingOperation *op) {
         auto myacc = new TelepathyAccount(acc);
         accounts << myacc;
 
-        connect(myacc, SIGNAL(databaseAddition(ChatMessage *)), SLOT(onDatabaseAddition(ChatMessage *)));
+        connect(myacc, &TelepathyAccount::databaseAddition, this, &Telepathy::onDatabaseAddition);
     }
 
     emit accountManagerReady();
 }
 
-void Telepathy::onDatabaseAddition(ChatMessage *msg) {
+void Telepathy::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
     emit databaseAddition(msg);
 }
 
@@ -121,8 +121,10 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
                  text, true,
                  m_protocol_name.toStdString().c_str());
 
-    auto *item = new ChatMessage(1, "-1", "", m_local_uid, remote_uid, remote_uid, "", text, "", epoch, 0, "", "-1", true, 0);
-    emit databaseAddition(item);
+    auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
+    auto *msg = new ChatMessage(1, service, "", m_local_uid, remote_uid, remote_uid, "", text, "", epoch, 0, "", "-1", true, 0);
+    QSharedPointer<ChatMessage> ptr(msg);
+    emit databaseAddition(ptr);
 }
 
 void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel) {
@@ -144,8 +146,10 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
     auto epoch = message.received().toTime_t();
     create_event(epoch, self_name.data(), backend_name.data(), remote_uid, remote_uid, text, false, m_protocol_name.toStdString().c_str());
 
-    auto *item = new ChatMessage(1, "-1", "", backend_name, remote_uid, remote_uid, "", text, "", epoch, 0, "", "-1", false, 0);
-    emit databaseAddition(item);
+    auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
+    auto *msg = new ChatMessage(1, service, "", backend_name, remote_uid, remote_uid, "", text, "", epoch, 0, "", "-1", false, 0);
+    QSharedPointer<ChatMessage> ptr(msg);
+    emit databaseAddition(ptr);
 }
 
 void TelepathyAccount::onOnline(bool online) {
