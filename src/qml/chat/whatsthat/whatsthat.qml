@@ -41,7 +41,7 @@ Components.ChatRoot {
             property bool highlight: root.highlightEventId == event_id
 
             height: itemHeight + 12
-            width: parent.width
+            width: parent !== null ? parent.width : 0
             spacing: 0
 
             Item {

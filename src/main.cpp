@@ -64,6 +64,7 @@ int main(int argc, char *argv[]) {
   QApplication::setApplicationVersion(CONVERSATIONS_VERSION);
 
   QApplication app(argc, argv);
+  app.setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
 
   QMap<QString, QString> info;
   info["Qt"] = QT_VERSION_STR;

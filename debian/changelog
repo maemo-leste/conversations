@@ -1,3 +1,11 @@
+conversations (0.5.2) unstable; urgency=medium
+
+  * Fix black overview screen after app wake-up (https://forum.qt.io/topic/56551/qopenglwidget-cannot-be-used-as-a-native-child-widget and https://bugreports.qt.io/browse/QTBUG-40765)
+  * Fix whatsapp theme 'width' console error
+  * Remove menubar 'w00t' from chatWindow
+
+ -- Sander <sander@kroket.io>  Wed, 26 Okt 2023 01:25:14 +0200
+
 conversations (0.5.1) unstable; urgency=medium
 
   * Uses /velnias75/libnotify-qt, modified/updated to work on Leste
