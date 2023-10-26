@@ -1,3 +1,11 @@
+conversations (0.5.3) unstable; urgency=medium
+
+  * Spawn individual chat windows
+  * Auto-close chats on background inactivity (15min) as each window drains memory/battery. Enabled by default (configurable).
+  * Remove menubar 'w00t' from chatWindow
+
+ -- Sander <sander@kroket.io>  Wed, 26 Okt 2023 21:31:00 +0200
+
 conversations (0.5.2) unstable; urgency=medium
 
   * Fix black overview screen after app wake-up (https://forum.qt.io/topic/56551/qopenglwidget-cannot-be-used-as-a-native-child-widget and https://bugreports.qt.io/browse/QTBUG-40765)

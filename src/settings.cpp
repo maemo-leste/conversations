@@ -67,6 +67,12 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
     config()->set(ConfigKeys::EnableNotifications, toggled);
   });
 
+  // Auto-close chat windows on inactivity
+  ui->checkBox_enableAutoCloseChatWindows->setChecked(config()->get(ConfigKeys::EnableAutoCloseChatWindows).toBool());
+  connect(ui->checkBox_enableAutoCloseChatWindows, &QCheckBox::toggled, [](bool toggled){
+    config()->set(ConfigKeys::EnableAutoCloseChatWindows, toggled);
+  });
+
   // text scaling
   float textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
   if(textScaling < 1) textScaling = 1;

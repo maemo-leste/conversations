@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>535</width>
-    <height>514</height>
+    <width>615</width>
+    <height>681</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -237,6 +237,23 @@
         </item>
         <item>
          <widget class="QCheckBox" name="checkBox_enableNotifications">
+          <property name="text">
+           <string>Enabled</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Close chat window(s) on 15min of inactivity whilst in the background</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBox_enableAutoCloseChatWindows">
           <property name="text">
            <string>Enabled</string>
           </property>

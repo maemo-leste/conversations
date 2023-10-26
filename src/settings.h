@@ -32,6 +32,7 @@ public:
 
 signals:
     void textScalingChanged();
+    void autoCloseChatWindowsChanged(bool enabled);
 
 private slots:
     void onTextScalingValueChanged(int val);

@@ -19,6 +19,7 @@ static const QHash<ConfigKeys::ConfigKey, ConfigDirective> configStrings = {
   {ConfigKeys::ChatTheme,{QS("ChatTheme"), "whatsthat"}},
   {ConfigKeys::TextScaling,{QS("TextScaling"), 1.0}},
   {ConfigKeys::EnableNotifications,{QS("EnableNotifications"), true}},
+  {ConfigKeys::EnableAutoCloseChatWindows,{QS("EnableAutoCloseChatWindows"), true}},
   {ConfigKeys::EnterKeySendsChat,{QS("EnterKeySendsChat"), false}}
 };
 

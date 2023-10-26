@@ -96,7 +96,7 @@ Rectangle {
 
         delegate: Rectangle {
             height: root.itemHeight
-            width: parent.width
+            width: parent !== null ? parent.width : 0
             color: "black"
 
             Item {

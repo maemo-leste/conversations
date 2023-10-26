@@ -43,10 +43,11 @@ private slots:
     void onGatherMessage();
     void onOpenSearchWindow();
     void onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg);
+    void onAutoCloseChatWindowsChanged(bool enabled);
     void onSearchResultClicked(const QSharedPointer<ChatMessage> &msg);
 
 signals:
-    void closed();
+    void closed(const QString &remote_uid);
     void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
     void jumpToMessage(int event_id);
     void scrollDown();
@@ -59,6 +60,9 @@ private:
     QSharedPointer<ChatMessage> m_chatMessage;
     bool m_enterKeySendsChat = false;
     SearchWindow *m_searchWindow = nullptr;
+
+    QTimer *m_windowFocusTimer;
+    unsigned int m_windowFocus = 0; // seconds
 
     void fillBufferUntil(const QSharedPointer<ChatMessage> &msg) const;
 

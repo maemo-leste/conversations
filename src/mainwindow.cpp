@@ -93,11 +93,18 @@ void MainWindow::onOpenChatWindow(const QString &remote_uid) {
 }
 
 void MainWindow::onOpenChatWindow(const QSharedPointer<ChatMessage> &msg) {
-  m_chatWindow = new ChatWindow(m_ctx, msg, this);
-  m_chatWindow->show();
+  auto uid = msg->remote_uid();
+  if(m_chatWindows.contains(uid)) {
+    m_chatWindows[uid]->setFocus();
+    return;
+  }
 
-  connect(m_chatWindow, &ChatWindow::sendMessage, this->m_ctx, &Conversations::onSendOutgoingMessage);
-  connect(m_chatWindow, &ChatWindow::closed, this, &MainWindow::onChatWindowClosed);
+  auto *window = new ChatWindow(m_ctx, msg, this);
+  m_chatWindows[uid] = window;
+  window->show();
+
+  connect(window, &ChatWindow::sendMessage, this->m_ctx, &Conversations::onSendOutgoingMessage);
+  connect(window, &ChatWindow::closed, this, &MainWindow::onChatWindowClosed);
 }
 
 void MainWindow::onQuitApplication() {
@@ -126,6 +133,7 @@ void MainWindow::onOpenSettingsWindow() {
   m_settings->show();
 
   connect(m_settings, &Settings::textScalingChanged, this->m_ctx, &Conversations::onTextScalingChanged);
+  connect(m_settings, &Settings::autoCloseChatWindowsChanged, this->m_ctx, &Conversations::autoCloseChatWindowsChanged);
 }
 
 void MainWindow::onNotificationClicked(const QSharedPointer<ChatMessage> &msg) {
@@ -142,10 +150,12 @@ void MainWindow::closeEvent(QCloseEvent *event) {
   }
 }
 
-void MainWindow::onChatWindowClosed() {
-  if(m_chatWindow == nullptr) return;
-  m_chatWindow->deleteLater();
-  m_chatWindow = nullptr;
+void MainWindow::onChatWindowClosed(const QString &remote_uid) {
+  if(!m_chatWindows.contains(remote_uid)) return;
+  auto *window = m_chatWindows[remote_uid];
+  if(window != nullptr)
+    window->deleteLater();
+  m_chatWindows.remove(remote_uid);
 }
 
 void MainWindow::onShowApplication() {

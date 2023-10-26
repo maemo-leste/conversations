@@ -55,7 +55,7 @@ public slots:
     void onQuitApplication();
     void onShowApplication();
     void onHideApplication();
-    void onChatWindowClosed();
+    void onChatWindowClosed(const QString &remote_uid);
     void onTPAccountManagerReady();
     void onNotificationClicked(const QSharedPointer<ChatMessage> &msg);
 
@@ -69,7 +69,7 @@ private:
     QQuickWidget *m_quickWidget = nullptr;
     Conversations *m_ctx;
     static MainWindow *pMainWindow;
-    ChatWindow *m_chatWindow = nullptr;
+    QMap<QString, ChatWindow*> m_chatWindows;
     Settings *m_settings = nullptr;
     SearchWindow *m_searchWindow = nullptr;
     bool m_autoHideWindow = true;

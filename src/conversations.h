@@ -68,6 +68,7 @@ signals:
     void reloadOverview();
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
     void notificationClicked(const QSharedPointer<ChatMessage> &msg);
+    void autoCloseChatWindowsChanged(bool enabled);
 
 public slots:
     void onSendOutgoingMessage(const QString &local_uid, const QString &remote_uid, const QString &message);

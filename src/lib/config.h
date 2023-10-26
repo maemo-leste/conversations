@@ -15,6 +15,7 @@ namespace ConfigKeys
         ChatTheme,
         TextScaling,
         EnableNotifications,
+        EnableAutoCloseChatWindows,
         EnterKeySendsChat
     };
     Q_ENUM_NS(ConfigKey)

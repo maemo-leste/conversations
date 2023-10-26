@@ -21,6 +21,7 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
     QMainWindow(parent),
     ui(new Ui::ChatWindow),
     m_chatMessage(msg),
+    m_windowFocusTimer(new QTimer(this)),
     m_ctx(ctx) {
   pChatWindow = this;
   ui->setupUi(this);
@@ -33,10 +34,7 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
     protocol = m_chatMessage->local_uid().split("/").at(1);
   this->setWindowTitle(QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->remote_uid()));
   // properties
-#ifdef MAEMO
-  setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
-#endif
 
   // [chatBox]
   ui->chatBox->setFocus();
@@ -69,6 +67,23 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   else
     ui->quick->setSource(QUrl("qrc:/whatsthat/whatsthat.qml"));
 
+  // auto-close inactivity timer
+  m_windowFocusTimer->setInterval(1000);
+  connect(m_windowFocusTimer, &QTimer::timeout, [=] {
+     auto *window = QApplication::activeWindow();
+     if(window == nullptr || window->windowTitle() != this->windowTitle()) {
+       m_windowFocus += 1;
+       if(m_windowFocus == 60*15) {  // 15 minutes
+         this->close();
+       }
+     } else {
+      m_windowFocus = 0;
+    }
+  });
+  connect(m_ctx, &Conversations::autoCloseChatWindowsChanged, this, &ChatWindow::onAutoCloseChatWindowsChanged);
+  auto autoCloseChatWindowsEnabled = config()->get(ConfigKeys::EnableAutoCloseChatWindows).toBool();
+  this->onAutoCloseChatWindowsChanged(autoCloseChatWindowsEnabled);
+
   connect(this->ui->btnSend, &QPushButton::clicked, this, &ChatWindow::onGatherMessage);
   connect(m_ctx->telepathy, &Telepathy::databaseAddition, this, &ChatWindow::onDatabaseAddition);
 
@@ -76,6 +91,11 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   connect((QObject*)ui->quick->rootObject(),
           SIGNAL(chatPreReady()), this,
           SLOT(onChatPreReady()));
+}
+
+void ChatWindow::onAutoCloseChatWindowsChanged(bool enabled) {
+  m_windowFocus = 0;
+  enabled ? m_windowFocusTimer->start() : m_windowFocusTimer->stop();
 }
 
 void ChatWindow::onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg) {
@@ -160,8 +180,8 @@ bool ChatWindow::eventFilter(QObject *watched, QEvent *event) {
 
 void ChatWindow::closeEvent(QCloseEvent *event) {
   this->chatModel->clear();
+  emit closed(m_chatMessage->remote_uid());
   m_chatMessage.clear();
-  emit closed();
   QWidget::closeEvent(event);
 }
 
