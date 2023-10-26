@@ -24,6 +24,7 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
     m_ctx(ctx) {
   pChatWindow = this;
   ui->setupUi(this);
+  ui->menuBar->hide();
 
   // [window]
   // title
