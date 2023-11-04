@@ -16,28 +16,23 @@
 #include "lib/config.h"
 
 namespace Ui {
-    class Settings;
+    class ComposeWindow;
 }
 
-class Settings : public QMainWindow {
+class Compose : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit Settings(Conversations *ctx, QWidget *parent = nullptr);
+    explicit Compose(Conversations *ctx, QWidget *parent = nullptr);
     static Conversations *getContext();
-    ~Settings() override;
-    Ui::Settings *ui;
+    ~Compose() override;
+    Ui::ComposeWindow *ui;
 
 signals:
-    void textScalingChanged();
     void autoCloseChatWindowsChanged(bool enabled);
-
-private slots:
-    void onTextScalingValueChanged(int val);
 
 private:
     Conversations *m_ctx;
-    static Settings *pSettings;
+    static Compose *pCompose;
     void closeEvent(QCloseEvent *event) override;
 };
-

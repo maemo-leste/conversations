@@ -21,6 +21,7 @@
 #include "chatwindow.h"
 #include "searchwindow.h"
 #include "settings.h"
+#include "composewindow.h"
 #include "lib/config.h"
 #include "lib/libnotify-qt/Notification.h"
 
@@ -50,6 +51,7 @@ public slots:
     void onOpenChatWindow(const QString &remote_uid);
     void onOpenChatWindow(const QSharedPointer<ChatMessage> &msg);
     void onOpenSettingsWindow();
+    void onOpenComposeWindow();
     void onOpenSearchWindow();
     void onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg);
     void onQuitApplication();
@@ -71,6 +73,7 @@ private:
     static MainWindow *pMainWindow;
     QMap<QString, ChatWindow*> m_chatWindows;
     Settings *m_settings = nullptr;
+    Compose *m_compose = nullptr;
     SearchWindow *m_searchWindow = nullptr;
     bool m_autoHideWindow = true;
 

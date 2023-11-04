@@ -55,6 +55,7 @@
     <property name="title">
      <string>w00t</string>
     </property>
+    <addaction name="actionCompose"/>
     <addaction name="actionSettings"/>
     <addaction name="actionSearch"/>
     <addaction name="actionAbout"/>
@@ -80,6 +81,11 @@
   <action name="actionQuit_conversations">
    <property name="text">
     <string>Quit conversations</string>
+   </property>
+  </action>
+  <action name="actionCompose">
+   <property name="text">
+    <string>New message</string>
    </property>
   </action>
  </widget>

@@ -48,6 +48,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx, &Conversations::hideApplication, this, &MainWindow::onHideApplication);
   connect(m_ctx, &Conversations::notificationClicked, this, &MainWindow::onNotificationClicked);
   connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::onOpenSettingsWindow);
+  connect(ui->actionCompose, &QAction::triggered, this, &MainWindow::onOpenComposeWindow);
   connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::onOpenSearchWindow);
   connect(ui->actionQuit_conversations, &QAction::triggered, this, &MainWindow::onQuitApplication);
 
@@ -127,6 +128,14 @@ void MainWindow::onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg) {
   m_searchWindow->close();
   m_searchWindow->deleteLater();
 }
+
+void MainWindow::onOpenComposeWindow() {
+  m_compose = new Compose(m_ctx, this);
+  m_compose->show();
+
+  // connect(m_s, &Settings::textScalingChanged, this->m_ctx, &Conversations::onTextScalingChanged);
+}
+
 
 void MainWindow::onOpenSettingsWindow() {
   m_settings = new Settings(m_ctx, this);
