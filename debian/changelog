@@ -1,3 +1,11 @@
+conversations (0.5.4) unstable; urgency=medium
+
+  * Search: auto-scroll to the correct message
+  * CSV export for chats
+  * Enable StackedWindow for chatWindow
+  * ScrollArea for settingsWindow
+  * Message compose window WIP
+
 conversations (0.5.3) unstable; urgency=medium
 
   * Spawn individual chat windows
