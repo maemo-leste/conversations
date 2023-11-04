@@ -27,10 +27,8 @@ SearchWindow::SearchWindow(Conversations *ctx, QString remote_uid, QWidget *pare
 
   this->searchModel = new ChatModel(this);
 
-#ifdef MAEMO
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
-#endif
 
   auto *qctx = ui->quick->rootContext();
   qctx->setContextProperty("searchWindow", this);

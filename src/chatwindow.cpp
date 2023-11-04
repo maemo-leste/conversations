@@ -35,6 +35,7 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   this->setWindowTitle(QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->remote_uid()));
   // properties
   setProperty("X-Maemo-Orientation", 2);
+  setProperty("X-Maemo-StackedWindow", 0);
 
   // [chatBox]
   ui->chatBox->setFocus();
