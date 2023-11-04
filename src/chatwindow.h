@@ -42,6 +42,7 @@ private slots:
     void onChatPreReady();
     void onGatherMessage();
     void onOpenSearchWindow();
+    void onExportToCsv();
     void onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg);
     void onAutoCloseChatWindowsChanged(bool enabled);
     void onSearchResultClicked(const QSharedPointer<ChatMessage> &msg);

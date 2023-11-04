@@ -94,6 +94,35 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
   return QVariant();
 }
 
+void ChatModel::exportChatToCsv(const QString &service, const QString &remote_uid, QObject *parent) {
+  qDebug() << __FUNCTION__;
+
+  auto *model = new ChatModel(parent);
+  model->setRemoteUID(remote_uid);
+  model->setServiceID(service);
+
+  while(model->getPage(500) > 0) {
+    qDebug() << "fetching";
+  }
+
+  QString csv;
+  QtCSV::StringData data;
+  auto now = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm");
+
+  for(const QSharedPointer<ChatMessage> &chat: model->chats) {
+    QStringList row;
+    row << QString::number(chat->epoch()) << chat->service() << chat->fulldate() << chat->remote_uid() << chat->name() << chat->text();
+    data.addRow(row);
+  }
+  
+  const auto fn = QString("%1-%2-%3.csv").arg(service).arg(now).arg(remote_uid);
+  const auto path = QString("%1/MyDocs/%2").arg(QDir::homePath()).arg(fn);
+
+  qDebug() << "writing to: " << path;
+  QtCSV::Writer::write(path, data);
+  model->deleteLater();
+}
+
 QHash<int, QByteArray> ChatModel::roleNames() const {
   QHash<int, QByteArray> roles;
   roles[GroupUIDRole] = "group_uid";

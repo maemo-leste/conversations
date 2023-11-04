@@ -15,6 +15,8 @@ file(GLOB SOURCE_FILES
         "models/*.cpp"
         "lib/libnotify-qt/*.h"
         "lib/libnotify-qt/*.cpp"
+        "lib/qtcsv/*.h"
+        "lib/qtcsv/*.cpp"
         )
 
 find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui Network DBus Svg Xml Quick QuickWidgets Qml QuickControls2 QuickCompiler)
@@ -65,6 +67,7 @@ message(STATUS "xxx ${TELEPATHY_QT5_INCLUDE_DIR}")
 
 target_include_directories(conversations PUBLIC
         ${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/src/lib/
         ${X11_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${Qt5Core_INCLUDE_DIRS}

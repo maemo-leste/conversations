@@ -36,8 +36,10 @@ public:
     QString cid() const;
     QString name() const;
 
-    QString datestr() const;
-    QString hourstr() const;
+    QString fulldate() const { return m_date.toString("yyyy-MM-dd hh:mm:ss"); }
+    QString hourstr() const { return m_date.toString("hh:mm"); }
+    QString datestr() const { return m_date.toString("dd/MM/yyyy"); }
+    time_t epoch() const { return m_date.toTime_t(); }
 
     bool isHead() const;
     bool isLast() const;
