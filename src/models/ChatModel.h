@@ -4,9 +4,14 @@
 #include <QAbstractListModel>
 #include <QDateTime>
 #include <QStringList>
+#include <QDir>
 
 #include <glib.h>
 #include <glib/gstdio.h>
+
+#include "qtcsv/stringdata.h"
+#include "qtcsv/reader.h"
+#include "qtcsv/writer.h"
 
 #include "models/ChatMessage.h"
 
@@ -37,6 +42,9 @@ public:
       this->clear();
     }
 
+    void setRemoteUID(const QString &remote_uid) { m_remote_uid = remote_uid; }
+    void setServiceID(const QString &service_id) { m_service_id = service_id; }
+
     void prependMessage(ChatMessage *message);
     void prependMessage(const QSharedPointer<ChatMessage> &message);
     void appendMessage(ChatMessage *message);
@@ -66,6 +74,7 @@ public:
     Q_INVOKABLE int eventIdToIdx(int msg);
 
     Q_INVOKABLE void clear();
+    static void exportChatToCsv(const QString &service, const QString &remote_uid, QObject *parent);
 
 public slots:
   void onGetOverviewMessages(int limit = 9999, int offset = 0);

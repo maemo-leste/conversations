@@ -53,8 +53,6 @@ bool ChatMessage::outgoing() const { return m_outgoing; }
 int ChatMessage::flags() const { return m_flags; }
 QString ChatMessage::cid() const { return m_cid; }
 QDateTime ChatMessage::date() const { return m_date; }
-QString ChatMessage::hourstr() const { return m_date.toString("hh:mm"); }
-QString ChatMessage::datestr() const { return m_date.toString("dd/MM/yyyy"); }
 QString ChatMessage::name() const {
   if(!m_remote_name.isEmpty()) return m_remote_name;
   return m_remote_uid;

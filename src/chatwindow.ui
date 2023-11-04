@@ -112,12 +112,18 @@
      <string>w00t</string>
     </property>
     <addaction name="actionSearchChat"/>
+    <addaction name="actionExportChatToCsv"/>
    </widget>
    <addaction name="menuw00t"/>
   </widget>
   <action name="actionSearchChat">
    <property name="text">
-    <string>Search chat</string>
+    <string>Search chat test</string>
+   </property>
+  </action>
+  <action name="actionExportChatToCsv">
+   <property name="text">
+    <string>Export chat</string>
    </property>
   </action>
  </widget>

@@ -87,10 +87,19 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   connect(this->ui->btnSend, &QPushButton::clicked, this, &ChatWindow::onGatherMessage);
   connect(m_ctx->telepathy, &Telepathy::databaseAddition, this, &ChatWindow::onDatabaseAddition);
 
+  connect(ui->actionExportChatToCsv, &QAction::triggered, this, &ChatWindow::onExportToCsv);
   connect(ui->actionSearchChat, &QAction::triggered, this, &ChatWindow::onOpenSearchWindow);
   connect((QObject*)ui->quick->rootObject(),
           SIGNAL(chatPreReady()), this,
           SLOT(onChatPreReady()));
+}
+
+void ChatWindow::onExportToCsv() {
+    qDebug() << __FUNCTION__;
+    ChatModel::exportChatToCsv(m_chatMessage->service(), m_chatMessage->remote_uid(), this);
+    QMessageBox msgBox;
+    msgBox.setText(QString("File written to ~/MyDocs/"));
+    msgBox.exec();
 }
 
 void ChatWindow::onAutoCloseChatWindowsChanged(bool enabled) {
@@ -122,7 +131,7 @@ void ChatWindow::onSearchResultClicked(const QSharedPointer<ChatMessage> &msg) {
 void ChatWindow::fillBufferUntil(const QSharedPointer<ChatMessage> &msg) const {
   // fill the message buffer list until we find the relevant message
   qDebug() << __FUNCTION__;
-  const unsigned int limit = 0;
+  unsigned int limit = 0;
   const unsigned int perPage = 100;
 
   while(chatModel->eventIdToIdx(msg->event_id()) == -1) {
