@@ -122,9 +122,11 @@ void ChatWindow::onSearchResultClicked(const QSharedPointer<ChatMessage> &msg) {
 void ChatWindow::fillBufferUntil(const QSharedPointer<ChatMessage> &msg) const {
   // fill the message buffer list until we find the relevant message
   qDebug() << __FUNCTION__;
-  unsigned int limit = 0;
-  while(chatModel->eventIdToIdx(msg->event_id()) == -1 && limit <= 200) {
-    chatModel->getPage(50);
+  const unsigned int limit = 0;
+  const unsigned int perPage = 100;
+
+  while(chatModel->eventIdToIdx(msg->event_id()) == -1) {
+    chatModel->getPage(perPage);
     limit += 1;
   }
 }
