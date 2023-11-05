@@ -7,13 +7,21 @@ import "../components" as Components
 
 Rectangle {
     id: root
-    color: "black"
+    color: colorWindow
 
-    property string highlight: "#00a2ff"
+    property string highlight: systemPalette.highlight
     property int itemHeight: 76 * ctx.scaleFactor
     property int topBarHeight: 54 * ctx.scaleFactor
+    SystemPalette {
+        id: systemPalette
+        colorGroup: SystemPalette.Active
+    }
 
     signal overviewRowClicked(int idx);
+
+    Component.onCompleted: {
+        console.log('hi ' + colorWindow);
+    }
 
     ListView {
         height: root.topBarHeight
@@ -27,7 +35,7 @@ Rectangle {
         layoutDirection: Qt.LeftToRight
 
         delegate: Rectangle {
-            color: "black"
+            color: colorWindow
             width: text.implicitWidth + 75
             height: root.topBarHeight
 
@@ -45,7 +53,7 @@ Rectangle {
                         id: text
                         text: name || "";
                         font.pointSize: 18 * ctx.scaleFactor
-                        color: "white"
+                        color: colorText
                         anchors.centerIn: parent
                     }
                 }
@@ -97,7 +105,7 @@ Rectangle {
         delegate: Rectangle {
             height: root.itemHeight
             width: parent !== null ? parent.width : 0
-            color: "black"
+            color: colorWindow
 
             Item {
                 height: root.itemHeight
@@ -110,11 +118,11 @@ Rectangle {
 
                     onEntered: {
                         if(!ctx.isMaemo)
-                            parent.parent.color = highlight;
+                            parent.parent.color = colorHighlight;
                     }
                     onExited: {
                         if(!ctx.isMaemo)
-                            parent.parent.color = "black";
+                            parent.parent.color = colorWindow;
                     }
                     onClicked: {
                         overviewRowClicked(index);
@@ -160,7 +168,7 @@ Rectangle {
 
                         Components.PlainText {
                             text: name
-                            color: "white"
+                            color: colorText
                             font.pointSize: 18 * ctx.scaleFactor
                             Layout.alignment: Qt.AlignTop
                         }
@@ -171,7 +179,8 @@ Rectangle {
                                 if(message !== "") datestr + " " + hourstr;
                                 else "";
                             }
-                            color: "grey"
+                            color: colorText
+                            opacity: 0.7
                             font.pointSize: 12 * ctx.scaleFactor
                             Layout.alignment: Qt.AlignTop
                         }
@@ -184,7 +193,8 @@ Rectangle {
                     Components.PlainText {
                         Layout.fillWidth: true
                         Layout.preferredHeight: root.itemHeight / 2
-                        color: "grey"
+                        color: colorText
+                        opacity: 0.7
                         font.pointSize: 14 * ctx.scaleFactor
                         text: {
                             if(message !== "") message;

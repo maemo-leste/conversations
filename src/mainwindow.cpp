@@ -24,6 +24,16 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
 
+  auto palette = QApplication::palette();
+  auto *widget = new QLabel(this);
+  m_ctx->colorBase = palette.base().color().name();
+  m_ctx->colorWindow = palette.window().color().name();
+  m_ctx->colorText = widget->palette().foreground().color().name();
+  m_ctx->colorHighlight = widget->palette().highlight().color().name();
+  m_ctx->colorButton = palette.button().color().name();
+  m_ctx->colorButtonText = palette.buttonText().color().name();
+  m_ctx->colorBrightText = palette.brightText().color().name();
+
   this->screenDpiRef = 128;
   this->screenGeo = QApplication::primaryScreen()->availableGeometry();
   this->screenRect = QGuiApplication::primaryScreen()->geometry();
@@ -65,6 +75,13 @@ void MainWindow::createQml() {
   qctx->setContextProperty("mainWindow", this);
   qctx->setContextProperty("chatOverviewModel", m_ctx->chatOverviewModel);
   qctx->setContextProperty("overviewServiceModel", m_ctx->overviewServiceModel);
+  qctx->setContextProperty("colorWindow", m_ctx->colorWindow);
+  qctx->setContextProperty("colorBase", m_ctx->colorBase);
+  qctx->setContextProperty("colorText", m_ctx->colorText);
+  qctx->setContextProperty("colorButton", m_ctx->colorButton);
+  qctx->setContextProperty("colorButtonText", m_ctx->colorButtonText);
+  qctx->setContextProperty("colorBrightText", m_ctx->colorBrightText);
+  qctx->setContextProperty("colorHighlight", m_ctx->colorHighlight);
 
   m_quickWidget->setSource(QUrl("qrc:/qml/Overview.qml"));
   m_quickWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
@@ -143,6 +160,9 @@ void MainWindow::onOpenSettingsWindow() {
 
   connect(m_settings, &Settings::textScalingChanged, this->m_ctx, &Conversations::onTextScalingChanged);
   connect(m_settings, &Settings::autoCloseChatWindowsChanged, this->m_ctx, &Conversations::autoCloseChatWindowsChanged);
+  connect(m_settings, &Settings::inheritSystemThemeToggled, this, [=](bool enabled){
+    emit inheritSystemThemeChanged(enabled);
+  });
 }
 
 void MainWindow::onNotificationClicked(const QSharedPointer<ChatMessage> &msg) {

@@ -12,8 +12,10 @@
 #include <QQuickView>
 #include <QQmlContext>
 #include <QtCore>
+#include <QLabel>
 #include <QtGui>
 #include <QFileInfo>
+#include <QPalette>
 
 #include <iostream>
 
@@ -63,6 +65,7 @@ public slots:
 
 signals:
     void requestOverviewSearchWindow();
+    void inheritSystemThemeChanged(bool toggled);
 
 protected:
     void closeEvent(QCloseEvent *event) override;

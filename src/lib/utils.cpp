@@ -17,6 +17,16 @@ bool Utils::dirExists(const QString &path) {
     return pathDir.exists();
 }
 
+void Utils::qmlInjectPalette(QQmlContext *qctx, Conversations *m_ctx) {
+  qctx->setContextProperty("colorWindow", m_ctx->colorWindow);
+  qctx->setContextProperty("colorBase", m_ctx->colorBase);
+  qctx->setContextProperty("colorText", m_ctx->colorText);
+  qctx->setContextProperty("colorButton", m_ctx->colorButton);
+  qctx->setContextProperty("colorButtonText", m_ctx->colorButtonText);
+  qctx->setContextProperty("colorBrightText", m_ctx->colorBrightText);
+  qctx->setContextProperty("colorHighlight", m_ctx->colorHighlight);
+}
+
 QByteArray Utils::fileOpen(const QString &path) {
     QFile file(path);
     if(!file.open(QFile::ReadOnly | QFile::Text)) {

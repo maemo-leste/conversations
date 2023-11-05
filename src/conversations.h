@@ -22,8 +22,17 @@ class Conversations : public QObject {
     Q_PROPERTY(QString pathGenericData MEMBER pathGenericData);
     Q_PROPERTY(QString homeDir MEMBER homeDir);
     Q_PROPERTY(QString accountName MEMBER accountName);
+
+    Q_PROPERTY(QString colorBase MEMBER colorBase);
+    Q_PROPERTY(QString colorWindow MEMBER colorWindow);
+    Q_PROPERTY(QString colorText MEMBER colorText);
+    Q_PROPERTY(QString colorButton MEMBER colorButton);
+    Q_PROPERTY(QString colorButtonText MEMBER colorButtonText);
+    Q_PROPERTY(QString colorBrightText MEMBER colorBrightText);
+
     Q_PROPERTY(bool isDebug MEMBER isDebug NOTIFY debugChanged);
     Q_PROPERTY(float scaleFactor MEMBER m_textScaling NOTIFY textScalingChanged);
+    Q_PROPERTY(bool inheritSystemTheme MEMBER m_inheritSystemTheme NOTIFY inheritSystemThemeChanged);
     Q_PROPERTY(float isMaemo MEMBER isMaemo NOTIFY isMaemoChanged);
 
 public:
@@ -42,6 +51,15 @@ public:
     QString homeDir;
     QString accountName;
     QString applicationPath;
+
+    // hex
+    QString colorBase;
+    QString colorWindow;
+    QString colorText;
+    QString colorHighlight;
+    QString colorButton;
+    QString colorButtonText;
+    QString colorBrightText;
 
     static void createConfigDirectory(const QString &dir) ;
 
@@ -69,6 +87,7 @@ signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
     void notificationClicked(const QSharedPointer<ChatMessage> &msg);
     void autoCloseChatWindowsChanged(bool enabled);
+    void inheritSystemThemeChanged(bool enabled);
 
 public slots:
     void onSendOutgoingMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
@@ -79,6 +98,7 @@ public slots:
 
 private:
     float m_textScaling = 1.0;
+    bool m_inheritSystemTheme = true;
     QMap<QString, QString> ossoIconCache;
     QTimer m_hibernateTimer;
     std::chrono::seconds m_hibernateDetectInterval{300};

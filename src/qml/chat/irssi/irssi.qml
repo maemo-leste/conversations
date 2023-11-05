@@ -9,7 +9,7 @@ Components.ChatRoot {
     color: "black"
     chatList: chatListView
 
-    property string statusBarBackgroundColor: "#3465a4"
+    property string statusBarBackgroundColor: colorHighlight
     property string textGreyColor: "#555753"
     property string textDimmedColor: "#d3d7ce"
     property string textNickActiveColor: "#30e0e2"
