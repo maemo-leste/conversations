@@ -6,17 +6,23 @@ import "../components" as Components
 
 Components.ChatRoot {
     id: root
-    color: "black"
+    color: colorBackground
     chatList: chatListView
 
-    property string statusBarBackgroundColor: "#3465a4"
-    property string textGreyColor: "#555753"
-    property string textDimmedColor: "#d3d7ce"
-    property string textNickActiveColor: "#30e0e2"
-    property string textNickInactiveColor: "#06989a"
+    property string colorBackground: ctx.inheritSystemTheme ? theme.colors.defaultBackgroundColor : "black"
+    property string colorText: ctx.inheritSystemTheme ? theme.colors.defaultTextColor : "white"
+    property string colorMutedText: ctx.inheritSystemTheme ? theme.colors.disabledTextColor : "grey"
+    property string colorSecondaryText: ctx.inheritSystemTheme ? theme.colors.secondaryTextColor : "grey"
+    property string colorActiveTextColor: ctx.inheritSystemTheme ? theme.colors.activeTextColor : "white"
+    property string statusBarBackgroundColor: ctx.inheritSystemTheme ? theme.colors.reversedBackgroundColor : "#00a2ff"
+    property string statusBarTextColor: ctx.inheritSystemTheme ? theme.colors.reversedTextColor : textDimmedColor
+    property string textGreyColor: ctx.inheritSystemTheme ? theme.colors.secondaryTextColor : "#555753"
+    property string textDimmedColor: ctx.inheritSystemTheme ? theme.colors.disabledTextColor : "#d3d7ce"
+    property string textNickActiveColor: ctx.inheritSystemTheme ? theme.colors.defaultTextColor : "#30e0e2"
+    property string textNickInactiveColor: ctx.inheritSystemTheme ? theme.colors.secondaryTextColor : "#06989a"
 
-    historyPopupBackgroundColor: "#262d31"
-    historyPopupTextColor: "white"
+    historyPopupBackgroundColor: ctx.inheritSystemTheme ? theme.colors.statusBarBackgroundColor : "262d31"
+    historyPopupTextColor: ctx.inheritSystemTheme ? theme.colors.statusBarTextColor : "white"
 
     Rectangle {
         z: parent.z + 1
@@ -28,7 +34,7 @@ Components.ChatRoot {
 
         Components.PlainText {
             id: statusBarText
-            color: textDimmedColor
+            color: statusBarTextColor
             text: chatModel.remote_uid
             anchors.verticalCenter: parent.verticalCenter
             anchors.leftMargin: 12
@@ -51,13 +57,13 @@ Components.ChatRoot {
             id: item
             property int itemHeight: textMessage.implicitHeight
             height: itemHeight
-            width: parent.width
+            width: parent !== null ? parent.width : 0
             spacing: 0
 
             Components.PlainText {
                 font.pointSize: 14 * ctx.scaleFactor
                 font.family: fixedFont
-                color: "white"
+                color: root.colorActiveTextColor
                 text: hourstr
                 Layout.rightMargin: 10
                 Layout.alignment: Qt.AlignTop

@@ -73,6 +73,13 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
     config()->set(ConfigKeys::EnableAutoCloseChatWindows, toggled);
   });
 
+  // respect system themes
+  ui->checkBox_enableInheritSystemTheme->setChecked(config()->get(ConfigKeys::EnableInheritSystemTheme).toBool());
+  connect(ui->checkBox_enableInheritSystemTheme, &QCheckBox::toggled, [=](bool toggled){
+    config()->set(ConfigKeys::EnableInheritSystemTheme, toggled);
+    emit inheritSystemThemeToggled(toggled);
+  });
+
   // text scaling
   float textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
   if(textScaling < 1) textScaling = 1;

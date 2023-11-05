@@ -7,9 +7,20 @@ import "../components" as Components
 Components.ChatRoot {
     id: root
     chatList: chatListView
+    color: colorBackground
 
-    property string chatBackgroundSelf: "#056162"
-    property string chatBackgroundThem: "#262d31"
+    property string colorBackground: ctx.inheritSystemTheme ? theme.colors.defaultBackgroundColor : "black"
+    property string chatBackgroundSelf: ctx.inheritSystemTheme ? theme.colors.notificationBackgroundColor : "#056162"
+    property string chatBackgroundThem: ctx.inheritSystemTheme ? theme.colors.contentSelectionColor : "#363e42"
+
+    property string colorTextSelf: ctx.inheritSystemTheme ? theme.colors.defaultTextColor : "white"
+    property string colorTextThem: ctx.inheritSystemTheme ? theme.colors.paintedTextColor : "white"
+
+    property string colorHighlight: ctx.inheritSystemTheme ? theme.colors.contentSelectionColor : "white"
+    property string colorReversedTextColor: ctx.inheritSystemTheme ? theme.colors.reversedTextColor : "lightblue"
+    property string colorReversedSecondaryTextColor: ctx.inheritSystemTheme ? theme.colors.reversedSecondaryTextColor : "lightblue"
+    property string colorDate: ctx.inheritSystemTheme ? theme.colors.reversedPaintedTextColor : "#98ac90"
+
     property int itemHeightDefault: 68
     property int itemHeightSmall: 32
 
@@ -18,6 +29,7 @@ Components.ChatRoot {
 
     Image {
         // background
+        visible: !ctx.inheritSystemTheme
         source: "qrc:/whatsthat/bg.png"
         anchors.fill: parent
         fillMode: Image.Tile
@@ -51,7 +63,7 @@ Components.ChatRoot {
             }
 
             Rectangle {
-                color: highlight ? "white" : "transparent"
+                color: highlight ? colorHighlight : "transparent"
                 Layout.preferredHeight: itemHeight
                 Layout.preferredWidth: {
                     var max_width = item.width / 6 * 4;
@@ -94,7 +106,8 @@ Components.ChatRoot {
                             Components.PlainText {
                                 visible: !outgoing && isHead
                                 font.pointSize: 12 * ctx.scaleFactor
-                                color: "lightblue"
+                                color: root.colorTextThem
+                                opacity: 0.6
                                 text: name
                             }
 
@@ -105,15 +118,16 @@ Components.ChatRoot {
 
                             Components.PlainText {
                                 font.pointSize: 12 * ctx.scaleFactor
-                                color: "#98ac90"
+                                color: outgoing ? root.colorTextSelf : root.colorTextThem
                                 text: datestr + " " + hourstr
                                 Layout.rightMargin: 0
+                                opacity: 0.6
                             }
                         }
 
                         Components.PlainText {
                             id: textMessage
-                            color: "white"
+                            color: outgoing ? root.colorTextSelf : root.colorTextThem
                             text: message
                             wrapMode: Text.WordWrap
                             width: parent.width

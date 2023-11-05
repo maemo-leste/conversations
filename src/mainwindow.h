@@ -12,8 +12,10 @@
 #include <QQuickView>
 #include <QQmlContext>
 #include <QtCore>
+#include <QLabel>
 #include <QtGui>
 #include <QFileInfo>
+#include <QPalette>
 
 #include <iostream>
 
@@ -36,6 +38,7 @@ public:
     explicit MainWindow(Conversations *ctx, QWidget *parent = nullptr);
     static MainWindow *getInstance();
     static Conversations *getContext();
+    static void qmlInjectPalette(QQmlContext *qctx, Conversations *ctx);
     ~MainWindow() override;
     Ui::MainWindow *ui;
 
@@ -63,6 +66,7 @@ public slots:
 
 signals:
     void requestOverviewSearchWindow();
+    void inheritSystemThemeChanged(bool toggled);
 
 protected:
     void closeEvent(QCloseEvent *event) override;

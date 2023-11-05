@@ -113,3 +113,22 @@ QString Utils::protocolToRTCOMServiceID(const QString &protocol) {
   }
   return "RTCOM_EL_SERVICE_CHAT";
 }
+
+QMap<QString, QString> Utils::readSystemConfig(const QString &path) {
+  QMap<QString, QString> rtn;
+  if(!Utils::fileExists(path)) {
+    qWarning() << "could not read: " << path;
+    return rtn;
+  }
+
+  const auto lines = Utils::barrayToString(Utils::fileOpen(path));
+  for(auto const &line: lines.split('\x0a')) {
+    if (line.trimmed().length() == 0 || !line.contains('=')) continue;
+    const auto spl = line.split('=');
+    const auto &key = spl.at(0);
+    const auto &val = spl.at(1);
+    rtn[key] = val;
+  }
+
+  return rtn;
+}

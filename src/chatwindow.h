@@ -1,6 +1,4 @@
-#ifndef CHATWINDOW_H
-#define CHATWINDOW_H
-
+#pragma once
 #include <QtGlobal>
 #include <QResource>
 #include <QApplication>
@@ -71,5 +69,3 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
 };
-
-#endif

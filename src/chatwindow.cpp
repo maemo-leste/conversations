@@ -10,6 +10,7 @@
 #include <QTextEdit>
 
 #include "chatwindow.h"
+#include "mainwindow.h"
 #include "config-conversations.h"
 #include "lib/globals.h"
 
@@ -57,8 +58,10 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   qctx->setContextProperty("chatWindow", this);
   qctx->setContextProperty("chatModel", this->chatModel);
   qctx->setContextProperty("ctx", m_ctx);
+  qctx->setContextProperty("theme", m_ctx->theme);
   const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
   qctx->setContextProperty("fixedFont", fixedFont);
+  MainWindow::qmlInjectPalette(qctx, m_ctx);
 
   auto theme = config()->get(ConfigKeys::ChatTheme).toString();
   if(theme == "chatty")

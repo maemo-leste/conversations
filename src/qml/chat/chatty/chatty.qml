@@ -6,13 +6,20 @@ import "../components" as Components
 
 Components.ChatRoot {
     id: root
-    color: "black"
+    color: colorBackground
     chatList: chatListView
 
-    property string avatarBorderColor: "#999999"
-    property string chatBorderColor: "#30302f"
-    property string nickColor: "#86d5fc"
-    property string dividerColor: "#2c2c2c"
+    property string colorBackground: ctx.inheritSystemTheme ? theme.colors.defaultBackgroundColor : "black"
+    property string colorText: ctx.inheritSystemTheme ? theme.colors.defaultTextColor : "white"
+    property string colorHighlight: ctx.inheritSystemTheme ? theme.colors.SelectionColor : "#00a2ff"
+    property string colorMutedText: ctx.inheritSystemTheme ? theme.colors.disabledTextColor : "grey"
+    property string colorSecondaryText: ctx.inheritSystemTheme ? theme.colors.secondaryTextColor : "grey"
+
+    property string avatarBorderColor: ctx.inheritSystemTheme ? theme.colors.SelectionColor : "#999999"
+    property string chatBorderColor: ctx.inheritSystemTheme ? theme.colors.SelectionColor : "#30302f"
+    property string nickColor: ctx.inheritSystemTheme ? colorSecondaryText : "#86d5fc"
+    property string dividerColor: ctx.inheritSystemTheme ? theme.colors.disabledTextColor : "#2c2c2c"
+
     property int itemHeightDefault: 68
     property int itemHeightSmall: 32
 
@@ -97,7 +104,7 @@ Components.ChatRoot {
                         Layout.leftMargin: 8
                         Layout.alignment: isHead ? Qt.AlignVCenter : Qt.AlignTop
                         text: message
-                        color: "white"
+                        color: root.colorText
                         wrapMode: Text.WordWrap
                         font.pointSize: 14 * ctx.scaleFactor
                         font.bold: name == "_self" ? true : false;
@@ -113,7 +120,7 @@ Components.ChatRoot {
                         Components.PlainText {
                             Layout.fillWidth: true
                             text: message
-                            color: "white"
+                            color: root.colorText
                             wrapMode: Text.WordWrap
                             font.pointSize: 14 * ctx.scaleFactor
                             font.bold: name == "_self" ? true : false;
@@ -141,7 +148,7 @@ Components.ChatRoot {
                         Layout.leftMargin: 12
                         Layout.alignment: Qt.AlignVCenter
                         text: hourstr
-                        color: "grey"
+                        color: root.colorMutedText
                         font.pointSize: 12 * ctx.scaleFactor
                     }
                 }

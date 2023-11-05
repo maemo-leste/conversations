@@ -7,9 +7,14 @@ import "../components" as Components
 
 Rectangle {
     id: root
-    color: "black"
+    color: colorBackground
 
-    property string highlight: "#00a2ff"
+    property string colorBackground: ctx.inheritSystemTheme ? theme.colors.defaultBackgroundColor : "black"
+    property string colorText: ctx.inheritSystemTheme ? theme.colors.defaultTextColor : "white"
+    property string colorHighlight: ctx.inheritSystemTheme ? theme.colors.SelectionColor : "#00a2ff"
+    property string colorMutedText: ctx.inheritSystemTheme ? theme.colors.disabledTextColor : "grey"
+    property string colorSecondaryText: ctx.inheritSystemTheme ? theme.colors.secondaryTextColor : "grey"
+
     property int itemHeight: 76 * ctx.scaleFactor
     property int topBarHeight: 54 * ctx.scaleFactor
 
@@ -27,7 +32,7 @@ Rectangle {
         layoutDirection: Qt.LeftToRight
 
         delegate: Rectangle {
-            color: "black"
+            color: colorBackground
             width: text.implicitWidth + 75
             height: root.topBarHeight
 
@@ -45,7 +50,7 @@ Rectangle {
                         id: text
                         text: name || "";
                         font.pointSize: 18 * ctx.scaleFactor
-                        color: "white"
+                        color: colorText
                         anchors.centerIn: parent
                     }
                 }
@@ -97,7 +102,7 @@ Rectangle {
         delegate: Rectangle {
             height: root.itemHeight
             width: parent !== null ? parent.width : 0
-            color: "black"
+            color: colorBackground
 
             Item {
                 height: root.itemHeight
@@ -110,11 +115,11 @@ Rectangle {
 
                     onEntered: {
                         if(!ctx.isMaemo)
-                            parent.parent.color = highlight;
+                            parent.parent.color = colorHighlight;
                     }
                     onExited: {
                         if(!ctx.isMaemo)
-                            parent.parent.color = "black";
+                            parent.parent.color = colorBackground;
                     }
                     onClicked: {
                         overviewRowClicked(index);
@@ -160,7 +165,7 @@ Rectangle {
 
                         Components.PlainText {
                             text: name
-                            color: "white"
+                            color: colorText
                             font.pointSize: 18 * ctx.scaleFactor
                             Layout.alignment: Qt.AlignTop
                         }
@@ -171,7 +176,7 @@ Rectangle {
                                 if(message !== "") datestr + " " + hourstr;
                                 else "";
                             }
-                            color: "grey"
+                            color: colorMutedText
                             font.pointSize: 12 * ctx.scaleFactor
                             Layout.alignment: Qt.AlignTop
                         }
@@ -184,7 +189,7 @@ Rectangle {
                     Components.PlainText {
                         Layout.fillWidth: true
                         Layout.preferredHeight: root.itemHeight / 2
-                        color: "grey"
+                        color: colorSecondaryText
                         font.pointSize: 14 * ctx.scaleFactor
                         text: {
                             if(message !== "") message;

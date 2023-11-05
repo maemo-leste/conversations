@@ -24,10 +24,6 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
 
-  this->screenDpiRef = 128;
-  this->screenGeo = QApplication::primaryScreen()->availableGeometry();
-  this->screenRect = QGuiApplication::primaryScreen()->geometry();
-  this->screenDpi = QGuiApplication::primaryScreen()->logicalDotsPerInch();
   this->screenDpiPhysical = QGuiApplication::primaryScreen()->physicalDotsPerInch();
   this->screenRatio = this->screenDpiPhysical / this->screenDpiRef;
   qDebug() << QString("%1x%2 (%3 DPI)").arg(
@@ -62,9 +58,11 @@ void MainWindow::createQml() {
   auto *qctx = m_quickWidget->rootContext();
   qctx->setContextProperty("cfg", config());
   qctx->setContextProperty("ctx", m_ctx);
+  qctx->setContextProperty("theme", m_ctx->theme);
   qctx->setContextProperty("mainWindow", this);
   qctx->setContextProperty("chatOverviewModel", m_ctx->chatOverviewModel);
   qctx->setContextProperty("overviewServiceModel", m_ctx->overviewServiceModel);
+  MainWindow::qmlInjectPalette(qctx, m_ctx);
 
   m_quickWidget->setSource(QUrl("qrc:/qml/Overview.qml"));
   m_quickWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
@@ -143,6 +141,10 @@ void MainWindow::onOpenSettingsWindow() {
 
   connect(m_settings, &Settings::textScalingChanged, this->m_ctx, &Conversations::onTextScalingChanged);
   connect(m_settings, &Settings::autoCloseChatWindowsChanged, this->m_ctx, &Conversations::autoCloseChatWindowsChanged);
+  connect(m_settings, &Settings::inheritSystemThemeToggled, this, [=](bool toggled){
+    m_ctx->inheritSystemTheme = toggled;
+    m_ctx->inheritSystemThemeChanged(toggled);
+  });
 }
 
 void MainWindow::onNotificationClicked(const QSharedPointer<ChatMessage> &msg) {
@@ -181,6 +183,16 @@ void MainWindow::onHideApplication() {
   this->hide();
   this->destroyQml();
   m_ctx->isBackground = true;
+}
+
+void MainWindow::qmlInjectPalette(QQmlContext *qctx, Conversations *ctx) {
+//  qctx->setContextProperty("colorWindow", ctx->colorWindow);
+//  qctx->setContextProperty("colorBase", ctx->colorBase);
+//  qctx->setContextProperty("colorText", ctx->colorText);
+//  qctx->setContextProperty("colorButton", ctx->colorButton);
+//  qctx->setContextProperty("colorButtonText", ctx->colorButtonText);
+//  qctx->setContextProperty("colorBrightText", ctx->colorBrightText);
+//  qctx->setContextProperty("colorHighlight", ctx->colorHighlight);
 }
 
 MainWindow *MainWindow::getInstance() {

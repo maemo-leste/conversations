@@ -1,9 +1,8 @@
-#ifndef CONV_UTILS_H
-#define CONV_UTILS_H
-
+#pragma once
 #include <QObject>
 #include <QSettings>
 #include <QRegExp>
+#include <QQmlContext>
 #include <QStandardItemModel>
 #include <QApplication>
 #include <QTextCharFormat>
@@ -29,8 +28,7 @@ public:
     static QMap<QString, QLocale> localeCache;
     static Notification* notification(QString title, QString message, const QSharedPointer<ChatMessage> &msg);
     static QString protocolToRTCOMServiceID(const QString &protocol);
+    static QMap<QString, QString> readSystemConfig(const QString &path);
 };
 
 class Conversations;
-
-#endif

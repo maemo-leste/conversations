@@ -27,28 +27,29 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   accountName = qgetenv("USER");
   homeDir = QDir::homePath();
   configDirectory = QString("%1/.config/%2/").arg(configRoot, QCoreApplication::applicationName());
-
-  // Create some directories
   createConfigDirectory(configDirectory);
 
   m_textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
 
-  if(this->isDebug) {
-    qDebug() << "configRoot: " << configRoot;
-    qDebug() << "homeDir: " << homeDir;
-    qDebug() << "configDirectory: " << configDirectory;
-  }
-
   Tp::registerTypes();
+#ifdef DEBUG
+  Tp::enableDebug(true);
+#else
   Tp::enableDebug(false);
+#endif
   Tp::enableWarnings(true);
 
+  theme= new HildonTheme();
+  qDebug() << "THEME: " << theme->name;
   chatOverviewModel = new ChatModel();
 
   this->chatOverviewModel->onGetOverviewMessages();
 
   connect(telepathy, &Telepathy::databaseAddition, this, &Conversations::onDatabaseAddition);
   connect(overviewServiceModel, &OverviewServiceModel::protocolFilterChanged, chatOverviewModel, &ChatModel::onProtocolFilter);
+
+  inheritSystemTheme = config()->get(ConfigKeys::EnableInheritSystemTheme).toBool();
+  emit inheritSystemThemeChanged(inheritSystemTheme);
 }
 
 void Conversations::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {

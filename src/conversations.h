@@ -6,6 +6,7 @@
 #include <QNetworkAccessManager>
 #include <QTimer>
 
+#include "lib/colors.h"
 #include "lib/http.h"
 #include "lib/config.h"
 #include "lib/ipc.h"
@@ -23,8 +24,9 @@ class Conversations : public QObject {
     Q_PROPERTY(QString homeDir MEMBER homeDir);
     Q_PROPERTY(QString accountName MEMBER accountName);
     Q_PROPERTY(bool isDebug MEMBER isDebug NOTIFY debugChanged);
-    Q_PROPERTY(float scaleFactor MEMBER m_textScaling NOTIFY textScalingChanged);
     Q_PROPERTY(float isMaemo MEMBER isMaemo NOTIFY isMaemoChanged);
+    Q_PROPERTY(float scaleFactor MEMBER m_textScaling NOTIFY textScalingChanged);
+    Q_PROPERTY(bool inheritSystemTheme MEMBER inheritSystemTheme NOTIFY inheritSystemThemeChanged);
 
 public:
     explicit Conversations(QCommandLineParser *cmdargs, IPC *ipc);
@@ -42,6 +44,9 @@ public:
     QString homeDir;
     QString accountName;
     QString applicationPath;
+
+    HildonTheme *theme;
+    bool inheritSystemTheme;
 
     static void createConfigDirectory(const QString &dir) ;
 
@@ -69,6 +74,8 @@ signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
     void notificationClicked(const QSharedPointer<ChatMessage> &msg);
     void autoCloseChatWindowsChanged(bool enabled);
+    void inheritSystemThemeChanged(bool enabled);
+    void hildonThemeChanged();
 
 public slots:
     void onSendOutgoingMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
