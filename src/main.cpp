@@ -27,6 +27,9 @@ int main(int argc, char *argv[]) {
   Q_INIT_RESOURCE(irssi);
 
 #ifdef DEBUG
+  Tp::enableDebug(true);
+  Tp::enableWarnings(true);
+
   // For remote debugging (QEMU) with CLion, the environment variables need
   // to be correctly set such that e.g. dbus will work. We can execute
   // this hack to dump the environ to a file, then reads it below.

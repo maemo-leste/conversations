@@ -65,6 +65,7 @@ void MainWindow::createQml() {
   MainWindow::qmlInjectPalette(qctx, m_ctx);
 
   m_quickWidget->setSource(QUrl("qrc:/qml/Overview.qml"));
+  m_quickWidget->setAttribute(Qt::WA_AlwaysStackOnTop);
   m_quickWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
 
   connect((QObject*)m_quickWidget->rootObject(), SIGNAL(overviewRowClicked(int)), this, SLOT(onOpenChatWindow(int)));
