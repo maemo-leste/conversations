@@ -3,8 +3,8 @@ project(conversations)
 message(STATUS "Initiating compile using CMake ${CMAKE_VERSION}")
 
 set(VERSION_MAJOR "0")
-set(VERSION_MINOR "1")
-set(VERSION_REVISION "0")
+set(VERSION_MINOR "5")
+set(VERSION_REVISION "7")
 set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION}")
 
 set(CMAKE_CXX_STANDARD 14)

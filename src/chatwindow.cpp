@@ -63,6 +63,8 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   qctx->setContextProperty("fixedFont", fixedFont);
   MainWindow::qmlInjectPalette(qctx, m_ctx);
 
+  ui->quick->setAttribute(Qt::WA_AlwaysStackOnTop);
+
   auto theme = config()->get(ConfigKeys::ChatTheme).toString();
   if(theme == "chatty")
     ui->quick->setSource(QUrl("qrc:/chatty/chatty.qml"));
