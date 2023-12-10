@@ -67,6 +67,10 @@
 #include <rtcom-eventlogger/eventlogger.h>
 #endif
 
+class Telepathy;
+class TelepathyAccount;
+class TelepathyChannel;
+class TelepathyHandler;
 
 
 class TelepathyAccount : public QObject {
@@ -89,23 +93,26 @@ public slots:
 private slots:
     void onOnline(bool online);
     void onAccReady(Tp::PendingOperation *op);
-    void onGroupAddContacts(Tp::PendingOperation *op);
-    void onChannelReady(Tp::PendingOperation *op);
 
+    // XXX: This is part of the SimpleObserver
     void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
-    void onChanMessageReceived(const Tp::ReceivedMessage &message);
-    void onChanPendingMessageRemoved(const Tp::ReceivedMessage &message);
-    void onChanMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &);
+    // XXX: This is part of the SimpleObserver
     void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
 
+    // XXX: This is part of the SimpleObserver
     void onNewChannels(const QList< Tp::ChannelPtr > &channels);
+
+
+    // TODO return value
+    void joinChannel(const QString &channel);
+    // sendChannelMessage (if we cannot just use sendMessage)
 
 public:
     Tp::AccountPtr acc;
 
     Tp::ChannelPtr m_testchan;
-    //Tp::TextChannel * m_testchan;
 
+    QList<TelepathyChannel*> channels;
 private:
     QString m_nickname;
     QString m_local_uid;
@@ -116,8 +123,32 @@ private:
     Tp::ContactMessengerPtr messenger;
     Tp::TextChannel *hgbchan;
     Tp::AccountManagerPtr m_accountmanager;
+};
 
-    Tp::AbstractClientPtr clienthandler;
+class TelepathyChannel : public QObject {
+Q_OBJECT
+
+public:
+    explicit TelepathyChannel(Tp::ChannelPtr mchannel, TelepathyAccount* macc);
+    ~TelepathyChannel() override;
+
+public slots:
+    void sendMessage(const QString &message);
+
+private slots:
+    void onGroupAddContacts(Tp::PendingOperation *op);
+    void onChannelReady(Tp::PendingOperation *op);
+
+    void onChanMessageReceived(const Tp::ReceivedMessage &message);
+    void onChanPendingMessageRemoved(const Tp::ReceivedMessage &message);
+    void onChanMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &);
+    // sendChannelMessage (if we cannot just use sendMessage)
+
+public:
+    TelepathyAccount* m_account;
+    Tp::ChannelPtr m_channel;
+
+private:
 };
 
 
