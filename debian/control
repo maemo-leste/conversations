@@ -19,6 +19,7 @@ Build-Depends: debhelper (>= 10),
     qtdeclarative5-dev,
     qtdeclarative5-dev-tools,
     libtelepathy-qt5-dev,
+    maemo-system-services-dev
 Homepage: https://github.com/maemo-leste/conversations
 XSBC-Bugtracker: https://github.com/maemo-leste/conversations/issues
 Vcs-Git: https://github.com/maemo-leste/conversations/
