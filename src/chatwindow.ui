@@ -118,7 +118,7 @@
   </widget>
   <action name="actionSearchChat">
    <property name="text">
-    <string>Search chat test</string>
+    <string>Search chat</string>
    </property>
   </action>
   <action name="actionExportChatToCsv">
