@@ -88,7 +88,7 @@ signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
 
 public slots:
-    void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
+    void sendMessage(const QString &remote_uid, const QString &message);
 
 private slots:
     void onOnline(bool online);
