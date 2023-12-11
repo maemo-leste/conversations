@@ -96,7 +96,7 @@ void Telepathy::sendMessage(const QString &local_uid, const QString &remote_uid,
 
         if (backend_name == local_uid) {
             qDebug() << backend_name;
-            ma->sendMessage(local_uid, remote_uid, message);
+            ma->sendMessage(remote_uid, message);
         }
     }
 }
@@ -258,7 +258,10 @@ void TelepathyAccount::onAccReady(Tp::PendingOperation *op) {
 
 }
 
-void TelepathyAccount::sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message) {
+void TelepathyAccount::sendMessage(const QString &remote_uid, const QString &message) {
+    /* Find existing channel, otherwise create one using ensureTextChat and the
+     * lambda */
+
     auto *pending = acc->ensureTextChat(remote_uid);
 
     connect(pending, &Tp::PendingChannelRequest::finished, [=](Tp::PendingOperation *op){
