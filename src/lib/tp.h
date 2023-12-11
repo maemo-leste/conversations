@@ -99,9 +99,6 @@ private slots:
     // XXX: This is part of the SimpleObserver
     void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
 
-    // XXX: This is part of the SimpleObserver
-    void onNewChannels(const QList< Tp::ChannelPtr > &channels);
-
 
     // TODO return value
     void joinChannel(const QString &channel);

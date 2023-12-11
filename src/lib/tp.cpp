@@ -172,22 +172,9 @@ TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
     connect(textobserver.data(), SIGNAL(messageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)),
             SLOT(onMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)));
 
-    channelobserver = Tp::SimpleObserver::create(acc, Tp::ChannelClassSpec::textChatroom());
-    connect(channelobserver.data(),
-            SIGNAL(newChannels(const QList< Tp::ChannelPtr > &)),
-            SLOT(onNewChannels(const QList< Tp::ChannelPtr > &)));
-
-
     m_nickname = acc->nickname();
     m_local_uid = acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName();
     m_protocol_name = acc->protocolName();
-}
-
-void TelepathyAccount::onNewChannels(const QList< Tp::ChannelPtr > &channels) {
-    Tp::TextChannel* channel_ = (Tp::TextChannel*)channels[0].data();
-    qDebug() << "onNewChannels" << channel_;
-
-    //channel_->send("Maemo conversations says hi");
 }
 
 void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel) {
