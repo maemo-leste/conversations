@@ -9,6 +9,17 @@
 
 /*
  * TODO:
+ * Priority:
+ * - Fixup logging for outgoing messages
+ * - On incoming messages, let's make sure we match them to an account using
+ *   abook, see
+ *   https://github.com/maemo-leste/osso-abook/blob/master/lib/osso-abook-aggregator.h#L140
+ *   https://github.com/maemo-leste/osso-abook/blob/master/lib/osso-abook-aggregator.h#L145
+ * - Clean up class signatures (public/private), slots/signal usage, etc
+ *
+ * Soon(tm):
+ * - In the account manager, keep track of when accounts are *added* or
+ *   *deleted*
  * - Deal with message history, if we can fetch it (say XMPP)
  * - Deal with self-messages sent by us from another client (see if we can get
  *   them for say XMPP)
@@ -206,7 +217,9 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
     auto remote_uid = channel->targetContact()->id().toLocal8Bit();
     auto text = message.text().toLocal8Bit();
 
-    // TODO: remote_name != remote_uid, we shouldn't make them equal, but let's do it for now
+    /* TODO: remote_name != remote_uid, we shouldn't make them equal,
+     * but let's do it for now
+     * I think we need to do a lookup in osso_abook */
     auto epoch = message.sent().toTime_t();
     create_event(epoch, epoch,
                  m_nickname.toLocal8Bit().data(),
@@ -215,7 +228,7 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
                  remote_uid,
                  text, true,
                  m_protocol_name.toStdString().c_str(),
-                 NULL /* channel */,
+                 NULL /* TODO channel */,
          NULL /* TODO: group_uid */,
          0 /* TODO: flags */ );
 
@@ -236,7 +249,6 @@ void TelepathyAccount::joinChannel(const QString &channel) {
 
 void TelepathyAccount::onAccReady(Tp::PendingOperation *op) {
     qDebug() << "onAccReady, isError:" << op->isError() << "Display name:" << acc->displayName() << "(Online:" << acc->isOnline() << ", serviceName:" << acc->serviceName() << ", objectPath: " << acc->objectPath() << ", busName:" << acc->busName() << ")";
-
 
 #if 1
     if (acc->isOnline()) {
@@ -373,6 +385,8 @@ void TelepathyChannel::onChanMessageReceived(const Tp::ReceivedMessage &message)
     //emit m_account->databaseAddition(ptr);
 }
 
+/* This fires when a message is removed from the messageQueue, but that would
+ * typically be us, so I don't think we need to do anything here */
 void TelepathyChannel::onChanPendingMessageRemoved(const Tp::ReceivedMessage &message) {
     qDebug() << "onChanPendingMessageRemoved" << message.received() << message.senderNickname() << message.text();
 }
@@ -384,7 +398,9 @@ void TelepathyChannel::onChanMessageSent(const Tp::Message &message, Tp::Message
 
     Tp::TextChannel* channel = (Tp::TextChannel*) m_channel.data();
     m_account->onMessageSent(message, flags, sentMessageToken, (Tp::TextChannelPtr)channel);
-    // TODO: Log our own message here?
+    // TODO: Log our own message here instead of in the
+    // TelepathyAccount::onMessageSent
+
     // TODO: emit signals
     //emit m_account->databaseAddition(ptr);
 }
