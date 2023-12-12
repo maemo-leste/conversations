@@ -10,7 +10,6 @@
 /*
  * TODO:
  * Priority:
- * - Fixup logging for outgoing messages
  * - On incoming messages, let's make sure we match them to an account using
  *   abook, see
  *   https://github.com/maemo-leste/osso-abook/blob/master/lib/osso-abook-aggregator.h#L140
@@ -26,6 +25,11 @@
  * - Deal with message read delivery reports
  * - Investigate if we have to acknowledge() or forget() incoming messages
  *
+ *
+ * Research:
+ *
+ * - https://telepathy.freedesktop.org/spec/Channel_Interface_SMS.html
+ * - https://telepathy.freedesktop.org/spec/Channel_Type_Contact_Search.html
  */
 
 Telepathy::Telepathy(QObject *parent) : QObject(parent) {
@@ -202,12 +206,37 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
         return;
     }
 
-#if 0
+    QByteArray self_name = acc->nickname().toLocal8Bit();
+    QByteArray backend_name = (acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName()).toLocal8Bit();
+    QByteArray remote_uid = message.senderNickname().toLocal8Bit();
+    QByteArray text = message.text().toLocal8Bit();
+
+    char* channel_str = NULL;
+    QByteArray channel_ba = channel->targetId().toLocal8Bit();
+    if (channel->targetHandleType() == Tp::HandleTypeContact) {
+    } else {
+        channel_str = channel_ba.data();
+    }
+    QByteArray group_uid = (acc->objectPath().replace("/org/freedesktop/Telepathy/Account/", "") + "-" + channel->targetId()).toLocal8Bit();
+
+    // TODO: remote_name != remote_uid, we shouldn't make them equal, but let's do it for now
+    auto epoch = message.received().toTime_t();
+    create_event(epoch, epoch,
+                 self_name.data(),
+                 backend_name.data(),
+                 remote_uid,
+                 remote_uid /* TODO: remote_name */,
+                 text,
+                 false,
+                 acc->protocolName().toStdString().c_str(),
+                 channel_str,
+                 group_uid,
+                 3 /* TODO BETTER FLAGS */);
+
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
     auto *msg = new ChatMessage(1, service, "", backend_name, remote_uid, remote_uid, "", text, "", epoch, 0, "", "-1", false, 0);
     QSharedPointer<ChatMessage> ptr(msg);
     emit databaseAddition(ptr);
-#endif
 }
 
 /* When we have managed to send a message */
@@ -217,18 +246,26 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
     auto remote_uid = channel->targetContact()->id().toLocal8Bit();
     auto text = message.text().toLocal8Bit();
 
+    char* channel_str = NULL;
+    QByteArray channel_ba = channel->targetId().toLocal8Bit();
+    if (channel->targetHandleType() == Tp::HandleTypeContact) {
+    } else {
+        channel_str = channel_ba.data();
+    }
+    QByteArray group_uid = (acc->objectPath().replace("/org/freedesktop/Telepathy/Account/", "") + "-" + channel->targetId()).toLocal8Bit();
+
     /* TODO: remote_name != remote_uid, we shouldn't make them equal,
      * but let's do it for now
      * I think we need to do a lookup in osso_abook */
     auto epoch = message.sent().toTime_t();
     create_event(epoch, epoch,
                  m_nickname.toLocal8Bit().data(),
-                 m_local_uid.toLocal8Bit().data(),
+                 m_local_uid.toLocal8Bit().data(), /* TODO: double check if this is correct */
                  remote_uid,
-                 remote_uid,
+                 remote_uid /* TODO: remote_name */,
                  text, true,
                  m_protocol_name.toStdString().c_str(),
-                 NULL /* TODO channel */,
+                 channel_str,
          NULL /* TODO: group_uid */,
          0 /* TODO: flags */ );
 
@@ -364,22 +401,6 @@ void TelepathyChannel::onChanMessageReceived(const Tp::ReceivedMessage &message)
     qDebug() << "onChanMessageReceived" << message.received() << message.senderNickname() << message.text();
     qDebug() << "channel targetID:" << m_channel->targetId();
     Tp::TextChannel* channel = (Tp::TextChannel*) m_channel.data();
-
-    auto acc = m_account->acc;
-    QByteArray self_name = acc->nickname().toLocal8Bit();
-    QByteArray backend_name = (acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName()).toLocal8Bit();
-    QByteArray remote_uid = message.senderNickname().toLocal8Bit();
-    QByteArray text = message.text().toLocal8Bit();
-    QByteArray channel_str = QByteArray();
-    if (channel->targetHandleType() == Tp::HandleTypeContact) {
-    } else {
-        QByteArray channel_str = m_channel->targetId().toLocal8Bit();
-    }
-    QByteArray group_uid = (acc->objectPath().replace("/org/freedesktop/Telepathy/Account/", "") + "-" + m_channel->targetId()).toLocal8Bit();
-
-    // TODO: remote_name != remote_uid, we shouldn't make them equal, but let's do it for now
-    auto epoch = message.received().toTime_t();
-    create_event(epoch, epoch, self_name.data(), backend_name.data(), remote_uid, remote_uid, text, false, m_account->protocolName().toStdString().c_str(), channel_str, group_uid, 3 /* TODO BETTER FLAGS */);
 
     m_account->onMessageReceived(message, (Tp::TextChannelPtr)channel);
     //emit m_account->databaseAddition(ptr);
