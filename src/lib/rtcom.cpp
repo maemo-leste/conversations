@@ -87,8 +87,7 @@ void create_event(time_t start_time, time_t end_time, const char* self_name, con
     RTCOM_EL_EVENT_SET_FIELD(ev, event_type,  g_strdup("RTCOM_EL_EVENTTYPE_CHAT_MESSAGE"));
   }
 
-  RTCOM_EL_EVENT_SET_FIELD(ev, storage_time, 
-	std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+  RTCOM_EL_EVENT_SET_FIELD(ev, storage_time, std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
 
   RTCOM_EL_EVENT_SET_FIELD(ev, start_time, start_time);
   RTCOM_EL_EVENT_SET_FIELD(ev, end_time, end_time);
@@ -106,7 +105,6 @@ void create_event(time_t start_time, time_t end_time, const char* self_name, con
   if (group_uid) {
     RTCOM_EL_EVENT_SET_FIELD (ev, group_uid, g_strdup(group_uid));
   }
-
 
   RTCOM_EL_EVENT_SET_FIELD(ev, outgoing, is_outgoing);
 
