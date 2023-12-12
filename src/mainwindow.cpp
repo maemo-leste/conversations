@@ -46,7 +46,6 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::onOpenSettingsWindow);
   connect(ui->actionCompose, &QAction::triggered, this, &MainWindow::onOpenComposeWindow);
   connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::onOpenSearchWindow);
-  connect(ui->actionQuit_conversations, &QAction::triggered, this, &MainWindow::onQuitApplication);
 
   connect(m_ctx->telepathy, &Telepathy::accountManagerReady, this, &MainWindow::onTPAccountManagerReady);
 }
