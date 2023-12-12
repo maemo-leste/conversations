@@ -90,15 +90,13 @@ signals:
 public slots:
     void sendMessage(const QString &remote_uid, const QString &message);
 
+    /* TODO: make these private again and use connect/emit */
+    void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
+    void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
+
 private slots:
     void onOnline(bool online);
     void onAccReady(Tp::PendingOperation *op);
-
-    // XXX: This is part of the SimpleObserver
-    void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
-    // XXX: This is part of the SimpleObserver
-    void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
-
 
     // TODO return value
     void joinChannel(const QString &channel);
@@ -106,8 +104,6 @@ private slots:
 
 public:
     Tp::AccountPtr acc;
-
-    Tp::ChannelPtr m_testchan;
 
     QList<TelepathyChannel*> channels;
 private:
@@ -143,6 +139,7 @@ private slots:
 
 public:
     TelepathyAccount* m_account;
+
     Tp::ChannelPtr m_channel;
 
 private:

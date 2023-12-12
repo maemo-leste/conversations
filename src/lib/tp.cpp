@@ -33,6 +33,11 @@ Telepathy::Telepathy(QObject *parent) : QObject(parent) {
 
     channelFactory->addCommonFeatures(Tp::Channel::FeatureCore);
 
+    channelFactory->addFeaturesForTextChats(
+            Tp::Features()
+            << Tp::TextChannel::FeatureMessageQueue
+            << Tp::TextChannel::FeatureMessageSentSignal
+            );
     channelFactory->addFeaturesForTextChatrooms(
             Tp::Features()
             << Tp::TextChannel::FeatureMessageQueue
@@ -92,6 +97,8 @@ void Telepathy::sendMessage(const QString &local_uid, const QString &remote_uid,
     for (TelepathyAccount *ma : accounts) {
         auto acc = ma->acc;
 
+        // TODO: Let's revisit this and see if we want to use the backend_name
+        // of this format
         QByteArray backend_name = (acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName()).toLocal8Bit();
 
         if (backend_name == local_uid) {
@@ -130,15 +137,8 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
     qDebug() << "handleChannels";
 
     foreach (Tp::ChannelPtr channelptr, channels) {
-        Tp::TextChannel* channel_ = (Tp::TextChannel*)channelptr.data();
-
-        // TODO: If we actually implement this properly, then we can stop using
-        // the SimpleObservers, which would be a big improvement /
-        // simplification
-        if (channel_->targetHandleType() == Tp::HandleTypeContact) {
-            qDebug() << "handleChannels: skipping this channel, it's a contact, not a groupdm/channel";
-            continue;
-        }
+        // Do we have to check if we already have an existing channel (I would
+        // think not, but maybe we do want to check for that)
         for (TelepathyAccount *ma : m_telepathy_parent->accounts) {
             if (ma->acc == account) {
                 auto mychan = new TelepathyChannel(channelptr, ma);
@@ -155,7 +155,6 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
 
 TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
     acc = macc;
-    textobserver = Tp::SimpleTextObserver::create(acc);
 
     connect(acc.data(),
             SIGNAL(onlinenessChanged(bool)),
@@ -164,13 +163,6 @@ TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
     connect(acc->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onAccReady(Tp::PendingOperation*)));
-
-    connect(textobserver.data(),
-            SIGNAL(messageReceived(const Tp::ReceivedMessage&, const Tp::TextChannelPtr&)),
-            SLOT(onMessageReceived(const Tp::ReceivedMessage&, const Tp::TextChannelPtr&)));
-
-    connect(textobserver.data(), SIGNAL(messageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)),
-            SLOT(onMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &, const Tp::TextChannelPtr &)));
 
     m_nickname = acc->nickname();
     m_local_uid = acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName();
@@ -187,6 +179,7 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
         return;
     }
 
+#if 0
     QByteArray self_name = acc->nickname().toLocal8Bit();
     QByteArray backend_name = (acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName()).toLocal8Bit();
     QByteArray remote_uid = message.senderNickname().toLocal8Bit();
@@ -210,6 +203,7 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
     auto *msg = new ChatMessage(1, service, "", backend_name, remote_uid, remote_uid, "", text, "", epoch, 0, "", "-1", false, 0);
     QSharedPointer<ChatMessage> ptr(msg);
     emit databaseAddition(ptr);
+#endif
 }
 
 void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel) {
@@ -296,11 +290,35 @@ void TelepathyChannel::onChannelReady(Tp::PendingOperation *op) {
     }
 
     Tp::TextChannel* channel = (Tp::TextChannel*) m_channel.data();
+    qDebug() << "handle type" << channel->targetHandleType();
 
-    auto pending = channel->groupAddContacts(QList<Tp::ContactPtr>() << channel->connection()->selfContact());
-    connect(pending,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onGroupAddContacts(Tp::PendingOperation*)));
+    if (channel->targetHandleType() == Tp::HandleTypeContact) {
+        qDebug() << "handle type contact";
+        Tp::TextChannel* channel = (Tp::TextChannel*) m_channel.data();
+    
+        connect(channel,
+                SIGNAL(messageReceived(const Tp::ReceivedMessage&)),
+                SLOT(onChanMessageReceived(const Tp::ReceivedMessage&)));
+    
+        connect(channel,
+                SIGNAL(pendingMessageRemoved(const Tp::ReceivedMessage&)),
+                SLOT(onChanPendingMessageRemoved(const Tp::ReceivedMessage&)));
+    
+        connect(channel,
+                SIGNAL(messageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &)),
+                SLOT(onChanMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &)));
+
+        /* There might be pending messages, we should probably do this also for
+         * group channels, but maybe after their 'contacts' are added .*/
+        foreach (Tp::ReceivedMessage msg, channel->messageQueue()) {
+            onChanMessageReceived(msg);
+        }
+    } else {
+        auto pending = channel->groupAddContacts(QList<Tp::ContactPtr>() << channel->connection()->selfContact());
+        connect(pending,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onGroupAddContacts(Tp::PendingOperation*)));
+    }
 }
 
 void TelepathyChannel::onGroupAddContacts(Tp::PendingOperation *op) {
@@ -329,19 +347,25 @@ void TelepathyChannel::onGroupAddContacts(Tp::PendingOperation *op) {
 void TelepathyChannel::onChanMessageReceived(const Tp::ReceivedMessage &message) {
     qDebug() << "onChanMessageReceived" << message.received() << message.senderNickname() << message.text();
     qDebug() << "channel targetID:" << m_channel->targetId();
+    Tp::TextChannel* channel = (Tp::TextChannel*) m_channel.data();
 
     auto acc = m_account->acc;
     QByteArray self_name = acc->nickname().toLocal8Bit();
     QByteArray backend_name = (acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName()).toLocal8Bit();
     QByteArray remote_uid = message.senderNickname().toLocal8Bit();
     QByteArray text = message.text().toLocal8Bit();
-    QByteArray channel = m_channel->targetId().toLocal8Bit();
+    QByteArray channel_str = QByteArray();
+    if (channel->targetHandleType() == Tp::HandleTypeContact) {
+    } else {
+        QByteArray channel_str = m_channel->targetId().toLocal8Bit();
+    }
     QByteArray group_uid = (acc->objectPath().replace("/org/freedesktop/Telepathy/Account/", "") + "-" + m_channel->targetId()).toLocal8Bit();
 
     // TODO: remote_name != remote_uid, we shouldn't make them equal, but let's do it for now
     auto epoch = message.received().toTime_t();
-    create_event(epoch, epoch, self_name.data(), backend_name.data(), remote_uid, remote_uid, text, false, m_account->protocolName().toStdString().c_str(), channel, group_uid, 3 /* TODO BETTER FLAGS */);
+    create_event(epoch, epoch, self_name.data(), backend_name.data(), remote_uid, remote_uid, text, false, m_account->protocolName().toStdString().c_str(), channel_str, group_uid, 3 /* TODO BETTER FLAGS */);
 
+    m_account->onMessageReceived(message, (Tp::TextChannelPtr)channel);
     //emit m_account->databaseAddition(ptr);
 }
 
@@ -352,6 +376,8 @@ void TelepathyChannel::onChanPendingMessageRemoved(const Tp::ReceivedMessage &me
 void TelepathyChannel::onChanMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken) {
     qDebug() << "onChanMessageSent";
 
+    Tp::TextChannel* channel = (Tp::TextChannel*) m_channel.data();
+    m_account->onMessageSent(message, flags, sentMessageToken, (Tp::TextChannelPtr)channel);
     // TODO: Log our own message here?
     // TODO: emit signals
     //emit m_account->databaseAddition(ptr);
