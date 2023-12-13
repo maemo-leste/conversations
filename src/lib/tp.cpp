@@ -266,7 +266,7 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
                  text, true,
                  m_protocol_name.toStdString().c_str(),
                  channel_str,
-         NULL /* TODO: group_uid */,
+                 group_uid,
          0 /* TODO: flags */ );
 
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
