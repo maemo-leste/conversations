@@ -81,7 +81,6 @@ public:
     ~TelepathyAccount() override;
 
     QString nickname() const { return m_nickname; }
-    QString localUid() const { return m_local_uid; }
     QString protocolName() const { return m_protocol_name; }
 
 signals:
@@ -93,6 +92,8 @@ public slots:
     /* TODO: make these private again and use connect/emit */
     void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
     void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
+
+    bool log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid);
 
 private slots:
     void onOnline(bool online);
@@ -108,7 +109,7 @@ public:
     QList<TelepathyChannel*> channels;
 private:
     QString m_nickname;
-    QString m_local_uid;
+    QString m_backend_name;
     QString m_protocol_name;
 
     Tp::SimpleTextObserverPtr textobserver;
