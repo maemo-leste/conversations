@@ -65,16 +65,15 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
     return QVariant();
 
   const QSharedPointer<ChatMessage> message = chats[index.row()];
-  if (role == NameRole) {
-      if (!message->group_title().isEmpty()) {
-          return message->group_title();
+  if (role == OverviewNameRole) {
+      if (!message->channel().isEmpty()) {
+          return message->channel();
       } else if (!message->remote_name().isEmpty()) {
           return message->remote_name();
       } else {
           return message->remote_uid();
       }
-  }
-  if (role == GroupUIDRole)
+  } else if (role == GroupUIDRole)
     return message->group_uid();
   else if (role == LocalUIDRole)
     return message->local_uid();
@@ -100,6 +99,8 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
     return message->event_id();
   else if (role == ServiceIDRole)
     return message->service();
+  else if (role == ChannelRole)
+    return message->channel();
   return QVariant();
 }
 
@@ -148,6 +149,8 @@ QHash<int, QByteArray> ChatModel::roleNames() const {
   roles[IconNameRole] = "icon_name";
   roles[EventIDRole] = "event_id";
   roles[ServiceIDRole] = "service_id";
+  roles[OverviewNameRole] = "overview_name";
+  roles[ChannelRole] = "channel";
   return roles;
 }
 

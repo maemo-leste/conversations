@@ -34,7 +34,9 @@ public:
         RemoteNameRole,
         IconNameRole,
         EventIDRole,
-        ServiceIDRole
+        ServiceIDRole,
+        OverviewNameRole,
+        ChannelRole
     };
 
     explicit ChatModel(QObject *parent = nullptr);

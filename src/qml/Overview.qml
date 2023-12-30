@@ -164,7 +164,7 @@ Rectangle {
                         Layout.preferredHeight: root.itemHeight / 2
 
                         Components.PlainText {
-                            text: name
+                            text: overview_name
                             color: colorText
                             font.pointSize: 18 * ctx.scaleFactor
                             Layout.alignment: Qt.AlignTop
@@ -208,7 +208,13 @@ Rectangle {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
                         id: imgPerson
-                        source: ctx.ossoIconLookup("general_default_avatar.png")
+                        source: {
+                            if (channel != "") {
+                                ctx.ossoIconLookup("general_conference_avatar.png")
+                            } else {
+                                ctx.ossoIconLookup("general_default_avatar.png")
+                            }
+                        }
                         smooth: true
                         visible: true
                     }

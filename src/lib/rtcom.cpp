@@ -40,6 +40,7 @@ QList<ChatMessage*> rtcomIterateResults(rtcom_query *query_struct) {
           "start-time",
           "event-count",
           "group-title",
+          "channel",
           "event-type",
           "outgoing",
           "flags",
@@ -58,6 +59,7 @@ QList<ChatMessage*> rtcomIterateResults(rtcom_query *query_struct) {
           LOOKUP_INT("start-time"),
           LOOKUP_INT("event-count"),
           LOOKUP_STR("group-title"),
+          LOOKUP_STR("channel"),
           LOOKUP_STR("event-type"),
           LOOKUP_BOOL("outgoing"),
           LOOKUP_INT("flags"));

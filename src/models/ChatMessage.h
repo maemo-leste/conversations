@@ -13,7 +13,7 @@ public:
     explicit ChatMessage(int event_id, const QString &service, const QString &group_uid,
                 const QString &local_uid, const QString &remote_uid, const QString &remote_name,
                 const QString &remote_ebook_uid, const QString &text, const QString &icon_name,
-                int timestamp, int count, const QString &group_title,
+                int timestamp, int count, const QString &group_title, const QString &channel,
                 const QString &event_type, bool outgoing, int flags, QObject *parent = nullptr);
     ~ChatMessage() override;
 
@@ -30,11 +30,13 @@ public:
     QDateTime date() const;
     int count() const;
     QString group_title() const;
+    QString channel() const;
     QString event_type() const;
     bool outgoing() const;
     int flags() const;
     QString cid() const;
     QString name() const;
+    QString overview_name() const;
 
     QString fulldate() const { return m_date.toString("yyyy-MM-dd hh:mm:ss"); }
     QString hourstr() const { return m_date.toString("hh:mm"); }
@@ -62,6 +64,7 @@ private:
     QDateTime m_date;
     int m_count;
     QString m_group_title;
+    QString m_channel;
     QString m_event_type;
     bool m_outgoing;
     int m_flags;
