@@ -42,7 +42,7 @@ public:
       this->clear();
     }
 
-    void setRemoteUID(const QString &remote_uid) { m_remote_uid = remote_uid; }
+    void setGroupUID(const QString &group_uid) { m_group_uid = group_uid; }
     void setServiceID(const QString &service_id) { m_service_id = service_id; }
 
     void prependMessage(ChatMessage *message);
@@ -60,21 +60,21 @@ public:
     Q_PROPERTY(int limit MEMBER m_limit NOTIFY limitChanged);
     Q_PROPERTY(int offset MEMBER m_offset NOTIFY offsetChanged);
     Q_PROPERTY(int count READ count NOTIFY countChanged);
-    Q_PROPERTY(QString remote_uid MEMBER m_remote_uid CONSTANT);
+    Q_PROPERTY(QString group_uid MEMBER m_group_uid CONSTANT);
     int count() const { return m_count; }
     bool is_exhausted() {
       return m_exhausted;
     }
 
     Q_INVOKABLE unsigned int getPage(int custom_limit=0);
-    unsigned int getMessages(const QString &service_id, const QString &remote_uid);
-    unsigned int getMessages(const QString &service_id, const QString &remote_uid, int limit, int offset);
+    unsigned int getMessages(const QString &service_id, const QString &group_uid);
+    unsigned int getMessages(const QString &service_id, const QString &group_uid, int limit, int offset);
     Q_INVOKABLE unsigned int searchMessages(const QString &search);
-    Q_INVOKABLE unsigned int searchMessages(const QString &search, const QString &remote_uid);
+    Q_INVOKABLE unsigned int searchMessages(const QString &search, const QString &group_uid);
     Q_INVOKABLE int eventIdToIdx(int msg);
 
     Q_INVOKABLE void clear();
-    static void exportChatToCsv(const QString &service, const QString &remote_uid, QObject *parent);
+    static void exportChatToCsv(const QString &service, const QString &group_uid, QObject *parent);
 
 public slots:
   void onGetOverviewMessages(int limit = 9999, int offset = 0);
@@ -90,7 +90,7 @@ protected:
     QHash<int, QByteArray> roleNames() const;
 
 private:
-    QString m_remote_uid;
+    QString m_group_uid;
     QString m_service_id;
 
     int m_limit = 10;
