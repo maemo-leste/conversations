@@ -50,7 +50,7 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   m_enterKeySendsChat = config()->get(ConfigKeys::EnterKeySendsChat).toBool();
 
   this->chatModel = new ChatModel(this);
-  this->chatModel->getMessages(m_chatMessage->service(), m_chatMessage->remote_uid());
+  this->chatModel->getMessages(m_chatMessage->service(), m_chatMessage->group_uid());
   if(m_chatMessage->isSearchResult)
     fillBufferUntil(m_chatMessage);
 
@@ -119,7 +119,7 @@ void ChatWindow::onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg) {
 }
 
 void ChatWindow::onOpenSearchWindow() {
-  m_searchWindow = new SearchWindow(m_ctx, m_chatMessage->remote_uid(), this);
+  m_searchWindow = new SearchWindow(m_ctx, m_chatMessage->group_uid(), this);
   m_searchWindow->show();
 
   connect(m_searchWindow,

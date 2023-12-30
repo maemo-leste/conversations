@@ -54,6 +54,7 @@ int ChatMessage::flags() const { return m_flags; }
 QString ChatMessage::cid() const { return m_cid; }
 QDateTime ChatMessage::date() const { return m_date; }
 QString ChatMessage::name() const {
+  if(!m_group_title.isEmpty()) return m_group_title;
   if(!m_remote_name.isEmpty()) return m_remote_name;
   return m_remote_uid;
 }

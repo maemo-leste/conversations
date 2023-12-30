@@ -65,6 +65,15 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
     return QVariant();
 
   const QSharedPointer<ChatMessage> message = chats[index.row()];
+  if (role == NameRole) {
+      if (!message->group_title().isEmpty()) {
+          return message->group_title();
+      } else if (!message->remote_name().isEmpty()) {
+          return message->remote_name();
+      } else {
+          return message->remote_uid();
+      }
+  }
   if (role == GroupUIDRole)
     return message->group_uid();
   else if (role == LocalUIDRole)
@@ -94,11 +103,11 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
   return QVariant();
 }
 
-void ChatModel::exportChatToCsv(const QString &service, const QString &remote_uid, QObject *parent) {
+void ChatModel::exportChatToCsv(const QString &service, const QString &group_uid, QObject *parent) {
   qDebug() << __FUNCTION__;
 
   auto *model = new ChatModel(parent);
-  model->setRemoteUID(remote_uid);
+  model->setGroupUID(group_uid);
   model->setServiceID(service);
 
   while(model->getPage(500) > 0) {
@@ -115,7 +124,7 @@ void ChatModel::exportChatToCsv(const QString &service, const QString &remote_ui
     data.addRow(row);
   }
   
-  const auto fn = QString("%1-%2-%3.csv").arg(service).arg(now).arg(remote_uid);
+  const auto fn = QString("%1-%2-%3.csv").arg(service).arg(now).arg(group_uid);
   const auto path = QString("%1/MyDocs/%2").arg(QDir::homePath()).arg(fn);
 
   qDebug() << "writing to: " << path;
@@ -165,7 +174,7 @@ void ChatModel::onProtocolFilter(QString protocol) {
 void ChatModel::onGetOverviewMessages(const int limit, const int offset) {
   this->clear();
 
-  rtcom_query* query_struct = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_CONTACT);
+  rtcom_query* query_struct = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_GROUP);
   bool query_prepared = FALSE;
 
   if(m_filterProtocol.isEmpty()) {
@@ -194,8 +203,8 @@ void ChatModel::onGetOverviewMessages(const int limit, const int offset) {
     this->appendMessage(message);
 }
 
-unsigned int ChatModel::getMessages(const QString &service_id, const QString &remote_uid) {
-  auto count = this->getMessages(service_id, remote_uid, m_limit, m_offset);
+unsigned int ChatModel::getMessages(const QString &service_id, const QString &group_uid) {
+  auto count = this->getMessages(service_id, group_uid, m_limit, m_offset);
   if(count < m_limit) {
     m_exhausted = true;
     emit exhaustedChanged();
@@ -207,7 +216,7 @@ unsigned int ChatModel::searchMessages(const QString &search) {
   return this->searchMessages(search, nullptr);
 }
 
-unsigned int ChatModel::searchMessages(const QString &search, const QString &remote_uid) {
+unsigned int ChatModel::searchMessages(const QString &search, const QString &group_uid) {
 #ifndef RTCOM
   return 0;
 #else
@@ -217,18 +226,18 @@ unsigned int ChatModel::searchMessages(const QString &search, const QString &rem
   gint rtcom_sms_service_id = rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_SMS");
   bool query_prepared = FALSE;
 
-  if(remote_uid == nullptr) {
+  if(group_uid == nullptr) {
     query_prepared = rtcom_el_query_prepare(
       query_struct->query,
       "free-text", search.toStdString().c_str(), RTCOM_EL_OP_STR_LIKE,
 //      "service-id", rtcom_sms_service_id, RTCOM_EL_OP_EQUAL,
       NULL);
   } else {
-    m_remote_uid = remote_uid;
+    m_group_uid = group_uid;
     query_prepared = rtcom_el_query_prepare(
       query_struct->query,
       "free-text", search.toStdString().c_str(), RTCOM_EL_OP_STR_LIKE,
-      "remote-uid", remote_uid.toStdString().c_str(), RTCOM_EL_OP_EQUAL,
+      "group-uid", group_uid.toStdString().c_str(), RTCOM_EL_OP_EQUAL,
 //      "service-id", rtcom_sms_service_id, RTCOM_EL_OP_EQUAL,
       NULL);
   }
@@ -249,18 +258,18 @@ unsigned int ChatModel::searchMessages(const QString &search, const QString &rem
 #endif
 }
 
-unsigned int ChatModel::getMessages(const QString &service_id, const QString &remote_uid, const int limit, const int offset) {
+unsigned int ChatModel::getMessages(const QString &service_id, const QString &group_uid, const int limit, const int offset) {
 #ifndef RTCOM
   return 0;
 #else
-  m_remote_uid = remote_uid;
+  m_group_uid = group_uid;
   m_service_id = service_id;
 
   rtcom_query* query_struct = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_NONE);
   gint sid = rtcom_el_get_service_id(query_struct->el, m_service_id.toStdString().c_str());
   bool query_prepared = FALSE;
   query_prepared = rtcom_el_query_prepare(query_struct->query,
-                                          "remote-uid", remote_uid.toStdString().c_str(), RTCOM_EL_OP_EQUAL,
+                                          "group-uid", group_uid.toStdString().c_str(), RTCOM_EL_OP_EQUAL,
                                           "service-id", sid, RTCOM_EL_OP_EQUAL,
                                           NULL);
 
@@ -308,7 +317,7 @@ unsigned int ChatModel::getPage(int custom_limit) {
   if(custom_limit)
     limit = custom_limit;
 
-  auto count = this->getMessages(m_service_id, m_remote_uid, limit, m_offset);
+  auto count = this->getMessages(m_service_id, m_group_uid, limit, m_offset);
   emit offsetChanged();
 
   if(count < limit) {
