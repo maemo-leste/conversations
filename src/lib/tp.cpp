@@ -234,7 +234,13 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
                  3 /* TODO BETTER FLAGS */);
 
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
-    auto *msg = new ChatMessage(1, service, "", backend_name, remote_uid, remote_uid, "", text, "", epoch, 0, "", "-1", false, 0);
+    auto *msg = new ChatMessage(1, service, group_uid,
+            backend_name, remote_uid, remote_uid,
+            "" /* remote_abook_uid */,
+            text, "" /* icon_name */,
+            epoch, 0,
+            /* group_title */ "",
+            channel->targetId(), "-1", false, 0);
     QSharedPointer<ChatMessage> ptr(msg);
     emit databaseAddition(ptr);
 }

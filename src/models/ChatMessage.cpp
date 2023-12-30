@@ -7,7 +7,7 @@ ChatMessage::ChatMessage(  // @TODO: cleanup constructor
     const int event_id, const QString &service, const QString &group_uid,
     const QString &local_uid, const QString &remote_uid, const QString &remote_name,
     const QString &remote_ebook_uid, const QString &text, const QString &icon_name,
-    const int timestamp, const int count, const QString &group_title,
+    const int timestamp, const int count, const QString &group_title, const QString &channel,
     const QString &event_type, bool outgoing, const int flags, QObject *parent) :
     QObject(parent),
     m_event_id(event_id),
@@ -21,6 +21,7 @@ ChatMessage::ChatMessage(  // @TODO: cleanup constructor
     m_icon_name(icon_name),
     m_count(count),
     m_group_title(group_title),
+    m_channel(channel),
     m_event_type(event_type),
     m_outgoing(outgoing),
     m_flags(flags) {
@@ -32,6 +33,7 @@ ChatMessage::ChatMessage(  // @TODO: cleanup constructor
 QString ChatMessage::service() const { return m_service; }
 int ChatMessage::event_id() const { return m_event_id; }
 QString ChatMessage::group_uid() const { return m_group_uid; }
+QString ChatMessage::channel() const { return m_channel; }
 QString ChatMessage::local_uid() const { return m_local_uid; }
 QString ChatMessage::remote_uid() const { return m_remote_uid; }
 QString ChatMessage::remote_name() const { return m_remote_name; }
@@ -54,7 +56,11 @@ int ChatMessage::flags() const { return m_flags; }
 QString ChatMessage::cid() const { return m_cid; }
 QDateTime ChatMessage::date() const { return m_date; }
 QString ChatMessage::name() const {
-  if(!m_group_title.isEmpty()) return m_group_title;
+  if(!m_remote_name.isEmpty()) return m_remote_name;
+  return m_remote_uid;
+}
+QString ChatMessage::overview_name() const {
+  if(!m_channel.isEmpty()) return m_channel;
   if(!m_remote_name.isEmpty()) return m_remote_name;
   return m_remote_uid;
 }
