@@ -81,7 +81,7 @@ Components.ChatRoot {
                 font.pointSize: 14 * ctx.scaleFactor
                 font.family: fixedFont
                 color: "white"
-                text: outgoing ? "@me" : "them"
+                text: outgoing ? "@me" : name
                 font.bold: outgoing
                 Layout.alignment: Qt.AlignTop
             }
