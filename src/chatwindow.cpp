@@ -174,7 +174,12 @@ void ChatWindow::onGatherMessage() {
   _msg = _msg.trimmed();
   if(_msg.isEmpty())
     return;
-  emit sendMessage(m_chatMessage->local_uid(), m_chatMessage->remote_uid(), _msg);
+
+  if (m_chatMessage->channel() != "") {
+    emit sendMessage(m_chatMessage->local_uid(), m_chatMessage->channel(), _msg);
+  } else {
+    emit sendMessage(m_chatMessage->local_uid(), m_chatMessage->remote_uid(), _msg);
+  }
 
   this->ui->chatBox->clear();
 }
