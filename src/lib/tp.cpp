@@ -249,8 +249,7 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
     }
 
     auto epoch = message.received().toTime_t();
-    //auto remote_uid = message.senderNickname();
-    auto remote_uid = channel->targetContact()->id();
+    auto remote_uid = message.senderNickname();
     auto text = message.text().toLocal8Bit();
 
     qDebug() << "log_event";
@@ -262,7 +261,9 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
     qDebug() << "onMessageSent" << message.text();
 
     auto epoch = message.sent().toTime_t();
-    auto remote_uid = channel->targetContact()->id();
+    // TODO: what is the remote_uid if we send a message to a channel anyway?
+
+    auto remote_uid = channel->targetId();
     auto text = message.text().toLocal8Bit();
 
     qDebug() << "log_event";
@@ -286,19 +287,22 @@ void TelepathyAccount::onAccReady(Tp::PendingOperation *op) {
 #if 0
     if (acc->isOnline()) {
         joinChannel("##maemotest");
+        joinChannel("#maemo-leste");
     }
 #endif
 
 }
 
 void TelepathyAccount::sendMessage(const QString &remote_uid, const QString &message) {
+    qDebug() << "sendMessage: remote_uid:" << remote_uid;
     bool found = FALSE;
     /* Find existing channel, otherwise create one using ensureTextChat and the
      * lambda */
     foreach (TelepathyChannel* channel, channels) {
         Tp::TextChannel* a_channel = (Tp::TextChannel*) channel->m_channel.data();
-        /* TODO: This clearly needs improving for rooms/multi-user chats */
-        if (remote_uid == a_channel->targetContact()->id()) {
+        /* TODO: This has problems with case sensitivity */
+        qDebug() << "Testing against:" << a_channel->targetId();
+        if (remote_uid.toLower() == a_channel->targetId().toLower()) {
             qDebug() << "TelepathyAccount::sendMessage: Found matching channel";
             channel->sendMessage(message);
             found = TRUE;
