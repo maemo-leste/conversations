@@ -33,7 +33,15 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   QString protocol = "Unknown";
   if(m_chatMessage->local_uid().count('/') == 2)
     protocol = m_chatMessage->local_uid().split("/").at(1);
-  this->setWindowTitle(QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->remote_uid()));
+  if (m_chatMessage->channel() != "") {
+      this->setWindowTitle(QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->channel()));
+  } else {
+      if (m_chatMessage->remote_name() != "") {
+          this->setWindowTitle(QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->remote_name()));
+      } else {
+          this->setWindowTitle(QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->remote_uid()));
+      }
+  }
   // properties
   setProperty("X-Maemo-Orientation", 2);
   setProperty("X-Maemo-StackedWindow", 0);
