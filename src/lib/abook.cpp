@@ -31,57 +31,54 @@ bool conv_abook_init() {
 }
 
 
-char* conv_abook_lookup_tel(const char* telno) {
-    char* res = NULL;
+OssoABookContact* conv_abook_lookup_tel(const char* telno) {
+    OssoABookContact* res = NULL;
     GList *l = NULL;
     l = osso_abook_aggregator_find_contacts_for_phone_number(conv_abook_aggregator, telno, TRUE);
 
     GList *v = l;
     while (v) {
         OssoABookContact *contact = OSSO_ABOOK_CONTACT(v->data);
-        const char* name = osso_abook_contact_get_display_name(contact);
-
-        res = g_strdup(name);
+        res = contact;
         break;
     }
 
-    /* TODO: Free stuff */
+    g_list_free(l);
+
     return res;
 }
 
 
-char* conv_abook_lookup_sip(const char* address) {
-    char* res = NULL;
+OssoABookContact* conv_abook_lookup_sip(const char* address) {
+    OssoABookContact* res = NULL;
     GList *l = NULL;
     l = osso_abook_aggregator_find_contacts_for_sip_address(conv_abook_aggregator, address);
 
     GList *v = l;
     while (v) {
         OssoABookContact *contact = OSSO_ABOOK_CONTACT(v->data);
-        const char* name = osso_abook_contact_get_display_name(contact);
-
-        res = g_strdup(name);
+        res = contact;
         break;
     }
 
-    /* TODO: Free stuff */
+    g_list_free(l);
+
     return res;
 }
 
-char* conv_abook_lookup_im(const char* userid) {
-    char* res = NULL;
+OssoABookContact* conv_abook_lookup_im(const char* userid) {
+    OssoABookContact* res = NULL;
     GList *l = NULL;
     l = osso_abook_aggregator_find_contacts_for_im_contact(conv_abook_aggregator, userid, NULL); /* TODO: provide TpAccount* */
 
     GList *v = l;
     while (v) {
         OssoABookContact *contact = OSSO_ABOOK_CONTACT(v->data);
-        const char* name = osso_abook_contact_get_display_name(contact);
-
-        res = g_strdup(name);
+        res = contact;
         break;
     }
 
-    /* TODO: Free stuff */
+    g_list_free(l);
+
     return res;
 }

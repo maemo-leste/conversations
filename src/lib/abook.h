@@ -16,8 +16,8 @@ static OssoABookAggregator *conv_abook_aggregator = NULL;
 bool conv_abook_init();
 
 /* Look up user data given a phone number */
-char* conv_abook_lookup_tel(const char* telno);
-char* conv_abook_lookup_sip(const char* sipno);
-char* conv_abook_lookup_im(const char* userid);
+OssoABookContact* conv_abook_lookup_tel(const char* telno);
+OssoABookContact* conv_abook_lookup_sip(const char* sipno);
+OssoABookContact* conv_abook_lookup_im(const char* userid);
 
 #endif /* CONV_ABOOK_H */

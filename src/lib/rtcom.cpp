@@ -74,7 +74,7 @@ QList<ChatMessage*> rtcomIterateResults(rtcom_query *query_struct) {
   return results;
 }
 
-void create_event(time_t start_time, time_t end_time, const char* self_name, const char* backend_name, const char *remote_uid, const char *remote_name, const char* text, bool is_outgoing, const char* protocol, const char* channel, const char* group_uid, int flags) {
+void create_event(time_t start_time, time_t end_time, const char* self_name, const char* backend_name, const char *remote_uid, const char *remote_name, const char* abook_uid, const char* text, bool is_outgoing, const char* protocol, const char* channel, const char* group_uid, int flags) {
   qDebug() << "create_event";
   if(evlog == NULL)
     evlog = rtcom_el_new();
@@ -99,6 +99,8 @@ void create_event(time_t start_time, time_t end_time, const char* self_name, con
   RTCOM_EL_EVENT_SET_FIELD(ev, remote_name, g_strdup(remote_name));
   RTCOM_EL_EVENT_SET_FIELD (ev, free_text, g_strdup(text));
   RTCOM_EL_EVENT_SET_FIELD (ev, flags, flags);
+
+  RTCOM_EL_EVENT_SET_FIELD(ev, remote_ebook_uid, g_strdup(abook_uid));
 
   if (channel) {
     RTCOM_EL_EVENT_SET_FIELD (ev, channel, g_strdup(channel));
