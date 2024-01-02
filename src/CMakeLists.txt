@@ -113,7 +113,8 @@ target_compile_options(conversations
 
 set(CMAKE_CXX_FLAGS
         ${CMAKE_CXX_FLAGS}
-        ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS})
+        ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}
+        -Wno-deprecated-declarations)
 
 target_link_libraries(conversations PUBLIC
         ${CMAKE_DL_LIBS}
