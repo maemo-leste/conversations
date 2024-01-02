@@ -203,27 +203,41 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
      * number (uhhh) */
     QByteArray group_uid = (acc->objectPath().replace("/org/freedesktop/Telepathy/Account/", "") + "-" + channel->targetId()).toLocal8Bit();
 
-    char* remote_name = NULL;
+    const char* remote_name = NULL;
+    const char* abook_uid = NULL;
+    OssoABookContact* contact = NULL;
 
     if (m_protocol_name == "tel") {
         qDebug() << "conv_abook_lookup_tel";
-        remote_name = conv_abook_lookup_tel(remote_uid.toLocal8Bit());
+        contact = conv_abook_lookup_tel(remote_uid.toLocal8Bit());
+        if (contact) {
+            remote_name = osso_abook_contact_get_display_name(contact);
+            abook_uid = osso_abook_contact_get_uid(contact);
+        }
     } else if (m_protocol_name == "sip") {
         qDebug() << "conv_abook_lookup_sip";
-        remote_name = conv_abook_lookup_sip(remote_uid.toLocal8Bit());
+        contact = conv_abook_lookup_sip(remote_uid.toLocal8Bit());
+        if (contact) {
+            remote_name = osso_abook_contact_get_display_name(contact);
+            abook_uid = osso_abook_contact_get_uid(contact);
+        }
     } else {
         qDebug() << "conv_abook_lookup_im";
-        remote_name = conv_abook_lookup_im(remote_uid.toLocal8Bit());
+        contact = conv_abook_lookup_im(remote_uid.toLocal8Bit());
+        if (contact) {
+            remote_name = osso_abook_contact_get_display_name(contact);
+            abook_uid = osso_abook_contact_get_uid(contact);
+        }
     }
 
     if (!remote_name && (remote_alias != NULL)) {
-        remote_name = g_strdup(remote_alias.toLocal8Bit());
+        remote_name = remote_alias.toLocal8Bit();
     }
 
     create_event(epoch, epoch, m_nickname.toLocal8Bit().data(),
                  m_backend_name.toLocal8Bit().data(),
                  remote_uid.toLocal8Bit(),
-                 remote_name,
+                 remote_name, abook_uid,
                  text.toLocal8Bit(), outgoing, m_protocol_name.toStdString().c_str(),
                  channel_str, group_uid,
                  0 /* TODO: flags */);
@@ -238,9 +252,6 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
             /* group_title */ "",
             channel_qstr,
             "-1", outgoing, 0);
-
-    if (remote_name)
-        free(remote_name);
 
     QSharedPointer<ChatMessage> ptr(msg);
     emit databaseAddition(ptr);
