@@ -15,16 +15,17 @@
  *   https://github.com/maemo-leste/osso-abook/blob/master/lib/osso-abook-aggregator.h#L140
  *   https://github.com/maemo-leste/osso-abook/blob/master/lib/osso-abook-aggregator.h#L145
  * - Clean up class signatures (public/private), slots/signal usage, etc
+ * - Figure out group_uid for SMS
+ * - Message sending doesn't contain error codes
+ * - Report whether message was delivered or not
  *
  * Soon(tm):
- * - In the account manager, keep track of when accounts are *added* or
- *   *deleted*
+ * - Log channel joins/parts
+ * - In the account manager, keep track of when accounts are *added* or *deleted*
  * - Deal with message history, if we can fetch it (say XMPP)
  * - Deal with self-messages sent by us from another client (see if we can get
  *   them for say XMPP)
  * - Deal with message read delivery reports
- * - Investigate if we have to acknowledge() or forget() incoming messages
- *
  *
  * Research:
  *
@@ -88,8 +89,6 @@ Telepathy::Telepathy(QObject *parent) : QObject(parent) {
 /* When the account manager is ready, we will get a list of our accounts and
  * store them in our accounts structure */
 void Telepathy::onAccountManagerReady(Tp::PendingOperation *op) {
-    qDebug() << "onAccountManagerReady";
-
     auto validaccounts = m_accountmanager->validAccounts();
     auto l = validaccounts->accounts();
 
@@ -114,19 +113,13 @@ void Telepathy::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
 /* Convenience function to send a message to a contact, the local_uid specifies
  * what accounts to send from, the remote_uid specifies whom to send to - either
  * a person or a channel identifier */
-/* TODO: We might want to change the signature of this function */
 void Telepathy::sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message) {
-    qDebug() << local_uid << remote_uid;
-
+    /* Find our account given the local_uid and then send the message */
     for (TelepathyAccount *ma : accounts) {
         auto acc = ma->acc;
-
-        /* TODO: Let's revisit this and see if we want to use the backend_name
-           of this format */
         QByteArray backend_name = (acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName()).toLocal8Bit();
 
         if (backend_name == local_uid) {
-            qDebug() << backend_name;
             ma->sendMessage(remote_uid, message);
         }
     }
@@ -195,7 +188,7 @@ TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
     m_protocol_name = acc->protocolName();
 }
 
-bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid) {
+bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias) {
     char* channel_str = NULL;
     QString channel_qstr = QString();
     QByteArray channel_ba = channel->targetId().toLocal8Bit();
@@ -211,25 +204,44 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
      * number (uhhh) */
     QByteArray group_uid = (acc->objectPath().replace("/org/freedesktop/Telepathy/Account/", "") + "-" + channel->targetId()).toLocal8Bit();
 
-    /* TODO: remote_name != remote_uid, we shouldn't make them equal,
-     * but let's do it for now
-     * I think we need to do a lookup in osso_abook */
+    char* remote_name = NULL;
+#if 0
+    if (m_protocol_name == "tel") {
+        qDebug() << "conv_abook_lookup_tel";
+        remote_name = conv_abook_lookup_tel(remote_uid.toLocal8Bit());
+    } else (if m_protocol_name == "sip") {
+        qDebug() << "conv_abook_lookup_sip";
+        /* osso_abook_aggregator_find_contacts_for_sip_address */
+    } else {
+        qDebug() << "conv_abook_lookup_im";
+        //remote_name = conv_abook_lookup_im(remote_uid.toLocal8Bit());
+    }
+#endif
+
+    if (!remote_name && !outgoing) {
+        remote_name = g_strdup(remote_alias.toLocal8Bit());
+    }
+
     create_event(epoch, epoch, m_nickname.toLocal8Bit().data(),
                  m_backend_name.toLocal8Bit().data(),
-                 remote_uid.toLocal8Bit(), remote_uid.toLocal8Bit(), /* TODO: remote_name */
+                 remote_uid.toLocal8Bit(),
+                 remote_name,
                  text.toLocal8Bit(), outgoing, m_protocol_name.toStdString().c_str(),
                  channel_str, group_uid,
                  0 /* TODO: flags */);
 
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
     auto *msg = new ChatMessage(1, service, group_uid,
-            m_nickname, remote_uid, remote_uid,
+            m_nickname, remote_uid, remote_name,
             "" /* remote_abook_uid */,
             text, "" /* icon_name */,
             epoch, 0,
             /* group_title */ "",
             channel_qstr,
             "-1", outgoing, 0);
+
+    if (remote_name)
+        free(remote_name);
 
     QSharedPointer<ChatMessage> ptr(msg);
     emit databaseAddition(ptr);
@@ -241,6 +253,8 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
 void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel) {
     qDebug() << "onMessageReceived" << message.received() << message.senderNickname() << message.text();
     qDebug() << "isDeliveryReport" << message.isDeliveryReport();
+    qDebug() << "isScrollback" << message.isScrollback();
+    qDebug() << "isRescued" << message.isRescued();
 
     if (message.isDeliveryReport()) {
         // TODO: We do not want to reply to it not write anything for now
@@ -249,11 +263,12 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
     }
 
     auto epoch = message.received().toTime_t();
-    auto remote_uid = message.senderNickname();
+    auto remote_uid = message.sender()->id();
+    auto remote_alias = message.sender()->alias();
     auto text = message.text().toLocal8Bit();
 
     qDebug() << "log_event";
-    log_event(epoch, text, false, channel, remote_uid);
+    log_event(epoch, text, false, channel, remote_uid, remote_alias);
 }
 
 /* When we have managed to send a message */
@@ -261,13 +276,19 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
     qDebug() << "onMessageSent" << message.text();
 
     auto epoch = message.sent().toTime_t();
-    // TODO: what is the remote_uid if we send a message to a channel anyway?
 
-    auto remote_uid = channel->targetId();
+    QString remote_uid;
+    if (channel->targetHandleType() == Tp::HandleTypeContact) {
+        remote_uid = channel->targetId();
+    } else {
+        qDebug() << "onMessageSent channel targetId" << channel->targetId();
+        remote_uid = channel->groupSelfContact()->id();
+    }
+
     auto text = message.text().toLocal8Bit();
 
     qDebug() << "log_event";
-    log_event(epoch, text, true, channel, remote_uid);
+    log_event(epoch, text, true, channel, remote_uid, NULL);
 }
 
 void TelepathyAccount::onOnline(bool online) {
@@ -300,9 +321,8 @@ void TelepathyAccount::sendMessage(const QString &remote_uid, const QString &mes
      * lambda */
     foreach (TelepathyChannel* channel, channels) {
         Tp::TextChannel* a_channel = (Tp::TextChannel*) channel->m_channel.data();
-        /* TODO: This has problems with case sensitivity */
         qDebug() << "Testing against:" << a_channel->targetId();
-        if (remote_uid.toLower() == a_channel->targetId().toLower()) {
+        if (remote_uid == a_channel->targetId()) {
             qDebug() << "TelepathyAccount::sendMessage: Found matching channel";
             channel->sendMessage(message);
             found = TRUE;
@@ -346,10 +366,8 @@ void TelepathyChannel::onChannelReady(Tp::PendingOperation *op) {
     }
 
     Tp::TextChannel* channel = (Tp::TextChannel*) m_channel.data();
-    qDebug() << "handle type" << channel->targetHandleType();
 
     if (channel->targetHandleType() == Tp::HandleTypeContact) {
-        qDebug() << "handle type contact";
         Tp::TextChannel* channel = (Tp::TextChannel*) m_channel.data();
     
         connect(channel,
@@ -399,9 +417,6 @@ void TelepathyChannel::onGroupAddContacts(Tp::PendingOperation *op) {
             SIGNAL(messageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &)),
             SLOT(onChanMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &)));
 
-    /* TODO: DRY with code in TelepathyChannel::onChannelReady */
-    /* There might be pending messages, we should probably do this also for
-     * group channels, but maybe after their 'contacts' are added .*/
     foreach (Tp::ReceivedMessage msg, channel->messageQueue()) {
         onChanMessageReceived(msg);
     }
@@ -411,7 +426,7 @@ void TelepathyChannel::onGroupAddContacts(Tp::PendingOperation *op) {
  * Currently this does the logging
  */
 void TelepathyChannel::onChanMessageReceived(const Tp::ReceivedMessage &message) {
-    qDebug() << "onChanMessageReceived" << message.received() << message.senderNickname() << message.text();
+    qDebug() << "onChanMessageReceived" << message.received(); // << message.sender()->id() << message.text();
     qDebug() << "channel targetID:" << m_channel->targetId();
     Tp::TextChannel* channel = (Tp::TextChannel*) m_channel.data();
 
@@ -419,27 +434,19 @@ void TelepathyChannel::onChanMessageReceived(const Tp::ReceivedMessage &message)
     channel->acknowledge(messages);
 
     m_account->onMessageReceived(message, (Tp::TextChannelPtr)channel);
-    //emit m_account->databaseAddition(ptr);
 }
 
 /* This fires when a message is removed from the messageQueue, but that would
  * typically be us, so I don't think we need to do anything here */
 void TelepathyChannel::onChanPendingMessageRemoved(const Tp::ReceivedMessage &message) {
-    qDebug() << "onChanPendingMessageRemoved" << message.received() << message.senderNickname() << message.text();
 }
 
-/* When we have sent a message on a channel
- * TODO: Implement logging here */
+/* When we have sent a message on a channel */
 void TelepathyChannel::onChanMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken) {
     qDebug() << "onChanMessageSent";
 
     Tp::TextChannel* channel = (Tp::TextChannel*) m_channel.data();
     m_account->onMessageSent(message, flags, sentMessageToken, (Tp::TextChannelPtr)channel);
-    // TODO: Log our own message here instead of in the
-    // TelepathyAccount::onMessageSent
-
-    // TODO: emit signals
-    //emit m_account->databaseAddition(ptr);
 }
 
 /* If we already have a channel, send is easy */
