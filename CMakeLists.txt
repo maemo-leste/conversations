@@ -30,10 +30,22 @@ if(DEFINED RTCOM-EVENTLOGGER_LIBRARY_DIRS)
     set(RTCOM ON)
 endif()
 
-pkg_search_module(LIBHILDON hildon-1)
+pkg_check_modules(LIBHILDON hildon-1)
 if(DEFINED LIBHILDON_LIBRARIES)
     set(MAEMO ON)
 endif()
+
+pkg_check_modules(GTK REQUIRED gtk+-2.0)
+if(DEFINED GTK_LIBRARIES)
+    set(GTK ON)
+endif()
+
+pkg_check_modules(OSSO_ABOOK REQUIRED libosso-abook-1.0)
+if(DEFINED OSSO_ABOOK_FOUND)
+    set(OSSO_ABOOK ON)
+endif()
+
+#ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
 
 find_package(X11 REQUIRED)
 include_directories(${X11_INCLUDE_DIR})

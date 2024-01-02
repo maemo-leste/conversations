@@ -1,7 +1,6 @@
+#include "lib/abook.h"
+
 #include <QCoreApplication>
-#include <QLocalSocket>
-#include <QLocalServer>
-#include <QtNetwork>
 #include <QDebug>
 
 #include "lib/tp.h"
@@ -205,20 +204,23 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
     QByteArray group_uid = (acc->objectPath().replace("/org/freedesktop/Telepathy/Account/", "") + "-" + channel->targetId()).toLocal8Bit();
 
     char* remote_name = NULL;
-#if 0
+
     if (m_protocol_name == "tel") {
         qDebug() << "conv_abook_lookup_tel";
         remote_name = conv_abook_lookup_tel(remote_uid.toLocal8Bit());
-    } else (if m_protocol_name == "sip") {
+    } else if (m_protocol_name == "sip") {
+        /*
         qDebug() << "conv_abook_lookup_sip";
-        /* osso_abook_aggregator_find_contacts_for_sip_address */
+        remote_name = conv_abook_lookup_sip(remote_uid.toLocal8Bit());
+        */
     } else {
+        /*
         qDebug() << "conv_abook_lookup_im";
-        //remote_name = conv_abook_lookup_im(remote_uid.toLocal8Bit());
+        remote_name = conv_abook_lookup_im(remote_uid.toLocal8Bit(), acc);
+        */
     }
-#endif
 
-    if (!remote_name && !outgoing) {
+    if (!remote_name && (remote_alias != NULL)) {
         remote_name = g_strdup(remote_alias.toLocal8Bit());
     }
 
@@ -347,7 +349,6 @@ void TelepathyAccount::sendMessage(const QString &remote_uid, const QString &mes
 TelepathyAccount::~TelepathyAccount()
 {
 }
-
 
 TelepathyChannel::TelepathyChannel(Tp::ChannelPtr mchannel, TelepathyAccount* macc) : QObject(nullptr) {
     m_account = macc;
