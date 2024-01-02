@@ -231,8 +231,9 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
                  0 /* TODO: flags */);
 
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
-    auto *msg = new ChatMessage(1, service, group_uid,
-            m_nickname, remote_uid, remote_name,
+    auto *msg = new ChatMessage(1, /* TODO: event id is wrong here but should not matter */
+            service, group_uid,
+            m_backend_name, remote_uid, QString(remote_name),
             "" /* remote_abook_uid */,
             text, "" /* icon_name */,
             epoch, 0,
