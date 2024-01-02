@@ -63,6 +63,8 @@ QList<ChatMessage*> rtcomIterateResults(rtcom_query *query_struct) {
           LOOKUP_STR("event-type"),
           LOOKUP_BOOL("outgoing"),
           LOOKUP_INT("flags"));
+
+       g_hash_table_destroy(values);
       results << item;
     } while (rtcom_el_iter_next(query_struct->it));
     g_object_unref(query_struct->it);
