@@ -68,11 +68,10 @@ char* conv_abook_lookup_sip(const char* address) {
     return res;
 }
 
-#if 0
 char* conv_abook_lookup_im(const char* userid) {
     char* res = NULL;
     GList *l = NULL;
-    l = osso_abook_aggregator_find_contacts_for_im_contact(conv_abook_aggregator, userid, /* TODO: how to get TpAccount* */);
+    l = osso_abook_aggregator_find_contacts_for_im_contact(conv_abook_aggregator, userid, NULL); /* TODO: provide TpAccount* */
 
     GList *v = l;
     while (v) {
@@ -86,4 +85,3 @@ char* conv_abook_lookup_im(const char* userid) {
     /* TODO: Free stuff */
     return res;
 }
-#endif

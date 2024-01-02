@@ -209,15 +209,11 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
         qDebug() << "conv_abook_lookup_tel";
         remote_name = conv_abook_lookup_tel(remote_uid.toLocal8Bit());
     } else if (m_protocol_name == "sip") {
-        /*
         qDebug() << "conv_abook_lookup_sip";
         remote_name = conv_abook_lookup_sip(remote_uid.toLocal8Bit());
-        */
     } else {
-        /*
         qDebug() << "conv_abook_lookup_im";
-        remote_name = conv_abook_lookup_im(remote_uid.toLocal8Bit(), acc);
-        */
+        remote_name = conv_abook_lookup_im(remote_uid.toLocal8Bit());
     }
 
     if (!remote_name && (remote_alias != NULL)) {
