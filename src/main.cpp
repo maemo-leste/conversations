@@ -1,3 +1,10 @@
+#undef signals
+/*Work around issues with signals being defined earlier */
+#include <glib.h>
+#include <gio/gio.h>
+#include <gtk/gtk.h>
+#include "lib/abook.h"
+
 #include <QGuiApplication>
 #include <QSslSocket>
 #include <QResource>
@@ -17,6 +24,8 @@
 #include <QDBusInterface>
 #include <QDBusMessage>
 #endif
+
+#include <libosso-abook/osso-abook.h>
 
 #include "rtcom-eventlogger/eventlogger-query.h"
 
@@ -80,6 +89,9 @@ int main(int argc, char *argv[]) {
   for (const auto &k: info.keys())
     qWarning().nospace().noquote() << QString("%1: %2").arg(k, info[k]);
 
+  hildon_init();
+  osso_abook_init_with_name("conversations", NULL);
+
   QCommandLineParser parser;
   parser.addHelpOption();
   parser.addVersionOption();
@@ -132,6 +144,8 @@ int main(int argc, char *argv[]) {
 #ifdef MAEMO
   ctx->isMaemo = true;
 #endif
+  /* TODO: check for failure */
+  conv_abook_init();
   auto *mainWindow = new MainWindow(ctx);
   if(!parser.isSet(backgroundModeOption))
     mainWindow->onShowApplication();

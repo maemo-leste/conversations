@@ -80,6 +80,9 @@ target_include_directories(conversations PUBLIC
         ${TELEPATHY_QT5_INCLUDE_DIR}
         ${GLIB_INCLUDE_DIRS}
         ${RTCOM-EVENTLOGGER_INCLUDE_DIRS}
+        ${LIBHILDON_INCLUDE_DIRS}
+        ${OSSO_ABOOK_INCLUDE_DIRS}
+        ${GTK_INCLUDE_DIRS}
         )
 
 add_definitions(${QT_DEFINITIONS})
@@ -98,6 +101,14 @@ target_compile_definitions(conversations
         ${Qt5Network_DEFINITIONS}
         ${Qt5Svg_DEFINITIONS}
         ${Qt5Xml_DEFINITIONS}
+)
+
+target_compile_options(conversations
+        PUBLIC
+        ${RTCOM-EVENTLOGGER_CFLAGS_OTHER}
+        ${LIBHILDON_CFLAGS_OTHER}
+        ${OSSO_ABOOK_CFLAGS_OTHER}
+        ${GTK_CFLAGS_OTHER}
         )
 
 set(CMAKE_CXX_FLAGS
@@ -123,6 +134,9 @@ target_link_libraries(conversations PUBLIC
         ${TELEPATHY_QT5_LIBRARIES}
         ${GLIB_LIBRARIES}
         ${RTCOM-EVENTLOGGER_LIBRARIES}
+        ${OSSO_ABOOK_LIBRARIES}
+        ${LIBHILDON_LIBRARIES}
+        ${GTK_LIBRARIES}
         -lrtcom-el-plugin-chat
 )
 
@@ -150,4 +164,14 @@ if(RTCOM)
     message(STATUS "rtcom-eventlogger: ${RTCOM-EVENTLOGGER_VERSION}")
 else()
     message(STATUS "rtcom-eventlogger: off")
+endif()
+if(OSSO_ABOOK)
+    message(STATUS "osso-abook: ${OSSO_ABOOK_VERSION}")
+else()
+    message(STATUS "osso-abook: off")
+endif()
+if(GTK)
+    message(STATUS "gtk: ${GTK_VERSION}")
+else()
+    message(STATUS "gtk: off")
 endif()

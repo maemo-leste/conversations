@@ -66,6 +66,9 @@
 #include "lib/rtcom.h"
 #include <rtcom-eventlogger/eventlogger.h>
 #endif
+#ifdef OSSO_ABOOK
+#include <libosso-abook/osso-abook.h>
+#endif
 
 class Telepathy;
 class TelepathyAccount;
