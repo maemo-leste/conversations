@@ -48,19 +48,25 @@
      <x>0</x>
      <y>0</y>
      <width>607</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuw00t">
+   <widget class="QMenu" name="menu">
     <property name="title">
-     <string>w00t</string>
+     <string>menu</string>
     </property>
+    <addaction name="actionSendTo"/>
     <addaction name="actionCompose"/>
-    <addaction name="actionSettings"/>
+    <addaction name="actionJoinChatRoom"/>
     <addaction name="actionSearch"/>
+    <addaction name="separator"/>
+    <addaction name="actionNewContact"/>
+    <addaction name="actionAccounts"/>
+    <addaction name="separator"/>
+    <addaction name="actionSettings"/>
     <addaction name="actionAbout"/>
    </widget>
-   <addaction name="menuw00t"/>
+   <addaction name="menu"/>
   </widget>
   <action name="actionSettings">
    <property name="text">
@@ -73,6 +79,9 @@
    </property>
   </action>
   <action name="actionAbout">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>About</string>
    </property>
@@ -85,6 +94,38 @@
   <action name="actionCompose">
    <property name="text">
     <string>New message</string>
+   </property>
+  </action>
+  <action name="actionAccounts">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Accounts</string>
+   </property>
+  </action>
+  <action name="actionSendTo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Send IM to</string>
+   </property>
+  </action>
+  <action name="actionJoinChatRoom">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Join chat room</string>
+   </property>
+  </action>
+  <action name="actionNewContact">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>New contact</string>
    </property>
   </action>
  </widget>
