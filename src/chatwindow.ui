@@ -104,13 +104,16 @@
      <x>0</x>
      <y>0</y>
      <width>607</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuw00t">
     <property name="title">
-     <string>w00t</string>
+     <string>menu</string>
     </property>
+    <addaction name="actionInvite"/>
+    <addaction name="actionParticipants"/>
+    <addaction name="separator"/>
     <addaction name="actionSearchChat"/>
     <addaction name="actionExportChatToCsv"/>
    </widget>
@@ -124,6 +127,22 @@
   <action name="actionExportChatToCsv">
    <property name="text">
     <string>Export chat</string>
+   </property>
+  </action>
+  <action name="actionInvite">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Invite</string>
+   </property>
+  </action>
+  <action name="actionParticipants">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Participants</string>
    </property>
   </action>
  </widget>
