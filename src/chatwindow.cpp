@@ -164,7 +164,7 @@ void ChatWindow::onChatPreReady() {
 }
 
 void ChatWindow::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
-  if(m_chatMessage->local_uid() == msg->local_uid() && m_chatMessage->remote_uid() == msg->remote_uid()) {
+  if(m_chatMessage->local_uid() == msg->local_uid() && m_chatMessage->group_uid() == msg->group_uid()) {
     this->chatModel->appendMessage(msg);
   }
 }
