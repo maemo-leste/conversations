@@ -39,7 +39,6 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   );
 
   connect(m_ctx, &Conversations::setTitle, this, &QMainWindow::setWindowTitle);
-  connect(m_ctx, SIGNAL(openChatWindow(QString)), this, SLOT(onOpenChatWindow(QString)));
   connect(m_ctx, &Conversations::showApplication, this, &MainWindow::onShowApplication);
   connect(m_ctx, &Conversations::hideApplication, this, &MainWindow::onHideApplication);
   connect(m_ctx, &Conversations::notificationClicked, this, &MainWindow::onNotificationClicked);
