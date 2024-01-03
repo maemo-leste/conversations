@@ -57,8 +57,8 @@ void Conversations::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
 
   // chat message notification
   auto notificationsEnabled = config()->get(ConfigKeys::EnableNotifications).toBool();
-  if(isBackground && notificationsEnabled && !notificationMap.contains(msg->remote_uid())) {
-    notificationMap[msg->remote_uid()] = msg;
+  if(isBackground && notificationsEnabled && !notificationMap.contains(msg->group_uid())) {
+    notificationMap[msg->group_uid()] = msg;
 
     auto title = QString("Conversations - New message from %1").arg(msg->remote_name());
     auto *notification = Utils::notification(title, msg->textSnippet(), msg);

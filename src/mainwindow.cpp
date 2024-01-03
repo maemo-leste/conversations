@@ -86,13 +86,13 @@ void MainWindow::onOpenChatWindow(int idx) {
   this->onOpenChatWindow(msg);
 }
 
-void MainWindow::onOpenChatWindow(const QString &remote_uid) {
+void MainWindow::onOpenChatWindow(const QString &group_uid) {
   // @TODO: fix
-  //this->onOpenChatWindow("", "", remote_uid, "", "");
+  //this->onOpenChatWindow("", "", group_uid, "", "");
 }
 
 void MainWindow::onOpenChatWindow(const QSharedPointer<ChatMessage> &msg) {
-  auto uid = msg->remote_uid();
+  auto uid = msg->group_uid();
   if(m_chatWindows.contains(uid)) {
     m_chatWindows[uid]->setFocus();
     return;
@@ -161,12 +161,12 @@ void MainWindow::closeEvent(QCloseEvent *event) {
   }
 }
 
-void MainWindow::onChatWindowClosed(const QString &remote_uid) {
-  if(!m_chatWindows.contains(remote_uid)) return;
-  auto *window = m_chatWindows[remote_uid];
+void MainWindow::onChatWindowClosed(const QString &group_uid) {
+  if(!m_chatWindows.contains(group_uid)) return;
+  auto *window = m_chatWindows[group_uid];
   if(window != nullptr)
     window->deleteLater();
-  m_chatWindows.remove(remote_uid);
+  m_chatWindows.remove(group_uid);
 }
 
 void MainWindow::onShowApplication() {

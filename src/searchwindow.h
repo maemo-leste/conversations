@@ -28,12 +28,12 @@ class SearchWindow : public QMainWindow {
 
 public:
     Ui::SearchWindow *ui;
-    explicit SearchWindow(Conversations *ctx, QString remote_uid, QWidget *parent = nullptr);
+    explicit SearchWindow(Conversations *ctx, QString group_uid, QWidget *parent = nullptr);
     static Conversations *getContext();
-    ~SearchWindow() override;
+   ~SearchWindow() override;
 
     ChatModel *searchModel;
-    Q_PROPERTY(QString remote_uid MEMBER m_remote_uid CONSTANT);
+    Q_PROPERTY(QString group_uid MEMBER m_group_uid CONSTANT);
 
 signals:
   void searchResultClicked(QSharedPointer<ChatMessage> msg);
@@ -45,7 +45,7 @@ private slots:
 private:
     Conversations *m_ctx;
     static SearchWindow *pSearchWindow;
-    QString m_remote_uid = "";
+    QString m_group_uid = "";
 };
 
 #endif
