@@ -99,11 +99,11 @@ public slots:
 
     void TpOpenChannelWindow(Tp::TextChannelPtr channel);
 
-    Tp::TextChannel* hasChannel(const QString remote_uid);
+    Tp::TextChannel* hasChannel(const QString& remote_uid);
 
     bool log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias);
 
-    QString getRemoteUid(Tp::TextChannelPtr channel);
+    static QString getRemoteUid(Tp::TextChannelPtr channel);
     QString getGroupUid(Tp::TextChannelPtr channel);
 
 private slots:
@@ -134,11 +134,11 @@ class TelepathyChannel : public QObject {
 Q_OBJECT
 
 public:
-    explicit TelepathyChannel(Tp::ChannelPtr mchannel, TelepathyAccount* macc);
+    explicit TelepathyChannel(const Tp::ChannelPtr& mchannel, TelepathyAccount* macc);
     ~TelepathyChannel() override;
 
 public slots:
-    void sendMessage(const QString &message);
+    void sendMessage(const QString &message) const;
 
 private slots:
     void onGroupAddContacts(Tp::PendingOperation *op);
@@ -146,7 +146,7 @@ private slots:
 
     void onChanMessageReceived(const Tp::ReceivedMessage &message);
     void onChanPendingMessageRemoved(const Tp::ReceivedMessage &message);
-    void onChanMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &);
+    void onChanMessageSent(const Tp::Message &, Tp::MessageSendingFlags, const QString &) const;
     // sendChannelMessage (if we cannot just use sendMessage)
 
 public:
