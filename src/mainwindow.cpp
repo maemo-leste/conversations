@@ -109,6 +109,8 @@ void MainWindow::onOpenChatWindow(const QSharedPointer<ChatMessage> &msg) {
   auto uid = msg->group_uid();
   if(m_chatWindows.contains(uid)) {
     m_chatWindows[uid]->setFocus();
+    m_chatWindows[uid]->activateWindow();
+
     return;
   }
 
