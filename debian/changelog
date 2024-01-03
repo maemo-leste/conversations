@@ -1,3 +1,13 @@
+conversations (0.6.0) unstable; urgency=medium
+
+  * Significantly improve rtcom logging code
+  * Implement basic address book functionality (start a message from address
+    book, honour address book contact names)
+  * Rework telepathy code to support chat rooms / channels
+  * Fixup irssi theme to support group chats
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Tue, 02 Jan 2024 17:07:15 +0100
+
 conversations (0.5.8) unstable; urgency=medium
 
   * Add auto starting through dsmetool
