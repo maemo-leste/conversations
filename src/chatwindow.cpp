@@ -122,10 +122,7 @@ void ChatWindow::onOpenSearchWindow() {
   m_searchWindow = new SearchWindow(m_ctx, m_chatMessage->group_uid(), this);
   m_searchWindow->show();
 
-  connect(m_searchWindow,
-          SIGNAL(searchResultClicked(QSharedPointer<ChatMessage>)), this,
-          SLOT(onSearchResultClicked(QSharedPointer<ChatMessage>)));
-
+  connect(m_searchWindow, &SearchWindow::searchResultClicked, this, &ChatWindow::onSearchResultClicked);
   connect(m_searchWindow, &SearchWindow::searchResultClicked, this, &ChatWindow::onCloseSearchWindow);
 }
 

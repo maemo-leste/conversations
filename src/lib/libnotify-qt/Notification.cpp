@@ -103,6 +103,7 @@ Notification::Notification(const QSharedPointer<ChatMessage> &msg, const QString
 //	QDBusConnection::sessionBus().connect(QString(), QString(), org::freedesktop::Notifications::staticInterfaceName(),
 //										  "NotificationClosed", this, SLOT(onNotificationClosed(quint32, quint32)));
 
+
   QDBusConnection::sessionBus().connect(QString(), QString(), org::freedesktop::Notifications::staticInterfaceName(),
 										  "NotificationClosed", this, SLOT(onNotificationClosed(quint32)));
 
