@@ -88,6 +88,7 @@ public:
 
 signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
+    void openChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
 
 public slots:
     void sendMessage(const QString &remote_uid, const QString &message);
@@ -96,9 +97,14 @@ public slots:
     void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
     void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
 
+    void TpOpenChannelWindow(Tp::TextChannelPtr channel);
+
     Tp::TextChannel* hasChannel(const QString remote_uid);
 
     bool log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias);
+
+    QString getRemoteUid(Tp::TextChannelPtr channel);
+    QString getGroupUid(Tp::TextChannelPtr channel);
 
 private slots:
     void onOnline(bool online);
@@ -163,11 +169,13 @@ public:
 
 signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
+    void openChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
     void accountManagerReady();
 
 public slots:
     void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
     void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
+    void onOpenChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
 
 private slots:
     void onAccountManagerReady(Tp::PendingOperation *op);

@@ -100,6 +100,7 @@ void Telepathy::onAccountManagerReady(Tp::PendingOperation *op) {
 
         /* Connect this account signal to our general TP instance */
         connect(myacc, &TelepathyAccount::databaseAddition, this, &Telepathy::onDatabaseAddition);
+        connect(myacc, &TelepathyAccount::openChannelWindow, this, &Telepathy::onOpenChannelWindow);
     }
 
     emit accountManagerReady();
@@ -107,6 +108,10 @@ void Telepathy::onAccountManagerReady(Tp::PendingOperation *op) {
 
 void Telepathy::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
     emit databaseAddition(msg);
+}
+
+void Telepathy::onOpenChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel) {
+    emit openChannelWindow(local_uid, remote_uid, group_uid, service, channel);
 }
 
 /* Convenience function to send a message to a contact, the local_uid specifies
@@ -153,8 +158,12 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
     qDebug() << "handleChannels";
 
     foreach (Tp::ChannelPtr channelptr, channels) {
+        /* TODO: Make this code just use the sharedptrs, I somehow got stuck at
+         * making a NULL shareptr and got frustrated, but in the end we cast it
+         * back so it's stupid not just use the sharedptrs */
         Tp::ChannelRequest* matching_requestptr = NULL;
-        Tp::Channel* matching_channel = NULL;
+        Tp::TextChannel* matching_channel = NULL;
+        TelepathyAccount *matching_account = NULL;
 
         /* We don't need to check the account, I think we get handlechannels
          * for a specific account */
@@ -177,11 +186,12 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
 
         for (TelepathyAccount *ma : m_telepathy_parent->accounts) {
             if (ma->acc == account) {
-                matching_channel = ma->hasChannel(channelptr->targetId());
+                matching_account = ma;
+                matching_channel = (Tp::TextChannel*)ma->hasChannel(channelptr->targetId());
                 qDebug() << "handleChannels: channel exists already?" << matching_channel;
 
                 if (matching_channel == NULL) {
-                    matching_channel = (Tp::Channel*)channelptr.data();
+                    matching_channel = (Tp::TextChannel*)channelptr.data();
 
                     auto mychan = new TelepathyChannel(channelptr, ma);
                     ma->channels << mychan;
@@ -194,6 +204,7 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
         if (matching_channel) {
             if (matching_requestptr) {
                 matching_requestptr->succeeded((Tp::ChannelPtr)matching_channel);
+                matching_account->TpOpenChannelWindow(Tp::TextChannelPtr(matching_channel));
             }
         }
     }
@@ -222,6 +233,37 @@ TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
     m_protocol_name = acc->protocolName();
 }
 
+void TelepathyAccount::TpOpenChannelWindow(Tp::TextChannelPtr channel) {
+    auto local_uid = m_backend_name;
+    auto remote_uid = getRemoteUid(Tp::TextChannelPtr(channel));
+    auto group_uid = getGroupUid(Tp::TextChannelPtr(channel));
+    auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
+    QString channelstr;
+
+    if (channel->targetHandleType() == Tp::HandleTypeContact) {
+        channelstr = channel->targetId();
+    }
+
+    emit openChannelWindow(local_uid, remote_uid, group_uid, service, channelstr);
+}
+
+QString TelepathyAccount::getGroupUid(Tp::TextChannelPtr channel) {
+    /* TODO: How does this work for SMS? Need to test/think about this,
+     * Fremantle uses just a number for SMS it looks like, or sometimes a name?
+     * Let's double check. It seems to be the last 6-7 digits from a phone
+     * number (uhhh) */
+    return acc->objectPath().replace("/org/freedesktop/Telepathy/Account/", "") + "-" + channel->targetId();
+}
+
+QString TelepathyAccount::getRemoteUid(Tp::TextChannelPtr channel) {
+    if (channel->targetHandleType() == Tp::HandleTypeContact) {
+        return channel->targetId();
+    } else {
+        return channel->groupSelfContact()->id();
+    }
+}
+
+
 bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias) {
     char* channel_str = NULL;
     QString channel_qstr = QString();
@@ -232,11 +274,7 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
         channel_qstr = channel->targetId();
     }
 
-    /* TODO: How does this work for SMS? Need to test/think about this,
-     * Fremantle uses just a number for SMS it looks like, or sometimes a name?
-     * Let's double check. It seems to be the last 6-7 digits from a phone
-     * number (uhhh) */
-    QByteArray group_uid = (acc->objectPath().replace("/org/freedesktop/Telepathy/Account/", "") + "-" + channel->targetId()).toLocal8Bit();
+    QByteArray group_uid = getGroupUid(channel).toLocal8Bit();
 
     const char* remote_name = NULL;
     const char* abook_uid = NULL;
@@ -321,15 +359,7 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
     qDebug() << "onMessageSent" << message.text();
 
     auto epoch = message.sent().toTime_t();
-
-    QString remote_uid;
-    if (channel->targetHandleType() == Tp::HandleTypeContact) {
-        remote_uid = channel->targetId();
-    } else {
-        qDebug() << "onMessageSent channel targetId" << channel->targetId();
-        remote_uid = channel->groupSelfContact()->id();
-    }
-
+    QString remote_uid = getRemoteUid(channel);
     auto text = message.text().toLocal8Bit();
 
     qDebug() << "log_event";
