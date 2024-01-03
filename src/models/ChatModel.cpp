@@ -15,6 +15,7 @@ ChatModel::ChatModel(QObject *parent)
 
 void ChatModel::prependMessage(ChatMessage *message) {
   QSharedPointer<ChatMessage> ptr(message);
+  this->prependMessage(ptr);
 }
 
 void ChatModel::prependMessage(const QSharedPointer<ChatMessage> &message) {
