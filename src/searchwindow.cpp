@@ -17,10 +17,10 @@
 
 
 SearchWindow * SearchWindow::pSearchWindow = nullptr;
-SearchWindow::SearchWindow(Conversations *ctx, QString remote_uid, QWidget *parent) :
+SearchWindow::SearchWindow(Conversations *ctx, QString group_uid, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::SearchWindow),
-    m_remote_uid(remote_uid),
+    m_group_uid(group_uid),
     m_ctx(ctx) {
   pSearchWindow = this;
   ui->setupUi(this);

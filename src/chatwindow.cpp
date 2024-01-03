@@ -102,7 +102,7 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
 
 void ChatWindow::onExportToCsv() {
     qDebug() << __FUNCTION__;
-    ChatModel::exportChatToCsv(m_chatMessage->service(), m_chatMessage->remote_uid(), this);
+    ChatModel::exportChatToCsv(m_chatMessage->service(), m_chatMessage->group_uid(), this);
     QMessageBox msgBox;
     msgBox.setText(QString("File written to ~/MyDocs/"));
     msgBox.exec();
@@ -202,7 +202,7 @@ bool ChatWindow::eventFilter(QObject *watched, QEvent *event) {
 
 void ChatWindow::closeEvent(QCloseEvent *event) {
   this->chatModel->clear();
-  emit closed(m_chatMessage->remote_uid());
+  emit closed(m_chatMessage->group_uid());
   m_chatMessage.clear();
   QWidget::closeEvent(event);
 }
