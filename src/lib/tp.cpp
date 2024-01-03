@@ -153,12 +153,47 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
     qDebug() << "handleChannels";
 
     foreach (Tp::ChannelPtr channelptr, channels) {
-        /* Do we have to check if we already have an existing channel
-         * (I would think not, but maybe we do want to check for that) */
+        Tp::ChannelRequest* matching_requestptr = NULL;
+        Tp::Channel* matching_channel = NULL;
+
+        /* We don't need to check the account, I think we get handlechannels
+         * for a specific account */
+        foreach (Tp::ChannelRequestPtr requestptr, requestsSatisfied) {
+            QString target_uid;
+            foreach (Tp::QualifiedPropertyValueMap valuemap, requestptr->requests()) {
+                if (valuemap.contains("org.freedesktop.Telepathy.Channel.TargetID")) {
+                    auto target_variant = valuemap["org.freedesktop.Telepathy.Channel.TargetID"].variant();
+                    // TODO: Check target_variant.userType?
+                    target_uid = target_variant.toString();
+                    break;
+                }
+            }
+
+            if (target_uid == channelptr->targetId()) {
+                matching_requestptr = (Tp::ChannelRequest*)requestptr.data();
+                break;
+            }
+        }
+
         for (TelepathyAccount *ma : m_telepathy_parent->accounts) {
             if (ma->acc == account) {
-                auto mychan = new TelepathyChannel(channelptr, ma);
-                ma->channels << mychan;
+                matching_channel = ma->hasChannel(channelptr->targetId());
+                qDebug() << "handleChannels: channel exists already?" << matching_channel;
+
+                if (matching_channel == NULL) {
+                    matching_channel = (Tp::Channel*)channelptr.data();
+
+                    auto mychan = new TelepathyChannel(channelptr, ma);
+                    ma->channels << mychan;
+                }
+                break;
+            }
+        }
+
+        /* Update channel request ptr with channel */
+        if (matching_channel) {
+            if (matching_requestptr) {
+                matching_requestptr->succeeded((Tp::ChannelPtr)matching_channel);
             }
         }
     }
@@ -318,29 +353,30 @@ void TelepathyAccount::onAccReady(Tp::PendingOperation *op) {
 #if 0
     if (acc->isOnline()) {
         joinChannel("##maemotest");
-        joinChannel("#maemo-leste");
+        //joinChannel("#merlijn-test-channel");
+        //joinChannel("#maemo-leste");
     }
 #endif
 
 }
 
-void TelepathyAccount::sendMessage(const QString &remote_uid, const QString &message) {
-    qDebug() << "sendMessage: remote_uid:" << remote_uid;
-    bool found = FALSE;
-    /* Find existing channel, otherwise create one using ensureTextChat and the
-     * lambda */
+Tp::TextChannel* TelepathyAccount::hasChannel(const QString remote_uid) {
     foreach (TelepathyChannel* channel, channels) {
         Tp::TextChannel* a_channel = (Tp::TextChannel*) channel->m_channel.data();
-        qDebug() << "Testing against:" << a_channel->targetId();
         if (remote_uid == a_channel->targetId()) {
-            qDebug() << "TelepathyAccount::sendMessage: Found matching channel";
-            channel->sendMessage(message);
-            found = TRUE;
-            break;
+            return a_channel;
         }
     }
 
-    if (!found) {
+    return NULL;
+}
+
+void TelepathyAccount::sendMessage(const QString &remote_uid, const QString &message) {
+    qDebug() << "sendMessage: remote_uid:" << remote_uid;
+    Tp::TextChannel* channel = hasChannel(remote_uid);
+    if (channel) {
+        channel->send(message);
+    } else {
         auto *pending = acc->ensureTextChat(remote_uid);
 
         connect(pending, &Tp::PendingChannelRequest::finished, [=](Tp::PendingOperation *op){
