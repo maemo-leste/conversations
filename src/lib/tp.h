@@ -89,6 +89,7 @@ public:
 signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
     void openChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
+    void removed(TelepathyAccount* account);
 
 public slots:
     void sendMessage(const QString &remote_uid, const QString &message);
@@ -109,6 +110,7 @@ public slots:
 private slots:
     void onOnline(bool online);
     void onAccReady(Tp::PendingOperation *op);
+    void onRemoved(void);
 
     // TODO return value
     void joinChannel(const QString &channel);
@@ -176,6 +178,9 @@ public slots:
     void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
     void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
     void onOpenChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
+
+    void onNewAccount(const Tp::AccountPtr &account);
+    void onAccountRemoved(TelepathyAccount* account);
 
 private slots:
     void onAccountManagerReady(Tp::PendingOperation *op);

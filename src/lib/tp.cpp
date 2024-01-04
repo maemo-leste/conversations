@@ -94,14 +94,10 @@ void Telepathy::onAccountManagerReady(Tp::PendingOperation *op) {
     Tp::AccountPtr acc;
 
     for (int i = 0; i < l.count(); i++) {
-        acc = l[i];
-        auto myacc = new TelepathyAccount(acc);
-        accounts << myacc;
-
-        /* Connect this account signal to our general TP instance */
-        connect(myacc, &TelepathyAccount::databaseAddition, this, &Telepathy::onDatabaseAddition);
-        connect(myacc, &TelepathyAccount::openChannelWindow, this, &Telepathy::onOpenChannelWindow);
+        onNewAccount(l[i]);
     }
+
+    connect(m_accountmanager.data(), &Tp::AccountManager::newAccount, this, &Telepathy::onNewAccount);
 
     emit accountManagerReady();
 }
@@ -112,6 +108,24 @@ void Telepathy::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
 
 void Telepathy::onOpenChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel) {
     emit openChannelWindow(local_uid, remote_uid, group_uid, service, channel);
+}
+
+void Telepathy::onNewAccount(const Tp::AccountPtr &account) {
+    qDebug() << "adding account" << account;
+    auto myacc = new TelepathyAccount(account);
+    accounts << myacc;
+
+    /* Connect this account signal to our general TP instance */
+    connect(myacc, &TelepathyAccount::databaseAddition, this, &Telepathy::onDatabaseAddition);
+    connect(myacc, &TelepathyAccount::openChannelWindow, this, &Telepathy::onOpenChannelWindow);
+    connect(myacc, &TelepathyAccount::removed, this, &Telepathy::onAccountRemoved);
+}
+
+void Telepathy::onAccountRemoved(TelepathyAccount* account) {
+    qDebug() << "onAccountRemoved" << account;
+
+    /* TODO: Remove from QList, free TelepathyChannels (although those might
+     * get a signal that they are closed anyway?) and TelepathyAccount */
 }
 
 /* Convenience function to send a message to a contact, the local_uid specifies
@@ -219,6 +233,7 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
 TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
     acc = macc;
 
+    connect(acc.data(), &Tp::Account::removed, this, &TelepathyAccount::onRemoved);
     connect(acc.data(), &Tp::Account::onlinenessChanged, this, &TelepathyAccount::onOnline);
     connect(acc->becomeReady(), &Tp::PendingReady::finished, this, &TelepathyAccount::onAccReady);
 
@@ -412,6 +427,10 @@ void TelepathyAccount::sendMessage(const QString &remote_uid, const QString &mes
             auto text_channel = (Tp::TextChannel*)channel.data();
             text_channel->send(message);
     });
+}
+
+void TelepathyAccount::onRemoved() {
+    emit removed(this);
 }
 
 TelepathyAccount::~TelepathyAccount() = default;
