@@ -3,11 +3,14 @@
 #include <QDesktopServices>
 #include <QCoreApplication>
 #include <QSystemTrayIcon>
-#include <QQmlContext>
 #include <QMessageBox>
 #include <QGroupBox>
 #include <QFileDialog>
 #include <QTextEdit>
+
+#ifdef QUICK
+#include <QQmlContext>
+#endif
 
 #include "chatwindow.h"
 #include "mainwindow.h"
@@ -62,6 +65,7 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   if(m_chatMessage->isSearchResult)
     fillBufferUntil(m_chatMessage);
 
+#ifdef QUICK
   auto *qctx = ui->quick->rootContext();
   qctx->setContextProperty("chatWindow", this);
   qctx->setContextProperty("chatModel", this->chatModel);
@@ -80,6 +84,11 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
     ui->quick->setSource(QUrl("qrc:/irssi/irssi.qml"));
   else
     ui->quick->setSource(QUrl("qrc:/whatsthat/whatsthat.qml"));
+
+  connect((QObject*)ui->quick->rootObject(),
+        SIGNAL(chatPreReady()), this,
+        SLOT(onChatPreReady()));
+#endif
 
   // auto-close inactivity timer
   m_windowFocusTimer->setInterval(1000);
@@ -103,9 +112,6 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
 
   connect(ui->actionExportChatToCsv, &QAction::triggered, this, &ChatWindow::onExportToCsv);
   connect(ui->actionSearchChat, &QAction::triggered, this, &ChatWindow::onOpenSearchWindow);
-  connect((QObject*)ui->quick->rootObject(),
-          SIGNAL(chatPreReady()), this,
-          SLOT(onChatPreReady()));
 }
 
 void ChatWindow::onExportToCsv() {

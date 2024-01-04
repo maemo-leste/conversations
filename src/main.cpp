@@ -31,9 +31,11 @@
 
 int main(int argc, char *argv[]) {
   Q_INIT_RESOURCE(assets);
+#ifdef QUICK
   Q_INIT_RESOURCE(whatsthat);
   Q_INIT_RESOURCE(chatty);
   Q_INIT_RESOURCE(irssi);
+#endif
 
 #ifdef DEBUG
   Tp::enableDebug(true);

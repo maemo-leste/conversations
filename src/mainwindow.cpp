@@ -29,6 +29,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   qDebug() << QString("%1x%2 (%3 DPI)").arg(
       this->screenRect.width()).arg(this->screenRect.height()).arg(this->screenDpi);
 
+#ifdef QUICK
   // js: cfg.get(Config.MaemoTest);  |  cfg.set(Config.MaemoTest , "foo");
   qmlRegisterUncreatableMetaObject(
       ConfigKeys::staticMetaObject,
@@ -37,6 +38,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
       "Config",
       "Error: only enums"
   );
+#endif
 
   connect(m_ctx, &Conversations::setTitle, this, &QMainWindow::setWindowTitle);
   connect(m_ctx, &Conversations::showApplication, this, &MainWindow::onShowApplication);
@@ -50,7 +52,8 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx->telepathy, &Telepathy::openChannelWindow, this, QOverload<QString, QString, QString, QString, QString>::of(&MainWindow::onOpenChatWindow));
 }
 
-void MainWindow::createQml() {
+void MainWindow::createOverview() {
+#ifdef QUICK
   if(m_quickWidget != nullptr) return;
   m_quickWidget = new QQuickWidget(this);
 
@@ -70,16 +73,19 @@ void MainWindow::createQml() {
   connect((QObject*)m_quickWidget->rootObject(), SIGNAL(overviewRowClicked(int)), this, SLOT(onOpenChatWindow(int)));
 
   ui->centralWidget->layout()->addWidget(m_quickWidget);
+#endif
 }
 
-void MainWindow::onTPAccountManagerReady() {}
-
-void MainWindow::destroyQml() {
+void MainWindow::destroyOverview() {
+#ifdef QUICK
   if(m_quickWidget == nullptr) return;
   m_quickWidget->disconnect();
   m_quickWidget->deleteLater();
   m_quickWidget = nullptr;
+#endif
 }
+
+void MainWindow::onTPAccountManagerReady() {}
 
 void MainWindow::onOpenChatWindow(int idx) {
   auto msg = m_ctx->chatOverviewModel->chats.at(idx);
@@ -184,7 +190,7 @@ void MainWindow::onChatWindowClosed(const QString &group_uid) {
 }
 
 void MainWindow::onShowApplication() {
-  this->createQml();
+  this->createOverview();
   this->show();
 
   m_ctx->isBackground = false;
@@ -195,10 +201,11 @@ void MainWindow::onShowApplication() {
 
 void MainWindow::onHideApplication() {
   this->hide();
-  this->destroyQml();
+  this->destroyOverview();
   m_ctx->isBackground = true;
 }
 
+#ifdef QUICK
 void MainWindow::qmlInjectPalette(QQmlContext *qctx, Conversations *ctx) {
 //  qctx->setContextProperty("colorWindow", ctx->colorWindow);
 //  qctx->setContextProperty("colorBase", ctx->colorBase);
@@ -208,6 +215,7 @@ void MainWindow::qmlInjectPalette(QQmlContext *qctx, Conversations *ctx) {
 //  qctx->setContextProperty("colorBrightText", ctx->colorBrightText);
 //  qctx->setContextProperty("colorHighlight", ctx->colorHighlight);
 }
+#endif
 
 MainWindow *MainWindow::getInstance() {
   return pMainWindow;

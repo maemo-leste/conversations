@@ -3,11 +3,14 @@
 #include <QDesktopServices>
 #include <QCoreApplication>
 #include <QSystemTrayIcon>
-#include <QQmlContext>
 #include <QMessageBox>
 #include <QGroupBox>
 #include <QFileDialog>
 #include <QTextEdit>
+
+#ifdef QUICK
+#include <QQmlContext>
+#endif
 
 #include "searchwindow.h"
 #include "config-conversations.h"
@@ -30,6 +33,7 @@ SearchWindow::SearchWindow(Conversations *ctx, QString group_uid, QWidget *paren
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
 
+#ifdef QUICK
   auto *qctx = ui->quick->rootContext();
   qctx->setContextProperty("searchWindow", this);
   qctx->setContextProperty("chatSearchModel", this->searchModel);
@@ -40,6 +44,7 @@ SearchWindow::SearchWindow(Conversations *ctx, QString group_uid, QWidget *paren
   ui->quick->setSource(QUrl("qrc:/qml/Search.qml"));
 
   connect((QObject*)ui->quick->rootObject(), SIGNAL(itemClicked(int)), this, SLOT(onItemClicked(int)));
+#endif
 }
 
 void SearchWindow::onItemClicked(int idx) {

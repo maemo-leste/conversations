@@ -8,10 +8,13 @@
 #include <QtWidgets/QMenu>
 #include <QMainWindow>
 #include <QObject>
-#include <QQuickItem>
 #include <QtCore>
 #include <QtGui>
 #include <QFileInfo>
+
+#ifdef QUICK
+#include <QQuickItem>
+#endif
 
 #include <iostream>
 

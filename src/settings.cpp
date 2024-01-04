@@ -3,11 +3,14 @@
 #include <QDesktopServices>
 #include <QCoreApplication>
 #include <QSystemTrayIcon>
-#include <QQmlContext>
 #include <QMessageBox>
 #include <QGroupBox>
 #include <QFileDialog>
 #include <QCheckBox>
+
+#ifdef QUICK
+#include <QQmlContext>
+#endif
 
 #include "settings.h"
 #include "config-conversations.h"

@@ -2,10 +2,13 @@
 #include <QObject>
 #include <QSettings>
 #include <QRegExp>
-#include <QQmlContext>
 #include <QStandardItemModel>
 #include <QApplication>
 #include <QTextCharFormat>
+
+#ifdef QUICK
+#include <QQmlContext>
+#endif
 
 #include "lib/libnotify-qt/Notification.h"
 

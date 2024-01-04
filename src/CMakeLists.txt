@@ -19,13 +19,7 @@ file(GLOB SOURCE_FILES
         "lib/qtcsv/*.cpp"
         )
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui Network DBus Svg Xml Quick QuickWidgets Qml QuickControls2 QuickCompiler)
-if(MAEMO)
-    find_package(Qt5 REQUIRED COMPONENTS Maemo5)
-endif()
-
-find_package(TelepathyQt5 0.9.7 REQUIRED)
-
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui Network DBus Svg Quick QuickWidgets Qml QuickControls2 QuickCompiler)
 qtquick_compiler_add_resources(RESOURCES
         assets.qrc
         qml/components/qml_components.qrc
@@ -33,6 +27,14 @@ qtquick_compiler_add_resources(RESOURCES
         qml/chat/whatsthat/whatsthat.qrc
         qml/chat/irssi/irssi.qrc
         )
+
+qt5_add_resources(RESOURCES-tiny assets.qrc)
+
+if(MAEMO)
+    find_package(Qt5 REQUIRED COMPONENTS Maemo5)
+endif()
+
+find_package(TelepathyQt5 0.9.7 REQUIRED)
 
 if(NOT MAEMO)
     qtquick_compiler_add_resources(RESOURCES assets_localdev.qrc)
@@ -45,27 +47,38 @@ add_executable(conversations ${EXECUTABLE_FLAG} main.cpp
         ${RESOURCES}
         )
 
+add_executable(conversations-tiny ${EXECUTABLE_FLAG} main.cpp
+        ${SOURCE_FILES}
+        ${RESOURCES-tiny}
+        )
+
 set_property(TARGET conversations PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set_property(TARGET conversations-tiny PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 target_include_directories(conversations PUBLIC ${Qt5Gui_PRIVATE_INCLUDE_DIRS})
-#target_include_directories(PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}  ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(conversations-tiny PUBLIC ${Qt5Gui_PRIVATE_INCLUDE_DIRS})
+
+target_compile_definitions(conversations PRIVATE QUICK=1)
 
 if(MAEMO)
     # @TODO: should not be necessary, but definition `Q_WS_MAEMO` is *not* available via CMake
     target_compile_definitions(conversations PRIVATE MAEMO=1)
+    target_compile_definitions(conversations-tiny PRIVATE MAEMO=1)
+    target_compile_definitions(conversations PRIVATE MAEMO_GTK=1)
+    target_compile_definitions(conversations-tiny PRIVATE MAEMO_GTK=1)
 endif()
 
 if(RTCOM)
     target_compile_definitions(conversations PRIVATE RTCOM=1)
+    target_compile_definitions(conversations-tiny PRIVATE RTCOM=1)
 endif()
 
 if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
     target_compile_definitions(conversations PRIVATE DEBUG=1)
+    target_compile_definitions(conversations-tiny PRIVATE DEBUG=1)
 endif()
 
-message(STATUS "xxx ${TELEPATHY_QT5_INCLUDE_DIR}")
-
-target_include_directories(conversations PUBLIC
+set(INCLUDE_DIRS
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/src/lib/
         ${X11_INCLUDE_DIR}
@@ -76,46 +89,43 @@ target_include_directories(conversations PUBLIC
         ${Qt5Network_INCLUDE_DIRS}
         ${Qt5DBus_INCLUDE_DIRS}
         ${Qt5Svg_INCLUDE_DIRS}
-        ${Qt5Xml_INCLUDE_DIRS}
         ${TELEPATHY_QT5_INCLUDE_DIR}
         ${GLIB_INCLUDE_DIRS}
         ${RTCOM-EVENTLOGGER_INCLUDE_DIRS}
         ${LIBHILDON_INCLUDE_DIRS}
         ${OSSO_ABOOK_INCLUDE_DIRS}
-        ${GTK_INCLUDE_DIRS}
-        )
+        ${GTK_INCLUDE_DIRS})
+
+target_include_directories(conversations PUBLIC ${INCLUDE_DIRS})
+target_include_directories(conversations-tiny PUBLIC ${INCLUDE_DIRS})
 
 add_definitions(${QT_DEFINITIONS})
 if(NOT "${CMAKE_BUILD_TYPE}" EQUAL "Debug")
     add_definitions(-DQT_NO_DEBUG)
 endif()
 
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS})
+
+set(COMPILE_DEFS
+    ${Qt5Core_DEFINITIONS}
+    ${Qt5Widgets_DEFINITIONS}
+    ${Qt5Gui_DEFINITIONS}
+    ${Qt5DBus_DEFINITIONS}
+    ${Qt5Network_DEFINITIONS}
+    ${Qt5Svg_DEFINITIONS})
+
+set(COMPILE_OPTS
+    ${RTCOM-EVENTLOGGER_CFLAGS_OTHER}
+    ${LIBHILDON_CFLAGS_OTHER}
+    ${OSSO_ABOOK_CFLAGS_OTHER}
+    ${GTK_CFLAGS_OTHER}
+    -Wno-deprecated-declarations)
+
+target_compile_definitions(conversations PUBLIC ${COMPILE_DEFS})
+target_compile_definitions(conversations-tiny PUBLIC ${COMPILE_DEFS})
+target_compile_options(conversations PUBLIC ${COMPILE_OPTS})
 target_compile_definitions(conversations PRIVATE TP_QT_ENABLE_LOWLEVEL_API=1)
-
-target_compile_definitions(conversations
-        PUBLIC
-        ${Qt5Core_DEFINITIONS}
-        ${Qt5Widgets_DEFINITIONS}
-        ${Qt5Gui_DEFINITIONS}
-        ${Qt5DBus_DEFINITIONS}
-        ${Qt5Network_DEFINITIONS}
-        ${Qt5Svg_DEFINITIONS}
-        ${Qt5Xml_DEFINITIONS}
-)
-
-target_compile_options(conversations
-        PUBLIC
-        ${RTCOM-EVENTLOGGER_CFLAGS_OTHER}
-        ${LIBHILDON_CFLAGS_OTHER}
-        ${OSSO_ABOOK_CFLAGS_OTHER}
-        ${GTK_CFLAGS_OTHER}
-        -Wno-deprecated-declarations
-        )
-
-set(CMAKE_CXX_FLAGS
-        ${CMAKE_CXX_FLAGS}
-        ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}
-        )
+target_compile_definitions(conversations-tiny PRIVATE TP_QT_ENABLE_LOWLEVEL_API=1)
 
 target_link_libraries(conversations PUBLIC
         ${CMAKE_DL_LIBS}
@@ -127,7 +137,6 @@ target_link_libraries(conversations PUBLIC
         Qt5::Svg
         Qt5::QSvgIconPlugin
         Qt5::QSvgPlugin
-        Qt5::Xml
         Qt5::Quick
         Qt5::QuickWidgets
         Qt5::Qml
@@ -142,17 +151,38 @@ target_link_libraries(conversations PUBLIC
         -lrtcom-el-plugin-chat
 )
 
+target_link_libraries(conversations-tiny PUBLIC
+        ${CMAKE_DL_LIBS}
+        Qt5::Core
+        Qt5::Widgets
+        Qt5::Gui
+        Qt5::DBus
+        Qt5::Network
+        Qt5::Svg
+        Qt5::QSvgIconPlugin
+        Qt5::QSvgPlugin
+        Threads::Threads
+        ${TELEPATHY_QT5_LIBRARIES}
+        ${GLIB_LIBRARIES}
+        ${RTCOM-EVENTLOGGER_LIBRARIES}
+        ${OSSO_ABOOK_LIBRARIES}
+        ${LIBHILDON_LIBRARIES}
+        ${GTK_LIBRARIES}
+        -lrtcom-el-plugin-chat
+)
+
 if(MAEMO)
     target_link_libraries(conversations PUBLIC Qt5::Maemo5)
+    target_link_libraries(conversations-tiny PUBLIC Qt5::Maemo5)
 endif()
 
 if(X11_FOUND)
     target_link_libraries(conversations PUBLIC ${X11_LIBRARIES})
+    target_link_libraries(conversations-tiny PUBLIC ${X11_LIBRARIES})
 endif()
 
-install(TARGETS conversations
-        DESTINATION bin
-        )
+install(TARGETS conversations DESTINATION bin)
+install(TARGETS conversations-tiny DESTINATION bin)
 
 message(STATUS "CONVERSATIONS: ${VERSION}")
 if(MAEMO)

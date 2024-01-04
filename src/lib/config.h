@@ -1,11 +1,13 @@
-#ifndef CONV_SETTINGS_H
-#define CONV_SETTINGS_H
+#pragma once
 
 #include <QObject>
 #include <QSettings>
 #include <QPointer>
-#include <QQmlEngine>
 #include <QDir>
+
+#ifdef QUICK
+#include <QQmlEngine>
+#endif
 
 namespace ConfigKeys
 {
@@ -58,4 +60,3 @@ inline Config* config()
     return Config::instance();
 }
 
-#endif
