@@ -106,6 +106,7 @@ public slots:
 
     static QString getRemoteUid(Tp::TextChannelPtr channel);
     QString getGroupUid(Tp::TextChannelPtr channel);
+    QString getLocalUid();
 
 private slots:
     void onOnline(bool online);

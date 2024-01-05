@@ -135,7 +135,7 @@ void Telepathy::sendMessage(const QString &local_uid, const QString &remote_uid,
     /* Find our account given the local_uid and then send the message */
     for (TelepathyAccount *ma : accounts) {
         auto acc = ma->acc;
-        QByteArray backend_name = (acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName()).toLocal8Bit();
+        QByteArray backend_name = ma->getLocalUid().toLocal8Bit();
 
         if (backend_name == local_uid) {
             ma->sendMessage(remote_uid, message);
@@ -238,7 +238,7 @@ TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
     connect(acc->becomeReady(), &Tp::PendingReady::finished, this, &TelepathyAccount::onAccReady);
 
     m_nickname = acc->nickname();
-    m_backend_name = acc->cmName() + "/" + acc->protocolName() + "/" + acc->displayName();
+    m_backend_name = getLocalUid();
     m_protocol_name = acc->protocolName();
 }
 
@@ -270,6 +270,10 @@ QString TelepathyAccount::getRemoteUid(Tp::TextChannelPtr channel) {
     } else {
         return channel->groupSelfContact()->id();
     }
+}
+
+QString TelepathyAccount::getLocalUid() {
+    return acc->objectPath().replace("/org/freedesktop/Telepathy/Account/", "");
 }
 
 
