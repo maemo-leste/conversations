@@ -1,3 +1,12 @@
+conversations (0.6.1) unstable; urgency=medium
+
+  * Fix local_uid generation - we weren't using the object path before
+    If one used prior versions of conversations and wrote to the rtcom
+    el-v1.db database, things might not work entirely as expected - it's best
+    to start with a new database.
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Fri, 05 Jan 2024 22:52:15 +0100
+
 conversations (0.6.0) unstable; urgency=medium
 
   * Significantly improve rtcom logging code
