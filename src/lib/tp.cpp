@@ -462,11 +462,9 @@ void TelepathyChannel::onChannelReady(Tp::PendingOperation *op) {
         qDebug() << "onChannelReady, errorMessage:" << op->errorMessage();
     }
 
-    auto *channel = (Tp::TextChannel*)m_channel.data();
+    Tp::TextChannel *channel = (Tp::TextChannel*)m_channel.data();
 
     if (channel->targetHandleType() == Tp::HandleTypeContact) {
-        channel = (Tp::TextChannel*)m_channel.data();  // @TODO: data() assigned a second time?
-
         connect(channel, &Tp::TextChannel::messageReceived, this, &TelepathyChannel::onChanMessageReceived);
         connect(channel, &Tp::TextChannel::pendingMessageRemoved, this, &TelepathyChannel::onChanPendingMessageRemoved);
         connect(channel, &Tp::TextChannel::messageSent, this, &TelepathyChannel::onChanMessageSent);
