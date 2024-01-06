@@ -124,8 +124,8 @@ void Telepathy::onNewAccount(const Tp::AccountPtr &account) {
 void Telepathy::onAccountRemoved(TelepathyAccount* account) {
     qDebug() << "onAccountRemoved" << account;
 
-    /* TODO: Remove from QList, free TelepathyChannels (although those might
-     * get a signal that they are closed anyway?) and TelepathyAccount */
+    accounts.removeOne(account);
+    delete account;
 }
 
 /* Convenience function to send a message to a contact, the local_uid specifies
@@ -437,7 +437,13 @@ void TelepathyAccount::onRemoved() {
     emit removed(this);
 }
 
-TelepathyAccount::~TelepathyAccount() = default;
+TelepathyAccount::~TelepathyAccount() {
+    foreach (TelepathyChannel* channel, channels) {
+        /* Let's assume telepathy will clean up it's own channels so we don't
+         * work on the m_channel variable in this class */
+        delete channel;
+    }
+}
 
 TelepathyChannel::TelepathyChannel(const Tp::ChannelPtr &mchannel, TelepathyAccount* macc) : QObject(nullptr) {
     m_account = macc;
