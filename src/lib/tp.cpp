@@ -249,7 +249,7 @@ void TelepathyAccount::TpOpenChannelWindow(Tp::TextChannelPtr channel) {
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
     QString channelstr;
 
-    if (channel->targetHandleType() == Tp::HandleTypeContact) {
+    if (channel->targetHandleType() != Tp::HandleTypeContact) {
         channelstr = channel->targetId();
     }
 
