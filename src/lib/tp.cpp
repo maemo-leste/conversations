@@ -320,13 +320,13 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
         remote_name = remote_alias.toLocal8Bit();
     }
 
-    create_event(epoch, epoch, m_nickname.toLocal8Bit().data(),
-                 m_backend_name.toLocal8Bit().data(),
-                 remote_uid.toLocal8Bit(),
-                 remote_name, abook_uid,
-                 text.toLocal8Bit(), outgoing, m_protocol_name.toStdString().c_str(),
-                 channel_str, group_uid,
-                 0 /* TODO: flags */);
+    rtcomCreateEvent(epoch, epoch, m_nickname.toLocal8Bit().data(),
+                     m_backend_name.toLocal8Bit().data(),
+                     remote_uid.toLocal8Bit(),
+                     remote_name, abook_uid,
+                     text.toLocal8Bit(), outgoing, m_protocol_name.toStdString().c_str(),
+                     channel_str, group_uid,
+                     0 /* TODO: flags */);
 
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
     auto *msg = new ChatMessage(1, /* TODO: event id is wrong here but should not matter */

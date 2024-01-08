@@ -1,12 +1,16 @@
 #include "lib/rtcom.h"
 
-rtcom_query* rtcomStartQuery(const int limit, const int offset, const RTComElQueryGroupBy group_by) {
-  RTComElQuery *query = NULL;
-  RTComElIter *it = NULL;
-  RTComEl *el = NULL;
+RTComEl *rtcomel() {
+  static RTComEl *el = NULL;
 
-  el = rtcom_el_new();
-  query = rtcom_el_query_new(el);
+  if (!el)
+    el = rtcom_el_new();
+
+  return el;
+}
+
+RTComElQuery *rtcomStartQuery(const int limit, const int offset, const RTComElQueryGroupBy group_by) {
+  RTComElQuery *query = rtcom_el_query_new(rtcomel());
 
   if(group_by != RTCOM_EL_QUERY_GROUP_BY_NONE)
     rtcom_el_query_set_group_by(query, group_by);
@@ -16,18 +20,19 @@ rtcom_query* rtcomStartQuery(const int limit, const int offset, const RTComElQue
   if(offset > 0)
     rtcom_el_query_set_offset(query, offset);
 
-  return new rtcom_query{query, it , el};
+  return query;
 }
 
-QList<ChatMessage*> rtcomIterateResults(rtcom_query *query_struct) {
-  QList<ChatMessage*> results;
-  query_struct->it = rtcom_el_get_events(query_struct->el, query_struct->query);
+QList<ChatMessage*> rtcomIterateResults(RTComElQuery *query) {
+  QList<ChatMessage *> results;
+  RTComElIter *it = rtcom_el_get_events(rtcomel(), query);
 
-  if(query_struct->it && rtcom_el_iter_first(query_struct->it)) {
+  if(it && rtcom_el_iter_first(it)) {
     do {
       GHashTable *values = NULL;
+
       values = rtcom_el_iter_get_value_map(
-          query_struct->it,
+          it,
           "id",
           "service",
           "group-uid",
@@ -64,22 +69,20 @@ QList<ChatMessage*> rtcomIterateResults(rtcom_query *query_struct) {
           LOOKUP_BOOL("outgoing"),
           LOOKUP_INT("flags"));
 
-       g_hash_table_destroy(values);
+      g_hash_table_destroy(values);
       results << item;
-    } while (rtcom_el_iter_next(query_struct->it));
-    g_object_unref(query_struct->it);
+    } while (rtcom_el_iter_next(it));
+
+    g_object_unref(it);
   } else {
     qCritical() << "Failed to init iterator to start";
   }
 
-  g_object_unref(query_struct->query);
   return results;
 }
 
-void create_event(time_t start_time, time_t end_time, const char* self_name, const char* backend_name, const char *remote_uid, const char *remote_name, const char* abook_uid, const char* text, bool is_outgoing, const char* protocol, const char* channel, const char* group_uid, int flags) {
+void rtcomCreateEvent(time_t start_time, time_t end_time, const char* self_name, const char* backend_name, const char *remote_uid, const char *remote_name, const char* abook_uid, const char* text, bool is_outgoing, const char* protocol, const char* channel, const char* group_uid, int flags) {
   qDebug() << "create_event";
-  if(evlog == NULL)
-    evlog = rtcom_el_new();
 
   RTComElEvent *ev = rtcom_el_event_new();
 
@@ -114,7 +117,7 @@ void create_event(time_t start_time, time_t end_time, const char* self_name, con
 
   RTCOM_EL_EVENT_SET_FIELD(ev, outgoing, is_outgoing);
 
-  if(rtcom_el_add_event(evlog, ev, NULL) < 0) {
+  if(rtcom_el_add_event(rtcomel(), ev, NULL) < 0) {
     qDebug() << "Failed to add event to RTCom";
     // todo: log failure
     int wegw = 1;
@@ -125,15 +128,14 @@ void create_event(time_t start_time, time_t end_time, const char* self_name, con
 
 QList<QString> rtcomGetLocalUids() {
   QList<QString> protocols;
-  rtcom_query* query_struct = rtcomStartQuery(0, 0, RTCOM_EL_QUERY_GROUP_BY_EVENTS_LOCAL_UID);
-  if(!rtcom_el_query_prepare(query_struct->query, NULL)) {
+  RTComElQuery *query = rtcomStartQuery(0, 0, RTCOM_EL_QUERY_GROUP_BY_EVENTS_LOCAL_UID);
+  if(!rtcom_el_query_prepare(query, NULL)) {
     qCritical() << __FUNCTION__ << "Could not prepare query";
-    g_object_unref(query_struct->query);
-    delete query_struct;
+    g_object_unref(query);
     return protocols;
   }
 
-  auto items = rtcomIterateResults(query_struct);
+  auto items = rtcomIterateResults(query);
   for(auto &item: items) {
     auto local_uid = item->local_uid();
     if(local_uid.count("/") != 2) continue;
@@ -142,7 +144,7 @@ QList<QString> rtcomGetLocalUids() {
   }
   qDeleteAll(items);
 
-  g_object_unref(query_struct->query);
-  delete query_struct;
+  g_object_unref(query);
+
   return protocols;
 }

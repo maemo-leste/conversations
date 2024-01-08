@@ -178,31 +178,33 @@ void ChatModel::onProtocolFilter(QString protocol) {
 void ChatModel::onGetOverviewMessages(const int limit, const int offset) {
   this->clear();
 
-  rtcom_query* query_struct = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_GROUP);
+  RTComElQuery *query = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_GROUP);
   bool query_prepared = FALSE;
 
   if(m_filterProtocol.isEmpty()) {
-    gint service_id = rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_CALL");
-    query_prepared = rtcom_el_query_prepare(query_struct->query, "service-id", service_id, RTCOM_EL_OP_NOT_EQUAL,  NULL);
+    gint service_id = rtcom_el_get_service_id(rtcomel(), "RTCOM_EL_SERVICE_CALL");
+    query_prepared = rtcom_el_query_prepare(query, "service-id", service_id, RTCOM_EL_OP_NOT_EQUAL,  NULL);
   } else {
     gint service_id = (m_filterProtocol == "sms" || m_filterProtocol == "tel" || m_filterProtocol == "ofono") ?
-                      rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_SMS") :
-                      rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_CHAT");
+                      rtcom_el_get_service_id(rtcomel(), "RTCOM_EL_SERVICE_SMS") :
+                      rtcom_el_get_service_id(rtcomel(), "RTCOM_EL_SERVICE_CHAT");
 
     QString filterProtocol = QString("%%/" + m_filterProtocol + "/%%");
-    query_prepared = rtcom_el_query_prepare(query_struct->query,
+    query_prepared = rtcom_el_query_prepare(query,
                                             "service-id", service_id, RTCOM_EL_OP_EQUAL,
                                             "local-uid", filterProtocol.toStdString().c_str(), RTCOM_EL_OP_STR_LIKE, NULL);
   }
 
   if(!query_prepared) {
     qCritical() << "Couldn't prepare query";
-    g_object_unref(query_struct->query);
-    delete query_struct;
+    g_object_unref(query);
     return;
   }
 
-  auto results = rtcomIterateResults(query_struct);
+  auto results = rtcomIterateResults(query);
+
+  g_object_unref(query);
+
   for (const auto &message: results)
     this->appendMessage(message);
 }
@@ -226,20 +228,20 @@ unsigned int ChatModel::searchMessages(const QString &search, const QString &gro
 #else
   this->clear();
 
-  rtcom_query* query_struct = rtcomStartQuery(20, 0, RTCOM_EL_QUERY_GROUP_BY_NONE);
-  gint rtcom_sms_service_id = rtcom_el_get_service_id(query_struct->el, "RTCOM_EL_SERVICE_SMS");
+  RTComElQuery *query = rtcomStartQuery(20, 0, RTCOM_EL_QUERY_GROUP_BY_NONE);
+  gint rtcom_sms_service_id = rtcom_el_get_service_id(rtcomel(), "RTCOM_EL_SERVICE_SMS");
   bool query_prepared = FALSE;
 
   if(group_uid == nullptr) {
     query_prepared = rtcom_el_query_prepare(
-      query_struct->query,
+      query,
       "free-text", search.toStdString().c_str(), RTCOM_EL_OP_STR_LIKE,
 //      "service-id", rtcom_sms_service_id, RTCOM_EL_OP_EQUAL,
       NULL);
   } else {
     m_group_uid = group_uid;
     query_prepared = rtcom_el_query_prepare(
-      query_struct->query,
+      query,
       "free-text", search.toStdString().c_str(), RTCOM_EL_OP_STR_LIKE,
       "group-uid", group_uid.toStdString().c_str(), RTCOM_EL_OP_EQUAL,
 //      "service-id", rtcom_sms_service_id, RTCOM_EL_OP_EQUAL,
@@ -248,12 +250,14 @@ unsigned int ChatModel::searchMessages(const QString &search, const QString &gro
 
   if(!query_prepared) {
     qCritical() << "Couldn't prepare query";
-    g_object_unref(query_struct->query);
-    delete query_struct;
+    g_object_unref(query);
     return 0;
   }
 
-  auto results = rtcomIterateResults(query_struct);
+  auto results = rtcomIterateResults(query);
+
+  g_object_unref(query);
+
   for(auto const &message: results) {
     this->appendMessage(message);
   }
@@ -269,22 +273,23 @@ unsigned int ChatModel::getMessages(const QString &service_id, const QString &gr
   m_group_uid = group_uid;
   m_service_id = service_id;
 
-  rtcom_query* query_struct = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_NONE);
-  gint sid = rtcom_el_get_service_id(query_struct->el, m_service_id.toStdString().c_str());
+  RTComElQuery *query = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_NONE);
+  gint sid = rtcom_el_get_service_id(rtcomel(), m_service_id.toStdString().c_str());
   bool query_prepared = FALSE;
-  query_prepared = rtcom_el_query_prepare(query_struct->query,
+  query_prepared = rtcom_el_query_prepare(query,
                                           "group-uid", group_uid.toStdString().c_str(), RTCOM_EL_OP_EQUAL,
                                           "service-id", sid, RTCOM_EL_OP_EQUAL,
                                           NULL);
 
   if(!query_prepared) {
     qCritical() << "Couldn't prepare query";
-    g_object_unref(query_struct->query);
-    delete query_struct;
+    g_object_unref(query);
     return 0;
   }
 
-  auto results = rtcomIterateResults(query_struct);
+  auto results = rtcomIterateResults(query);
+
+  g_object_unref(query);
 
   bool prepend = offset != 0;
   if(prepend) {
