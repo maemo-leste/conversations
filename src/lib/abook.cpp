@@ -13,7 +13,7 @@ bool conv_abook_init() {
             return FALSE;
         }
         conv_abook_aggregator = OSSO_ABOOK_AGGREGATOR(conv_abook_roster);
-        printf("conv_abook_aggregator: %lx\n", conv_abook_aggregator);
+        printf("conv_abook_aggregator: %p\n", conv_abook_aggregator);
 
         osso_abook_waitable_run(OSSO_ABOOK_WAITABLE(conv_abook_aggregator),
                     g_main_context_default(), &err);
