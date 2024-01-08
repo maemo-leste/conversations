@@ -90,7 +90,6 @@ int main(int argc, char *argv[]) {
     qWarning().nospace().noquote() << QString("%1: %2").arg(k, info[k]);
 
   hildon_init();
-  osso_abook_init_with_name("conversations", NULL);
 
   QCommandLineParser parser;
   parser.addHelpOption();
