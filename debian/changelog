@@ -1,3 +1,9 @@
+conversations (0.6.2) unstable; urgency=medium
+
+  * Fix memory leak in rtcom code
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Tue, 09 Jan 2024 23:37:30 +0100
+
 conversations (0.6.1) unstable; urgency=medium
 
   * Fix local_uid generation - we weren't using the object path before
