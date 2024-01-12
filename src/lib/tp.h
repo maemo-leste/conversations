@@ -101,6 +101,7 @@ public slots:
     void TpOpenChannelWindow(Tp::TextChannelPtr channel);
 
     Tp::TextChannel* hasChannel(const QString& remote_uid);
+    void removeChannel(TelepathyChannel* chanptr);
 
     bool log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias);
 
@@ -146,6 +147,7 @@ public slots:
 private slots:
     void onGroupAddContacts(Tp::PendingOperation *op);
     void onChannelReady(Tp::PendingOperation *op);
+    void onInvalidated(Tp::DBusProxy* proxy, const QString& errorName, const QString& errorMessage);
 
     void onChanMessageReceived(const Tp::ReceivedMessage &message);
     void onChanPendingMessageRemoved(const Tp::ReceivedMessage &message);

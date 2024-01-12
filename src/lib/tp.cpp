@@ -414,6 +414,19 @@ Tp::TextChannel* TelepathyAccount::hasChannel(const QString &remote_uid) {
     return nullptr;
 }
 
+void TelepathyAccount::removeChannel(TelepathyChannel* chanptr) {
+    foreach (TelepathyChannel* channel, channels) {
+        if (channel == chanptr) {
+            channels.removeAll(chanptr);
+
+            delete channel;
+            return;
+        }
+    }
+
+    return;
+}
+
 void TelepathyAccount::sendMessage(const QString &remote_uid, const QString &message) {
     qDebug() << "sendMessage: remote_uid:" << remote_uid;
     Tp::TextChannel* channel = hasChannel(remote_uid);
@@ -452,6 +465,14 @@ TelepathyChannel::TelepathyChannel(const Tp::ChannelPtr &mchannel, TelepathyAcco
     connect(m_channel->becomeReady(),
         SIGNAL(finished(Tp::PendingOperation*)),
         SLOT(onChannelReady(Tp::PendingOperation*)));
+
+    connect(m_channel.data(),
+            &Tp::DBusProxy::invalidated, this,
+            &TelepathyChannel::onInvalidated);
+}
+
+void TelepathyChannel::onInvalidated(Tp::DBusProxy * proxy, const QString &errorName, const QString &errorMessage) {
+    m_account->removeChannel(this);
 }
 
 void TelepathyChannel::onChannelReady(Tp::PendingOperation *op) {
