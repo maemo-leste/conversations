@@ -1,3 +1,9 @@
+conversations (0.6.3) unstable; urgency=medium
+
+  * Invalidate channels when going offline/online
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Fri, 12 Jan 2024 21:45:21 +0100
+
 conversations (0.6.2) unstable; urgency=medium
 
   * Fix memory leak in rtcom code
