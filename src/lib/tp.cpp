@@ -257,11 +257,17 @@ void TelepathyAccount::TpOpenChannelWindow(Tp::TextChannelPtr channel) {
 }
 
 QString TelepathyAccount::getGroupUid(Tp::TextChannelPtr channel) {
-    /* TODO: How does this work for SMS? Need to test/think about this,
-     * Fremantle uses just a number for SMS it looks like, or sometimes a name?
-     * Let's double check. It seems to be the last 6-7 digits from a phone
-     * number (uhhh) */
-    return acc->objectPath().replace("/org/freedesktop/Telepathy/Account/", "") + "-" + channel->targetId();
+    if (acc->cmName() == "ring") {
+        /* Fremantle uses just the last 7 digits as a group ID and does not
+         * include the account path. This is not great, because I think this can
+         * cause collisions with different numbers that have the same last 7
+         * digits, but Fremantle has been doing it for many years, so let's do
+         * what Fremantle does for now. By doing what Fremantle does, we can
+         * guarantee compatibility with existing Fremantle rtcom databases */
+        return channel->targetId().right(7);
+    } else {
+        return acc->objectPath().replace("/org/freedesktop/Telepathy/Account/", "") + "-" + channel->targetId();
+    }
 }
 
 QString TelepathyAccount::getRemoteUid(Tp::TextChannelPtr channel) {
