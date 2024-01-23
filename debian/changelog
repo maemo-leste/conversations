@@ -1,3 +1,9 @@
+conversations (0.6.4) unstable; urgency=medium
+
+  * Add backwards compatible group-uid for Fremantle
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Wed, 24 Jan 2024 00:16:24 +0100
+
 conversations (0.6.3) unstable; urgency=medium
 
   * Invalidate channels when going offline/online
