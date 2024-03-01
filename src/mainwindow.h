@@ -24,6 +24,7 @@
 #include "searchwindow.h"
 #include "settings.h"
 #include "composewindow.h"
+#include "window_joinchannel.h"
 #include "lib/config.h"
 #include "lib/libnotify-qt/Notification.h"
 
@@ -56,6 +57,7 @@ public slots:
     void onOpenSettingsWindow();
     void onOpenComposeWindow();
     void onOpenSearchWindow();
+    void onOpenJoinChatWindow();
     void onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg);
     void onQuitApplication();
     void onShowApplication();
@@ -78,6 +80,7 @@ private:
     QMap<QString, ChatWindow*> m_chatWindows;
     Settings *m_settings = nullptr;
     Compose *m_compose = nullptr;
+    JoinChannel *m_joinchannel = nullptr;
     SearchWindow *m_searchWindow = nullptr;
     bool m_autoHideWindow = true;
 

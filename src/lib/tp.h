@@ -61,6 +61,7 @@
 #include <TelepathyQt/Types>
 
 #include "lib/utils.h"
+#include "lib/config.h"
 #include "models/ChatMessage.h"
 #ifdef RTCOM
 #include "lib/rtcom.h"
@@ -85,6 +86,8 @@ public:
 
     QString nickname() const { return m_nickname; }
     QString protocolName() const { return m_protocol_name; }
+    QString accountName;
+    QStringList configChannels;
 
 signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
@@ -93,6 +96,8 @@ signals:
 
 public slots:
     void sendMessage(const QString &remote_uid, const QString &message);
+    void joinChannel(const QString &channel);
+    void leaveChannel(const QString &channel);
 
     /* TODO: make these private again and use connect/emit */
     void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
@@ -101,7 +106,7 @@ public slots:
     void TpOpenChannelWindow(Tp::TextChannelPtr channel);
 
     Tp::TextChannel* hasChannel(const QString& remote_uid);
-    void removeChannel(TelepathyChannel* chanptr);
+    void _removeChannel(TelepathyChannel* chanptr);
 
     bool log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias);
 
@@ -112,16 +117,16 @@ public slots:
 private slots:
     void onOnline(bool online);
     void onAccReady(Tp::PendingOperation *op);
+    void onChannelJoined(const Tp::ChannelRequestPtr &channelRequest, QString channel);
     void onRemoved(void);
 
     // TODO return value
-    void joinChannel(const QString &channel);
     // sendChannelMessage (if we cannot just use sendMessage)
 
 public:
     Tp::AccountPtr acc;
 
-    QList<TelepathyChannel*> channels;
+    QMap<QString, TelepathyChannel*> channels;  // channel_name, tp_channel*
 private:
     QString m_nickname;
     QString m_backend_name;
@@ -132,6 +137,10 @@ private:
     Tp::ContactMessengerPtr messenger;
     Tp::TextChannel *hgbchan;
     Tp::AccountManagerPtr m_accountmanager;
+
+    QStringList readConfigChannels();
+    void writeConfigChannels();
+    void _joinChannel(const QString &channel);
 };
 
 class TelepathyChannel : public QObject {
@@ -171,6 +180,10 @@ public:
     ~Telepathy() override;
 
     QList<TelepathyAccount*> accounts;
+
+    void joinChannel(const QString &local_uid, const QString &channel);
+    void leaveChannel(const QString &local_uid, const QString &channel);
+    TelepathyAccount* rtcomLocalUidToAccount(const QString &local_uid);
 
 signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);

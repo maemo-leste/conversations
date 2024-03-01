@@ -56,13 +56,61 @@ Components.ChatRoot {
             width: parent !== null ? parent.width : 0
             spacing: 0
 
+            // (group)join, leave events, etc. are displayed differently
             Item {
-                visible: outgoing
+                visible: !chat_event
+                Layout.preferredHeight: 32
+                Layout.fillWidth: true
+
+                RowLayout {
+                    anchors.fill: parent
+                    Layout.preferredHeight: 32
+                    Layout.fillWidth: true
+                    spacing: 32
+
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 32
+                    }
+
+                    Components.PlainText {
+                        Layout.preferredHeight: 32
+                        Layout.alignment: Qt.AlignHCenter
+
+                        text: message
+                        color: root.colorTextSelf
+                        wrapMode: Text.WordWrap
+                        font.pointSize: 16 * ctx.scaleFactor
+                        font.bold: false
+                    }
+
+                    Components.PlainText {
+                        Layout.preferredHeight: 32
+                        Layout.alignment: Qt.AlignHCenter
+
+                        text: datestr + " " + hourstr
+                        color: root.colorTextSelf
+                        wrapMode: Text.WordWrap
+                        font.pointSize: 14 * ctx.scaleFactor
+                        font.bold: false
+                        opacity: 0.7
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 32
+                    }
+                }
+            }
+
+            Item {
+                visible: outgoing && chat_event
                 Layout.fillWidth: true
                 Layout.preferredHeight: 32
             }
 
             Rectangle {
+                visible: chat_event
                 color: highlight ? colorHighlight : "transparent"
                 Layout.preferredHeight: itemHeight
                 Layout.preferredWidth: {
@@ -139,7 +187,7 @@ Components.ChatRoot {
             }
 
             Item {
-                visible: !outgoing
+                visible: !outgoing && chat_event
                 Layout.fillWidth: true
                 Layout.preferredHeight: 32
             }

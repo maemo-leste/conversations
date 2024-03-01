@@ -48,7 +48,7 @@
      <x>0</x>
      <y>0</y>
      <width>607</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -114,7 +114,7 @@
   </action>
   <action name="actionJoinChatRoom">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Join chat room</string>

@@ -101,6 +101,14 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   connect(this->ui->btnSend, &QPushButton::clicked, this, &ChatWindow::onGatherMessage);
   connect(m_ctx->telepathy, &Telepathy::databaseAddition, this, &ChatWindow::onDatabaseAddition);
 
+  connect(ui->actionLeave_channel, &QAction::triggered, [=] {
+      // @TODO: change this button in-case we already left this channel (offer to rejoin)
+      auto local_uid = m_chatMessage->local_uid();
+      auto channel = m_chatMessage->channel();
+      if(channel.isEmpty()) return;
+
+      m_ctx->telepathy->leaveChannel(local_uid, channel);
+  });
   connect(ui->actionExportChatToCsv, &QAction::triggered, this, &ChatWindow::onExportToCsv);
   connect(ui->actionSearchChat, &QAction::triggered, this, &ChatWindow::onOpenSearchWindow);
   connect((QObject*)ui->quick->rootObject(),

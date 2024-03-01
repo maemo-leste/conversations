@@ -17,7 +17,8 @@ namespace ConfigKeys
         EnableNotifications,
         EnableAutoCloseChatWindows,
         EnterKeySendsChat,
-        EnableInheritSystemTheme
+        EnableInheritSystemTheme,
+        autoJoinChatChannels
     };
     Q_ENUM_NS(ConfigKey)
 }

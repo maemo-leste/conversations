@@ -21,7 +21,8 @@ static const QHash<ConfigKeys::ConfigKey, ConfigDirective> configStrings = {
   {ConfigKeys::EnableNotifications,{QS("EnableNotifications"), true}},
   {ConfigKeys::EnableAutoCloseChatWindows,{QS("EnableAutoCloseChatWindows"), true}},
   {ConfigKeys::EnableInheritSystemTheme,{QS("EnableInheritSystemTheme"), false}},
-  {ConfigKeys::EnterKeySendsChat,{QS("EnterKeySendsChat"), false}}
+  {ConfigKeys::EnterKeySendsChat,{QS("EnterKeySendsChat"), false}},
+  {ConfigKeys::autoJoinChatChannels, {QS("ActiveChatChannels"), "{}"}}
 };
 
 QPointer<Config> Config::m_instance(nullptr);

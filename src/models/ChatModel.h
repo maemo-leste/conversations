@@ -36,7 +36,10 @@ public:
         EventIDRole,
         ServiceIDRole,
         OverviewNameRole,
-        ChannelRole
+        ChannelRole,
+        ChatEventRole,
+        JoinEventRole,
+        LeaveEventRole
     };
 
     explicit ChatModel(QObject *parent = nullptr);

@@ -44,6 +44,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx, &Conversations::notificationClicked, this, &MainWindow::onNotificationClicked);
   connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::onOpenSettingsWindow);
   connect(ui->actionCompose, &QAction::triggered, this, &MainWindow::onOpenComposeWindow);
+  connect(ui->actionJoinChatRoom, &QAction::triggered, this, &MainWindow::onOpenJoinChatWindow);
   connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::onOpenSearchWindow);
 
   connect(m_ctx->telepathy, &Telepathy::accountManagerReady, this, &MainWindow::onTPAccountManagerReady);
@@ -140,6 +141,23 @@ void MainWindow::onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg) {
   m_searchWindow->close();
   m_searchWindow->deleteLater();
 }
+
+void MainWindow::onOpenJoinChatWindow() {
+  m_joinchannel = new JoinChannel(m_ctx, this);
+  m_joinchannel->show();
+
+  connect(m_joinchannel, &JoinChannel::joinChannel, [=](QString account, QString channel) {
+    m_ctx->telepathy->joinChannel(account, channel);
+
+    // hack: if we close this window immediately, then the QML overview model will not get
+    // updated properly with new changes. The data is updated but the screen wont
+    // refresh, only after touch. Dont know why, maybe maemo-qt or Hildon related.
+    QTimer::singleShot(300, [this]{
+        m_joinchannel->close();
+    });
+  });
+}
+
 
 void MainWindow::onOpenComposeWindow() {
   m_compose = new Compose(m_ctx, this);

@@ -102,6 +102,12 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
     return message->service();
   else if (role == ChannelRole)
     return message->channel();
+  else if (role == ChatEventRole)
+    return message->chat_event();
+  else if (role == JoinEventRole)
+    return message->join_event();
+  else if (role == LeaveEventRole)
+    return message->leave_event();
   return QVariant();
 }
 
@@ -152,6 +158,9 @@ QHash<int, QByteArray> ChatModel::roleNames() const {
   roles[ServiceIDRole] = "service_id";
   roles[OverviewNameRole] = "overview_name";
   roles[ChannelRole] = "channel";
+  roles[ChatEventRole] = "chat_event";
+  roles[JoinEventRole] = "join_event";
+  roles[LeaveEventRole] = "leave_event";
   return roles;
 }
 
@@ -178,16 +187,16 @@ void ChatModel::onProtocolFilter(QString protocol) {
 void ChatModel::onGetOverviewMessages(const int limit, const int offset) {
   this->clear();
 
-  RTComElQuery *query = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_GROUP);
+  RTComElQuery *query = qtrtcom::startQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_GROUP);
   bool query_prepared = FALSE;
 
   if(m_filterProtocol.isEmpty()) {
-    gint service_id = rtcom_el_get_service_id(rtcomel(), "RTCOM_EL_SERVICE_CALL");
+    gint service_id = rtcom_el_get_service_id(qtrtcom::rtcomel(), "RTCOM_EL_SERVICE_CALL");
     query_prepared = rtcom_el_query_prepare(query, "service-id", service_id, RTCOM_EL_OP_NOT_EQUAL,  NULL);
   } else {
     gint service_id = (m_filterProtocol == "sms" || m_filterProtocol == "tel" || m_filterProtocol == "ofono") ?
-                      rtcom_el_get_service_id(rtcomel(), "RTCOM_EL_SERVICE_SMS") :
-                      rtcom_el_get_service_id(rtcomel(), "RTCOM_EL_SERVICE_CHAT");
+                      rtcom_el_get_service_id(qtrtcom::rtcomel(), "RTCOM_EL_SERVICE_SMS") :
+                      rtcom_el_get_service_id(qtrtcom::rtcomel(), "RTCOM_EL_SERVICE_CHAT");
 
     QString filterProtocol = QString("%%/" + m_filterProtocol + "/%%");
     query_prepared = rtcom_el_query_prepare(query,
@@ -201,7 +210,7 @@ void ChatModel::onGetOverviewMessages(const int limit, const int offset) {
     return;
   }
 
-  auto results = rtcomIterateResults(query);
+  auto results = qtrtcom::iterateResults(query);
 
   g_object_unref(query);
 
@@ -228,8 +237,8 @@ unsigned int ChatModel::searchMessages(const QString &search, const QString &gro
 #else
   this->clear();
 
-  RTComElQuery *query = rtcomStartQuery(20, 0, RTCOM_EL_QUERY_GROUP_BY_NONE);
-  gint rtcom_sms_service_id = rtcom_el_get_service_id(rtcomel(), "RTCOM_EL_SERVICE_SMS");
+  RTComElQuery *query = qtrtcom::startQuery(20, 0, RTCOM_EL_QUERY_GROUP_BY_NONE);
+  gint rtcom_sms_service_id = rtcom_el_get_service_id(qtrtcom::rtcomel(), "RTCOM_EL_SERVICE_SMS");
   bool query_prepared = FALSE;
 
   if(group_uid == nullptr) {
@@ -254,7 +263,7 @@ unsigned int ChatModel::searchMessages(const QString &search, const QString &gro
     return 0;
   }
 
-  auto results = rtcomIterateResults(query);
+  auto results = qtrtcom::iterateResults(query);
 
   g_object_unref(query);
 
@@ -273,8 +282,8 @@ unsigned int ChatModel::getMessages(const QString &service_id, const QString &gr
   m_group_uid = group_uid;
   m_service_id = service_id;
 
-  RTComElQuery *query = rtcomStartQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_NONE);
-  gint sid = rtcom_el_get_service_id(rtcomel(), m_service_id.toStdString().c_str());
+  RTComElQuery *query = qtrtcom::startQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_NONE);
+  gint sid = rtcom_el_get_service_id(qtrtcom::rtcomel(), m_service_id.toStdString().c_str());
   bool query_prepared = FALSE;
   query_prepared = rtcom_el_query_prepare(query,
                                           "group-uid", group_uid.toStdString().c_str(), RTCOM_EL_OP_EQUAL,
@@ -287,7 +296,7 @@ unsigned int ChatModel::getMessages(const QString &service_id, const QString &gr
     return 0;
   }
 
-  auto results = rtcomIterateResults(query);
+  auto results = qtrtcom::iterateResults(query);
 
   g_object_unref(query);
 

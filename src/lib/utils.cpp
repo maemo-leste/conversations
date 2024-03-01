@@ -107,10 +107,13 @@ Notification* Utils::notification(QString title, QString message, const QSharedP
     return notification;
 }
 
+bool Utils::protocolIsTelephone(const QString &protocol) {
+  return protocol.contains("sms") || protocol.contains("tel") || protocol.contains("ofono");
+}
+
 QString Utils::protocolToRTCOMServiceID(const QString &protocol) {
-  if(protocol.contains("sms") || protocol.contains("tel") || protocol.contains("ofono")) {
-    return "RTCOM_EL_SERVICE_SMS";
-  }
+  if(Utils::protocolIsTelephone(protocol))
+      return "RTCOM_EL_SERVICE_SMS";
   return "RTCOM_EL_SERVICE_CHAT";
 }
 

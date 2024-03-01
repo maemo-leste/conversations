@@ -29,6 +29,7 @@ public:
     static Notification* notification(QString title, QString message, const QSharedPointer<ChatMessage> &msg);
     static QString protocolToRTCOMServiceID(const QString &protocol);
     static QMap<QString, QString> readSystemConfig(const QString &path);
+    static bool protocolIsTelephone(const QString &protocol);
 };
 
 class Conversations;

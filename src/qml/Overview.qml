@@ -171,6 +171,15 @@ Rectangle {
                         }
 
                         Components.PlainText {
+                            visible: channel !== ""
+                            text: local_uid
+                            color: colorText
+                            font.pointSize: 12 * ctx.scaleFactor
+                            Layout.alignment: Qt.AlignTop
+                            Layout.leftMargin: 8
+                        }
+
+                        Components.PlainText {
                             Layout.leftMargin: 6
                             text: {
                                 if(message !== "") datestr + " " + hourstr;

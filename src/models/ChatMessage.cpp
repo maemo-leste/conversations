@@ -38,7 +38,14 @@ QString ChatMessage::local_uid() const { return m_local_uid; }
 QString ChatMessage::remote_uid() const { return m_remote_uid; }
 QString ChatMessage::remote_name() const { return m_remote_name; }
 QString ChatMessage::remote_ebook_uid() const { return m_remote_ebook_uid; }
-QString ChatMessage::text() const { return m_text; }
+QString ChatMessage::text() const {
+  if(join_event()) {
+    return QString("%1 joined the groupchat").arg(remote_uid());
+  } else if(leave_event()) {
+    return QString("%1 has left the groupchat").arg(remote_uid());
+  }
+  return m_text;
+}
 QString ChatMessage::textSnippet() const {
   auto max_length = 32;
   if(m_text.length() >= max_length) {

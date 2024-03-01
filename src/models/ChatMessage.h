@@ -1,5 +1,4 @@
-#ifndef CHATMESSAGE_H
-#define CHATMESSAGE_H
+#pragma once
 
 #include <QObject>
 #include <QDebug>
@@ -43,6 +42,10 @@ public:
     QString datestr() const { return m_date.toString("dd/MM/yyyy"); }
     time_t epoch() const { return m_date.toTime_t(); }
 
+    bool chat_event() const { auto et = this->event_type(); return et == "RTCOM_EL_EVENTTYPE_SMS_MESSAGE" || et == "RTCOM_EL_EVENTTYPE_CHAT_MESSAGE"; }
+    bool join_event() const { return this->event_type() == "RTCOM_EL_EVENTTYPE_CHAT_JOIN"; }  // groupchat join
+    bool leave_event() const { return this->event_type() == "RTCOM_EL_EVENTTYPE_CHAT_LEAVE"; }  // groupchat leave
+
     bool isHead() const;
     bool isLast() const;
     QSharedPointer<ChatMessage> previous = nullptr;
@@ -69,5 +72,3 @@ private:
     bool m_outgoing;
     int m_flags;
 };
-
-#endif
