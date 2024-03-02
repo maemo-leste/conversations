@@ -118,6 +118,8 @@ void Telepathy::onNewAccount(const Tp::AccountPtr &account) {
     /* Connect this account signal to our general TP instance */
     connect(myacc, &TelepathyAccount::databaseAddition, this, &Telepathy::onDatabaseAddition);
     connect(myacc, &TelepathyAccount::openChannelWindow, this, &Telepathy::onOpenChannelWindow);
+    connect(myacc, &TelepathyAccount::channelJoined, this, &Telepathy::channelJoined);
+    connect(myacc, &TelepathyAccount::channelLeft, this, &Telepathy::channelLeft);
     connect(myacc, &TelepathyAccount::removed, this, &Telepathy::onAccountRemoved);
 }
 
@@ -128,35 +130,43 @@ void Telepathy::onAccountRemoved(TelepathyAccount* account) {
     delete account;
 }
 
-void Telepathy::joinChannel(const QString &local_uid, const QString &channel) {
-    auto account = rtcomLocalUidToAccount(local_uid);
+void Telepathy::joinChannel(const QString &backend_name, const QString &channel) {
+    auto account = rtcomLocalUidToAccount(backend_name);
     if(account == nullptr)
         return;
     account->joinChannel(channel);
 }
 
-void Telepathy::leaveChannel(const QString &local_uid, const QString &channel) {
-    auto account = rtcomLocalUidToAccount(local_uid);
+void Telepathy::leaveChannel(const QString &backend_name, const QString &channel) {
+    auto account = rtcomLocalUidToAccount(backend_name);
     if(account == nullptr)
         return;
     account->leaveChannel(channel);
 }
 
+bool Telepathy::participantOfChannel(const QString &backend_name, const QString &channel) {
+    auto account = rtcomLocalUidToAccount(backend_name);
+    if(account == nullptr)
+        return false;
 
-void Telepathy::sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message) {
-    auto account = rtcomLocalUidToAccount(local_uid);
+    if(account->channels.contains(channel))
+      return true;
+}
+
+void Telepathy::sendMessage(const QString &backend_name, const QString &remote_uid, const QString &message) {
+    auto account = rtcomLocalUidToAccount(backend_name);
     if(account == nullptr)
         return;
     account->sendMessage(remote_uid, message);
 }
 
-TelepathyAccount* Telepathy::rtcomLocalUidToAccount(const QString &local_uid) {
-    /* Find account given the local_uid (from rtcom) */
+TelepathyAccount* Telepathy::rtcomLocalUidToAccount(const QString &backend_name) {
+    /* Find account given the backend_name */
     for (TelepathyAccount *account: accounts) {
-        if(account->accountName == local_uid)
+        if(account->name == backend_name)
             return account;
     }
-    qWarning() << "could not find associated active tp account by rtcom local_uid" << local_uid;
+    qWarning() << "could not find associated active tp account by backend_name" << backend_name;
     return nullptr;
 }
 
@@ -226,6 +236,8 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
                 auto mychan = new TelepathyChannel(channelptr, ma);
                 auto channel_name = mychan->m_channel.data()->targetId();
                 ma->channels[channel_name] = mychan;
+
+                emit ma->channelJoined(ma->getLocalUid(), channel_name);
             }
 
             break;
@@ -251,21 +263,20 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
  * channel class */
 TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
     acc = macc;
+    name = getLocalUid();  // backend_name, e.g: 'idle/irc/oftc_2dsander0'
+    m_nickname = acc->nickname();
+    m_protocol_name = acc->protocolName();
+
+    // persistent channels saved in user config
+    configChannels = this->readConfigChannels();
 
     connect(acc.data(), &Tp::Account::removed, this, &TelepathyAccount::onRemoved);
     connect(acc.data(), &Tp::Account::onlinenessChanged, this, &TelepathyAccount::onOnline);
     connect(acc->becomeReady(), &Tp::PendingReady::finished, this, &TelepathyAccount::onAccReady);
-
-    accountName = QString("%1/%2").arg(acc->serviceName(), acc->displayName());
-    configChannels = this->readConfigChannels();
-
-    m_nickname = acc->nickname();
-    m_backend_name = getLocalUid();
-    m_protocol_name = acc->protocolName();
 }
 
 void TelepathyAccount::TpOpenChannelWindow(Tp::TextChannelPtr channel) {
-    auto local_uid = m_backend_name;
+    auto local_uid = name;
     auto remote_uid = getRemoteUid(Tp::TextChannelPtr(channel));
     auto group_uid = getGroupUid(Tp::TextChannelPtr(channel));
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
@@ -352,7 +363,7 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
     auto self_name = self_name_str.c_str();
     auto protocol_str = m_protocol_name.toStdString();
     auto protocol = protocol_str.c_str();
-    auto backend_name_str = m_backend_name.toStdString();
+    auto backend_name_str = name.toStdString();
     auto backend_name = backend_name_str.c_str();
 
     qtrtcom::registerMessage(
@@ -365,7 +376,7 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
     auto *msg = new ChatMessage(1, /* TODO: event id is wrong here but should not matter */
             service, group_uid,
-            m_backend_name, remote_uid, QString(remote_name),
+            backend_name, remote_uid, QString(remote_name),
             "" /* remote_abook_uid */,
             text, "" /* icon_name */,
             epoch, 0,
@@ -452,7 +463,7 @@ void TelepathyAccount::onChannelJoined(const Tp::ChannelRequestPtr &channelReque
 
     auto abook_uid = nullptr;  // @TODO: ?
 
-    auto local_uid_str = m_backend_name.toStdString();
+    auto local_uid_str = name.toStdString();
     auto _local_uid = local_uid_str.c_str();
 
     auto remote_uid_str  = m_nickname.toStdString();
@@ -464,7 +475,7 @@ void TelepathyAccount::onChannelJoined(const Tp::ChannelRequestPtr &channelReque
     std::string protocol_str = m_protocol_name.toStdString();
     const char *_protocol = protocol_str.c_str();
 
-    auto group_uid = QString("%1-%2").arg(m_backend_name, channel);
+    auto group_uid = QString("%1-%2").arg(name, channel);
     auto group_uid_str = group_uid.toStdString();
     auto _group_uid = group_uid_str.c_str();
 
@@ -479,7 +490,7 @@ void TelepathyAccount::onChannelJoined(const Tp::ChannelRequestPtr &channelReque
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
     auto *msg = new ChatMessage(1, /* TODO: event id is wrong here but should not matter */
             service, group_uid,
-            m_backend_name, m_nickname, QString(remote_name),
+            name, m_nickname, QString(remote_name),
             "" /* remote_abook_uid */,
             "", "" /* icon_name */,
             now, 0,
@@ -493,7 +504,7 @@ void TelepathyAccount::onChannelJoined(const Tp::ChannelRequestPtr &channelReque
 
 void TelepathyAccount::onAccReady(Tp::PendingOperation *op) {
     for(const auto &channel: configChannels) {
-        qDebug() << accountName << "joining" << channel << "from config";
+        qDebug() << "account:" << name << "joining:" << channel << "- from user config";
         this->_joinChannel(channel);
     }
 }
@@ -521,25 +532,28 @@ void TelepathyAccount::leaveChannel(const QString &channel) {
 }
 
 void TelepathyAccount::_removeChannel(TelepathyChannel* chanptr) {
-    for(const auto &key: channels.keys()) {
-        TelepathyChannel* channel = channels.value(key);
-        if(channel != chanptr)
-            continue;
+    auto it = std::find_if(channels.cbegin(), channels.cend(), [=](const auto& element) {
+        return element == chanptr;
+    });
 
-        auto leave_message = "";
-        auto pending = ((Tp::TextChannel*)channel->m_channel.data())->requestLeave(leave_message);
-        connect(pending, &Tp::PendingChannelRequest::finished, [=](Tp::PendingOperation *op){
-          if(op->isError()) {
-              qWarning() << "failed to leave channel:" << op->errorMessage();
-              return;
-          }
+    if(it == channels.cend())
+      return;
 
-          channels.remove(key);
-          channel->deleteLater();
-        });
+    const QString channel_name = it.key();
+    TelepathyChannel* channel = it.value();
 
-        break;
-    }
+    auto leave_message = "";
+    auto pending = ((Tp::TextChannel*)channel->m_channel.data())->requestLeave(leave_message);
+    connect(pending, &Tp::PendingChannelRequest::finished, [=](Tp::PendingOperation *op){
+      if(op->isError()) {
+          qWarning() << "failed to leave channel:" << op->errorMessage();
+          return;
+      }
+
+      channels.remove(channel_name);
+      channel->deleteLater();
+      emit channelLeft(name, channel_name);
+    });
 }
 
 void TelepathyAccount::sendMessage(const QString &remote_uid, const QString &message) {
@@ -577,15 +591,16 @@ QStringList TelepathyAccount::readConfigChannels() {
     }
 
     auto obj = doc.object();
-    if(obj.contains(accountName)) {
-        auto obj_account = obj[accountName].toObject();
+    if(obj.contains(name)) {
+        auto obj_account = obj[name].toObject();
         if(!obj_account.contains("channels"))
             return {};
 
         auto account_channels = obj_account["channels"].toArray();
         for (const auto &chan: account_channels) {
             auto channel = chan.toString();
-            rtn << channel;
+            if(!rtn.contains(channel))
+              rtn << channel;
         }
     }
 
@@ -600,7 +615,7 @@ void TelepathyAccount::writeConfigChannels() {
     auto doc = QJsonDocument::fromJson(data);
     if(!doc.isNull() && doc.isObject()) {
         auto obj = doc.object();
-        obj[accountName] = obj_account;
+        obj[name] = obj_account;
         auto dumps = QJsonDocument(obj).toJson(QJsonDocument::Compact);
         config()->set(ConfigKeys::autoJoinChatChannels, dumps);
     }

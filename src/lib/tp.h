@@ -86,13 +86,15 @@ public:
 
     QString nickname() const { return m_nickname; }
     QString protocolName() const { return m_protocol_name; }
-    QString accountName;
+    QString name;
     QStringList configChannels;
 
 signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
     void openChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
     void removed(TelepathyAccount* account);
+    void channelJoined(QString local_uid, QString channel);
+    void channelLeft(QString local_uid, QString channel);
 
 public slots:
     void sendMessage(const QString &remote_uid, const QString &message);
@@ -129,7 +131,6 @@ public:
     QMap<QString, TelepathyChannel*> channels;  // channel_name, tp_channel*
 private:
     QString m_nickname;
-    QString m_backend_name;
     QString m_protocol_name;
 
     Tp::SimpleTextObserverPtr textobserver;
@@ -181,17 +182,20 @@ public:
 
     QList<TelepathyAccount*> accounts;
 
-    void joinChannel(const QString &local_uid, const QString &channel);
-    void leaveChannel(const QString &local_uid, const QString &channel);
-    TelepathyAccount* rtcomLocalUidToAccount(const QString &local_uid);
+    void joinChannel(const QString &backend_name, const QString &channel);
+    void leaveChannel(const QString &backend_name, const QString &channel);
+    bool participantOfChannel(const QString &backend_name, const QString &channel);
+    TelepathyAccount* rtcomLocalUidToAccount(const QString &backend_name);
 
 signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
     void openChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
     void accountManagerReady();
+    void channelJoined(QString backend_name, QString channel);
+    void channelLeft(QString backend_name, QString channel);
 
 public slots:
-    void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
+    void sendMessage(const QString &backend_name, const QString &remote_uid, const QString &message);
     void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
     void onOpenChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
 

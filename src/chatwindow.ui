@@ -107,7 +107,7 @@
      <height>22</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuw00t">
+   <widget class="QMenu" name="menuChatWindow">
     <property name="title">
      <string>menu</string>
     </property>
@@ -118,7 +118,7 @@
     <addaction name="actionExportChatToCsv"/>
     <addaction name="actionLeave_channel"/>
    </widget>
-   <addaction name="menuw00t"/>
+   <addaction name="menuChatWindow"/>
   </widget>
   <action name="actionSearchChat">
    <property name="text">
@@ -148,7 +148,7 @@
   </action>
   <action name="actionLeave_channel">
    <property name="text">
-    <string>Leave channel</string>
+    <string>Leave groupchat</string>
    </property>
   </action>
  </widget>

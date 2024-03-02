@@ -27,9 +27,9 @@ JoinChannel::JoinChannel(Conversations *ctx, QWidget *parent) :
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
 
+  // @TODO: deal with additions/removals of accounts at runtime
   for(auto acc: m_ctx->telepathy->accounts) {
-    qDebug() << acc->accountName;
-    ui->comboAccount->addItem(acc->accountName);
+    ui->comboAccount->addItem(acc->name);
   }
 
   if(!m_ctx->telepathy->accounts.empty()) {

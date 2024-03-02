@@ -32,6 +32,7 @@ public:
     ~ChatWindow() override;
 
     ChatModel *chatModel;
+    bool groupchat;
 
 public slots:
   void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
@@ -44,6 +45,9 @@ private slots:
     void onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg);
     void onAutoCloseChatWindowsChanged(bool enabled);
     void onSearchResultClicked(const QSharedPointer<ChatMessage> &msg);
+    void onGroupchatJoinLeaveRequested();
+    void onChannelJoinedOrLeft(const QString &local_uid, const QString &channel);
+    void onSetupGroupchat();
 
 signals:
     void closed(const QString &remote_uid);
@@ -57,6 +61,8 @@ private:
     Conversations *m_ctx;
     static ChatWindow *pChatWindow;
     QSharedPointer<ChatMessage> m_chatMessage;
+    QString m_channel;
+    QString m_local_uid;
     bool m_enterKeySendsChat = false;
     SearchWindow *m_searchWindow = nullptr;
 

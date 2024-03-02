@@ -28,6 +28,10 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   ui->setupUi(this);
   ui->menuBar->hide();
 
+  m_local_uid = m_chatMessage->local_uid();
+  m_channel = m_chatMessage->channel();
+  groupchat = !m_chatMessage->channel().isEmpty();
+
   // [window]
   // title
   QString protocol = "Unknown";
@@ -101,16 +105,12 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   connect(this->ui->btnSend, &QPushButton::clicked, this, &ChatWindow::onGatherMessage);
   connect(m_ctx->telepathy, &Telepathy::databaseAddition, this, &ChatWindow::onDatabaseAddition);
 
-  // menu->groupchat leave/join, check if we are no longer in this channel
-  m_ctx->telepathy->
-  connect(ui->actionLeave_channel, &QAction::triggered, [=] {
-      // @TODO: change this button in-case we already left this channel (offer to rejoin)
-      auto local_uid = m_chatMessage->local_uid();
-      auto channel = m_chatMessage->channel();
-      if(channel.isEmpty()) return;
+  // groupchat
+  this->onSetupGroupchat();
+  connect(ui->actionLeave_channel, &QAction::triggered, this, &ChatWindow::onGroupchatJoinLeaveRequested);
+  connect(m_ctx->telepathy, &Telepathy::channelJoined, this, &ChatWindow::onChannelJoinedOrLeft);
+  connect(m_ctx->telepathy, &Telepathy::channelLeft, this, &ChatWindow::onChannelJoinedOrLeft);
 
-      m_ctx->telepathy->leaveChannel(local_uid, channel);
-  });
   connect(ui->actionExportChatToCsv, &QAction::triggered, this, &ChatWindow::onExportToCsv);
   connect(ui->actionSearchChat, &QAction::triggered, this, &ChatWindow::onOpenSearchWindow);
   connect((QObject*)ui->quick->rootObject(),
@@ -197,6 +197,34 @@ void ChatWindow::onGatherMessage() {
   }
 
   this->ui->chatBox->clear();
+}
+
+void ChatWindow::onGroupchatJoinLeaveRequested() {
+  if(m_ctx->telepathy->participantOfChannel(m_local_uid, m_channel)) {
+    m_ctx->telepathy->leaveChannel(m_local_uid, m_channel);
+  } else {
+    m_ctx->telepathy->joinChannel(m_local_uid, m_channel);
+  }
+}
+
+void ChatWindow::onSetupGroupchat() {
+  // do some UI stuff in case this is a groupchat
+  if(!groupchat) {
+    ui->actionLeave_channel->setVisible(false);
+    return;
+  }
+
+  if(!m_ctx->telepathy->participantOfChannel(m_local_uid, m_channel)) {
+    ui->actionLeave_channel->setText("Join groupchat");
+  } else {
+    ui->actionLeave_channel->setText("Leave groupchat");
+  }
+}
+
+void ChatWindow::onChannelJoinedOrLeft(const QString &local_uid, const QString &channel) {
+  if(local_uid == m_local_uid && channel == m_channel) {
+    onSetupGroupchat();
+  }
 }
 
 Conversations *ChatWindow::getContext() {
