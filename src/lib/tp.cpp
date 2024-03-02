@@ -142,6 +142,7 @@ void Telepathy::leaveChannel(const QString &local_uid, const QString &channel) {
     account->leaveChannel(channel);
 }
 
+
 void Telepathy::sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message) {
     auto account = rtcomLocalUidToAccount(local_uid);
     if(account == nullptr)

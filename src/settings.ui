@@ -246,8 +246,7 @@
                <string>Enabled</string>
               </property>
              </widget>
-         </item>
-
+            </item>
             <item>
              <widget class="QLabel" name="label_5">
               <property name="text">
@@ -262,8 +261,20 @@
               </property>
              </widget>
             </item>
-
-
+            <item>
+             <widget class="QLabel" name="label_6">
+              <property name="text">
+               <string>Display groupchat join/leave events</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_enableDisplayGroupchatJoinLeave">
+              <property name="text">
+               <string>Enabled</string>
+              </property>
+             </widget>
+            </item>
             <item>
              <widget class="QLabel" name="label_3">
               <property name="text">

@@ -27,6 +27,7 @@ class Conversations : public QObject {
     Q_PROPERTY(float isMaemo MEMBER isMaemo NOTIFY isMaemoChanged);
     Q_PROPERTY(float scaleFactor MEMBER m_textScaling NOTIFY textScalingChanged);
     Q_PROPERTY(bool inheritSystemTheme MEMBER inheritSystemTheme NOTIFY inheritSystemThemeChanged);
+    Q_PROPERTY(bool displayGroupchatJoinLeave MEMBER displayGroupchatJoinLeave NOTIFY displayGroupchatJoinLeaveChanged);
 
 public:
     explicit Conversations(QCommandLineParser *cmdargs, IPC *ipc);
@@ -47,6 +48,7 @@ public:
 
     HildonTheme *theme;
     bool inheritSystemTheme;
+    bool displayGroupchatJoinLeave;
 
     static void createConfigDirectory(const QString &dir) ;
 
@@ -75,6 +77,7 @@ signals:
     void notificationClicked(const QSharedPointer<ChatMessage> &msg);
     void autoCloseChatWindowsChanged(bool enabled);
     void inheritSystemThemeChanged(bool enabled);
+    void displayGroupchatJoinLeaveChanged(bool enabled);
     void hildonThemeChanged();
 
 public slots:

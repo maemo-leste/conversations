@@ -101,6 +101,8 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   connect(this->ui->btnSend, &QPushButton::clicked, this, &ChatWindow::onGatherMessage);
   connect(m_ctx->telepathy, &Telepathy::databaseAddition, this, &ChatWindow::onDatabaseAddition);
 
+  // menu->groupchat leave/join, check if we are no longer in this channel
+  m_ctx->telepathy->
   connect(ui->actionLeave_channel, &QAction::triggered, [=] {
       // @TODO: change this button in-case we already left this channel (offer to rejoin)
       auto local_uid = m_chatMessage->local_uid();

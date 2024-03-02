@@ -177,6 +177,10 @@ void MainWindow::onOpenSettingsWindow() {
     m_ctx->inheritSystemTheme = toggled;
     m_ctx->inheritSystemThemeChanged(toggled);
   });
+  connect(m_settings, &Settings::enableDisplayGroupchatJoinLeaveToggled, this, [=](bool toggled){
+    m_ctx->displayGroupchatJoinLeave = toggled;
+    m_ctx->displayGroupchatJoinLeaveChanged(toggled);
+  });
 }
 
 void MainWindow::onNotificationClicked(const QSharedPointer<ChatMessage> &msg) {

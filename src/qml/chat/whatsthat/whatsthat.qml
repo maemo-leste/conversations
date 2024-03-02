@@ -58,7 +58,7 @@ Components.ChatRoot {
 
             // (group)join, leave events, etc. are displayed differently
             Item {
-                visible: !chat_event
+                visible: !chat_event && ctx.displayGroupchatJoinLeave
                 Layout.preferredHeight: 32
                 Layout.fillWidth: true
 

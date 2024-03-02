@@ -50,6 +50,9 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
 
   inheritSystemTheme = config()->get(ConfigKeys::EnableInheritSystemTheme).toBool();
   emit inheritSystemThemeChanged(inheritSystemTheme);
+
+  displayGroupchatJoinLeave = config()->get(ConfigKeys::EnableDisplayGroupchatJoinLeave).toBool();
+  emit displayGroupchatJoinLeaveChanged(displayGroupchatJoinLeave);
 }
 
 void Conversations::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {

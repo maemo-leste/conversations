@@ -32,6 +32,7 @@ signals:
     void textScalingChanged();
     void autoCloseChatWindowsChanged(bool enabled);
     void inheritSystemThemeToggled(bool enabled);
+    void enableDisplayGroupchatJoinLeaveToggled(bool enabled);
 
 private slots:
     void onTextScalingValueChanged(int val);

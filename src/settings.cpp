@@ -80,6 +80,13 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
     emit inheritSystemThemeToggled(toggled);
   });
 
+  // groupchat join/leave
+  ui->checkBox_enableDisplayGroupchatJoinLeave->setChecked(config()->get(ConfigKeys::EnableDisplayGroupchatJoinLeave).toBool());
+  connect(ui->checkBox_enableDisplayGroupchatJoinLeave, &QCheckBox::toggled, [=](bool toggled){
+    config()->set(ConfigKeys::EnableDisplayGroupchatJoinLeave, toggled);
+    emit enableDisplayGroupchatJoinLeaveToggled(toggled);
+  });
+
   // text scaling
   float textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
   if(textScaling < 1) textScaling = 1;
