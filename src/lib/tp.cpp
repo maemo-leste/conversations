@@ -455,9 +455,9 @@ void TelepathyAccount::_joinChannel(const QString &channel) {
 }
 
 
+// register in rtcom
 void TelepathyAccount::onChannelJoined(const Tp::ChannelRequestPtr &channelRequest, QString channel) {
-    if(!channelRequest->isValid()) {  // @TODO
-      //qWarning() << channelRequest->me;
+    if(!channelRequest->isValid()) {  // @TODO: handle error
       return;
     }
 
@@ -488,11 +488,57 @@ void TelepathyAccount::onChannelJoined(const Tp::ChannelRequestPtr &channelReque
 
     // @TODO: duplicate code like in log_event, refactor
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
+    auto text = QString("%1 joined the groupchat").arg(m_nickname);
     auto *msg = new ChatMessage(1, /* TODO: event id is wrong here but should not matter */
             service, group_uid,
             name, m_nickname, QString(remote_name),
             "" /* remote_abook_uid */,
-            "", "" /* icon_name */,
+            text, "" /* icon_name */,
+            now, 0,
+            /* group_title */ "",
+            channel,
+            "-1", false, 0);
+
+    QSharedPointer<ChatMessage> ptr(msg);
+    emit databaseAddition(ptr);
+}
+
+// register in rtcom
+void TelepathyAccount::onChannelLeft(QString channel) {
+    auto abook_uid = nullptr;  // @TODO: ?
+
+    auto local_uid_str = name.toStdString();
+    auto _local_uid = local_uid_str.c_str();
+
+    auto remote_uid_str  = m_nickname.toStdString();
+    auto _remote_uid = remote_uid_str.c_str();
+
+    std::string channel_str = channel.toStdString();
+    const char *_channel = channel_str.c_str();
+
+    std::string protocol_str = m_protocol_name.toStdString();
+    const char *_protocol = protocol_str.c_str();
+
+    auto group_uid = QString("%1-%2").arg(name, channel);
+    auto group_uid_str = group_uid.toStdString();
+    auto _group_uid = group_uid_str.c_str();
+
+    time_t now = QDateTime::currentDateTime().toTime_t();
+    const char* remote_name = nullptr;
+
+    qtrtcom::registerChatLeave(now, now, _remote_uid, _local_uid,
+                               _remote_uid, remote_name, abook_uid,
+                               "left", _protocol, _channel, _group_uid);
+
+    // @TODO: duplicate code like in log_event, refactor
+    auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
+    auto text = QString("%1 has left the groupchat").arg(m_nickname);
+
+    auto *msg = new ChatMessage(1, /* TODO: event id is wrong here but should not matter */
+            service, group_uid,
+            name, m_nickname, QString(remote_name),
+            "" /* remote_abook_uid */,
+            text, "" /* icon_name */,
             now, 0,
             /* group_title */ "",
             channel,
@@ -527,33 +573,28 @@ void TelepathyAccount::leaveChannel(const QString &channel) {
     }
 
     if(channels.contains(channel)) {
-        this->_removeChannel(channels[channel]);
+        auto leave_message = "";
+        auto _channel = channels[channel];
+        auto pending = ((Tp::TextChannel*)_channel->m_channel.data())->requestLeave(leave_message);
+        // @TODO: handle pending
     }
 }
 
+// called by TelepathyChannel::onInvalidated
 void TelepathyAccount::_removeChannel(TelepathyChannel* chanptr) {
-    auto it = std::find_if(channels.cbegin(), channels.cend(), [=](const auto& element) {
-        return element == chanptr;
+    auto it = std::find_if(channels.cbegin(), channels.cend(), [=](const auto& _channel) {
+        return _channel == chanptr;
     });
-
     if(it == channels.cend())
       return;
 
     const QString channel_name = it.key();
     TelepathyChannel* channel = it.value();
 
-    auto leave_message = "";
-    auto pending = ((Tp::TextChannel*)channel->m_channel.data())->requestLeave(leave_message);
-    connect(pending, &Tp::PendingChannelRequest::finished, [=](Tp::PendingOperation *op){
-      if(op->isError()) {
-          qWarning() << "failed to leave channel:" << op->errorMessage();
-          return;
-      }
-
-      channels.remove(channel_name);
-      channel->deleteLater();
-      emit channelLeft(name, channel_name);
-    });
+    channels.remove(channel_name);
+    channel->deleteLater();
+    this->onChannelLeft(channel_name);
+    emit channelLeft(name, channel_name);
 }
 
 void TelepathyAccount::sendMessage(const QString &remote_uid, const QString &message) {

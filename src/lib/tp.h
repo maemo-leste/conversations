@@ -1,5 +1,4 @@
-#ifndef CONVTP_H
-#define CONVTP_H
+#pragma once
 
 #include <QtCore>
 #include <QLocalServer>
@@ -120,6 +119,7 @@ private slots:
     void onOnline(bool online);
     void onAccReady(Tp::PendingOperation *op);
     void onChannelJoined(const Tp::ChannelRequestPtr &channelRequest, QString channel);
+    void onChannelLeft(QString channel);
     void onRemoved(void);
 
     // TODO return value
@@ -230,7 +230,3 @@ public:
     Telepathy* m_telepathy_parent;
 
 };
-
-
-
-#endif // CONVTP_H

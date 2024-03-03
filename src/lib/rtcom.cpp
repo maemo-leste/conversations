@@ -99,6 +99,24 @@ void qtrtcom::registerChatJoin(time_t start_time, time_t end_time, const char* s
   }
 }
 
+void qtrtcom::registerChatLeave(time_t start_time, time_t end_time, const char* self_name, const char* backend_name, const char *remote_uid, const char *remote_name, const char* abook_uid, const char* text, const char* protocol, const char* channel, const char* group_uid) {
+  qDebug() << __FUNCTION__;
+
+  auto *ev = qtrtcom::_defaultEvent(start_time, end_time, backend_name, remote_uid, text, protocol, channel, false, group_uid);
+  RTCOM_EL_EVENT_SET_FIELD(ev, event_type,  g_strdup("RTCOM_EL_EVENTTYPE_CHAT_LEAVE"));
+
+  RTCOM_EL_EVENT_SET_FIELD(ev, local_name, g_strdup(self_name));
+  RTCOM_EL_EVENT_SET_FIELD(ev, remote_name, g_strdup(remote_name));
+  RTCOM_EL_EVENT_SET_FIELD(ev, remote_ebook_uid, g_strdup(abook_uid));
+  GError *err = NULL;
+
+  if(rtcom_el_add_event(qtrtcom::rtcomel(), ev, &err) < 0) {
+    qWarning() << "Failed to add event to RTCom" << "registerChatLeave" << err->message;
+  } else {
+    qDebug() << "registerChatLeave SUCCESS";
+  }
+}
+
 void qtrtcom::registerMessage(time_t start_time, time_t end_time, const char* self_name, const char* backend_name,
                               const char *remote_uid, const char *remote_name, const char* abook_uid, const char* text, bool is_outgoing, const char* protocol, const char* channel, const char* group_uid) {
   qDebug() << __FUNCTION__;
