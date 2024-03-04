@@ -39,7 +39,8 @@ public:
         ChannelRole,
         ChatEventRole,
         JoinEventRole,
-        LeaveEventRole
+        LeaveEventRole,
+        MessageReadRole
     };
 
     explicit ChatModel(QObject *parent = nullptr);
@@ -77,6 +78,7 @@ public:
     Q_INVOKABLE unsigned int searchMessages(const QString &search);
     Q_INVOKABLE unsigned int searchMessages(const QString &search, const QString &group_uid);
     Q_INVOKABLE int eventIdToIdx(int msg);
+    Q_INVOKABLE void onMessageRead(const int event_id);
 
     Q_INVOKABLE void clear();
     static void exportChatToCsv(const QString &service, const QString &group_uid, QObject *parent);
@@ -90,6 +92,7 @@ signals:
     void limitChanged();
     void offsetChanged();
     void countChanged();
+    void messageRead(const int event_id);
 
 protected:
     QHash<int, QByteArray> roleNames() const;

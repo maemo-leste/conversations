@@ -41,6 +41,11 @@ public:
     QString hourstr() const { return m_date.toString("hh:mm"); }
     QString datestr() const { return m_date.toString("dd/MM/yyyy"); }
     time_t epoch() const { return m_date.toTime_t(); }
+    bool message_read() const {
+      // @TODO: do something with flags here
+      if(flags() != 0) return true;
+      return false;
+    }
 
     bool chat_event() const { auto et = this->event_type(); return et == "RTCOM_EL_EVENTTYPE_SMS_MESSAGE" || et == "RTCOM_EL_EVENTTYPE_CHAT_MESSAGE"; }
     bool join_event() const { return this->event_type() == "RTCOM_EL_EVENTTYPE_CHAT_JOIN"; }  // groupchat join

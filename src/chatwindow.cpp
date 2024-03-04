@@ -65,6 +65,7 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   this->chatModel->getMessages(m_chatMessage->service(), m_chatMessage->group_uid());
   if(m_chatMessage->isSearchResult)
     fillBufferUntil(m_chatMessage);
+  connect(this->chatModel, &ChatModel::messageRead, this, &ChatWindow::messageRead);
 
   auto *qctx = ui->quick->rootContext();
   qctx->setContextProperty("chatWindow", this);

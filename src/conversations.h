@@ -1,5 +1,4 @@
-#ifndef CONV_CONTEXT_H
-#define CONV_CONTEXT_H
+#pragma once
 
 #include <QObject>
 #include <QProcess>
@@ -86,6 +85,7 @@ public slots:
     void onIPCReceived(const QString &cmd);
     void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
     void onNotificationClicked(const QSharedPointer<ChatMessage> &msg);
+    void onMessageRead(int event_id);
 
 private:
     float m_textScaling = 1.0;
@@ -94,5 +94,3 @@ private:
     std::chrono::seconds m_hibernateDetectInterval{300};
     std::chrono::time_point<std::chrono::steady_clock> m_hibernatePreviousTime;
 };
-
-#endif // CONV_CONTEXT_H

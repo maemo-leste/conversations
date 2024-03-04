@@ -52,6 +52,14 @@ Components.ChatRoot {
             property int itemHeight: textColumn.implicitHeight + chatListView.itemHeightSpacing
             property bool highlight: root.highlightEventId == event_id
 
+            property int yoff: Math.round(item.y - chatListView.contentY)
+            property bool isFullyVisible: {
+                let _visible = yoff > chatListView.y && yoff + height < chatListView.y + chatListView.height;
+                if(!message_read && _visible)
+                    chatModel.onMessageRead(event_id);
+                return _visible;
+            }
+
             height: itemHeight + 12
             width: parent !== null ? parent.width : 0
             spacing: 0

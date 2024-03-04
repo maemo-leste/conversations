@@ -100,6 +100,7 @@ void MainWindow::onOpenChatWindow(const QSharedPointer<ChatMessage> &msg) {
   window->show();
 
   connect(window, &ChatWindow::sendMessage, this->m_ctx, &Conversations::onSendOutgoingMessage);
+  connect(window, &ChatWindow::messageRead, this->m_ctx, &Conversations::onMessageRead);
   connect(window, &ChatWindow::closed, this, &MainWindow::onChatWindowClosed);
 }
 

@@ -74,6 +74,11 @@ void Conversations::onNotificationClicked(const QSharedPointer<ChatMessage> &msg
   emit notificationClicked(msg);
 }
 
+void Conversations::onMessageRead(const int event_id) {
+  const gchar* flags = 0;  // @TODO: how to set the 'read' flag?
+  //qtrtcom::setFlag(event_id, flags);
+}
+
 void Conversations::onIPCReceived(const QString &cmd) {
   if(cmd.contains(globals::reRemoteUID)) {
     emit showApplication();

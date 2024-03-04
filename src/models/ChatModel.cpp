@@ -108,6 +108,8 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
     return message->join_event();
   else if (role == LeaveEventRole)
     return message->leave_event();
+  else if (role == MessageReadRole)
+    return message->message_read();
   return QVariant();
 }
 
@@ -161,6 +163,7 @@ QHash<int, QByteArray> ChatModel::roleNames() const {
   roles[ChatEventRole] = "chat_event";
   roles[JoinEventRole] = "join_event";
   roles[LeaveEventRole] = "leave_event";
+  roles[MessageReadRole] = "message_read";
   return roles;
 }
 
@@ -325,6 +328,10 @@ int ChatModel::eventIdToIdx(int event_id) {
     if(chats[i]->event_id() == event_id)
       return i;
   return -1;
+}
+
+void ChatModel::onMessageRead(const int event_id) {
+  emit messageRead(event_id);
 }
 
 unsigned int ChatModel::getPage(int custom_limit) {
