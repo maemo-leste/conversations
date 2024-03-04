@@ -56,6 +56,13 @@ Components.ChatRoot {
         delegate: RowLayout {
             id: item
             property int itemHeight: textMessage.implicitHeight
+            property int yoff: Math.round(item.y - chatListView.contentY)
+            property bool isFullyVisible: {
+                let _visible = yoff > chatListView.y && yoff + height < chatListView.y + chatListView.height;
+                if(!message_read && _visible)
+                    chatModel.onMessageRead(event_id);
+                return _visible;
+            }
             height: itemHeight
             width: parent !== null ? parent.width : 0
             spacing: 0
