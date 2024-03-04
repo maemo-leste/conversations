@@ -140,6 +140,17 @@ void qtrtcom::registerMessage(time_t start_time, time_t end_time, const char* se
   }
 }
 
+void qtrtcom::setFlag(const int event_id, const gchar* flags) {
+  qDebug() << __FUNCTION__;
+  RTComEl *el = NULL;
+  RTComElEvent *ev = NULL;
+  GError *err = NULL;
+
+  if(rtcom_el_set_event_flag(el, event_id, flags, NULL) < 0) {
+    qWarning() << "Failed to update rtcom event with flag" << flags;
+  }
+}
+
 RTComElEvent* qtrtcom::_defaultEvent(time_t start_time, time_t end_time, const char* local_uid, const char *remote_uid,
                                      const char* text, const char* protocol, const char* channel, bool is_outgoing,
                                      const char* group_uid) {
