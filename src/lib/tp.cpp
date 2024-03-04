@@ -374,6 +374,8 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
 
     // @TODO: duplicate code like in onJoinChannel, refactor
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
+    auto event_type = Utils::protocolIsTelephone(protocol) ? "RTCOM_EL_EVENTTYPE_SMS_MESSAGE" : "RTCOM_EL_EVENTTYPE_CHAT_MESSAGE";
+
     auto *msg = new ChatMessage(1, /* TODO: event id is wrong here but should not matter */
             service, group_uid,
             backend_name, remote_uid, QString(remote_name),
@@ -382,7 +384,7 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
             epoch, 0,
             /* group_title */ "",
             channel_qstr,
-            "-1", outgoing, 0);
+            event_type, outgoing, 0);
 
     QSharedPointer<ChatMessage> ptr(msg);
     emit databaseAddition(ptr);
