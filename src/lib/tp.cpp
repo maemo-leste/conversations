@@ -106,10 +106,6 @@ void Telepathy::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
     emit databaseAddition(msg);
 }
 
-void Telepathy::onOpenChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel) {
-    emit openChannelWindow(local_uid, remote_uid, group_uid, service, channel);
-}
-
 void Telepathy::onNewAccount(const Tp::AccountPtr &account) {
     qDebug() << "adding account" << account;
     auto myacc = new TelepathyAccount(account);
@@ -117,7 +113,6 @@ void Telepathy::onNewAccount(const Tp::AccountPtr &account) {
 
     /* Connect this account signal to our general TP instance */
     connect(myacc, &TelepathyAccount::databaseAddition, this, &Telepathy::onDatabaseAddition);
-    connect(myacc, &TelepathyAccount::openChannelWindow, this, &Telepathy::onOpenChannelWindow);
     connect(myacc, &TelepathyAccount::channelJoined, this, &Telepathy::channelJoined);
     connect(myacc, &TelepathyAccount::channelLeft, this, &Telepathy::channelLeft);
     connect(myacc, &TelepathyAccount::removed, this, &Telepathy::onAccountRemoved);
@@ -247,8 +242,6 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
         if (matching_channel) {
             if (matching_requestptr) {
                 matching_requestptr->succeeded((Tp::ChannelPtr)matching_channel);
-                // dont auto-open chat windows for now
-                // matching_account->TpOpenChannelWindow(Tp::TextChannelPtr(matching_channel));
             }
         }
     }
@@ -273,20 +266,6 @@ TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
     connect(acc.data(), &Tp::Account::removed, this, &TelepathyAccount::onRemoved);
     connect(acc.data(), &Tp::Account::onlinenessChanged, this, &TelepathyAccount::onOnline);
     connect(acc->becomeReady(), &Tp::PendingReady::finished, this, &TelepathyAccount::onAccReady);
-}
-
-void TelepathyAccount::TpOpenChannelWindow(Tp::TextChannelPtr channel) {
-    auto local_uid = name;
-    auto remote_uid = getRemoteUid(Tp::TextChannelPtr(channel));
-    auto group_uid = getGroupUid(Tp::TextChannelPtr(channel));
-    auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
-    QString channelstr;
-
-    if (channel->targetHandleType() != Tp::HandleTypeContact) {
-        channelstr = channel->targetId();
-    }
-
-    emit openChannelWindow(local_uid, remote_uid, group_uid, service, channelstr);
 }
 
 QString TelepathyAccount::getGroupUid(Tp::TextChannelPtr channel) {
