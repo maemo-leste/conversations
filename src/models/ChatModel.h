@@ -78,7 +78,7 @@ public:
     Q_INVOKABLE unsigned int searchMessages(const QString &search);
     Q_INVOKABLE unsigned int searchMessages(const QString &search, const QString &group_uid);
     Q_INVOKABLE int eventIdToIdx(int msg);
-    Q_INVOKABLE void onMessageRead(const int event_id);
+    Q_INVOKABLE void onLastMessageRead(const int event_id);
 
     Q_INVOKABLE void clear();
     static void exportChatToCsv(const QString &service, const QString &group_uid, QObject *parent);

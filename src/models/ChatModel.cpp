@@ -330,8 +330,12 @@ int ChatModel::eventIdToIdx(int event_id) {
   return -1;
 }
 
-void ChatModel::onMessageRead(const int event_id) {
-  emit messageRead(event_id);
+void ChatModel::onLastMessageRead(const int event_id) {
+  // set 'message_read' for preceding messages in current buffer relative to most recent message
+  for(auto const &msg: chats) {
+    if(!msg->message_read())
+      emit messageRead(msg->event_id());
+  }
 }
 
 unsigned int ChatModel::getPage(int custom_limit) {

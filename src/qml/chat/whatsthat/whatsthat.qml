@@ -55,8 +55,8 @@ Components.ChatRoot {
             property int yoff: Math.round(item.y - chatListView.contentY)
             property bool isFullyVisible: {
                 let _visible = yoff > chatListView.y && yoff + height < chatListView.y + chatListView.height;
-                if(!message_read && _visible)
-                    chatModel.onMessageRead(event_id);
+                if(!message_read && _visible && isHead)
+                    chatModel.onLastMessageRead(event_id);
                 return _visible;
             }
 
