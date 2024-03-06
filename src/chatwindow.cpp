@@ -204,7 +204,7 @@ void ChatWindow::onGroupchatJoinLeaveRequested() {
   if(m_ctx->telepathy->participantOfChannel(m_local_uid, m_channel)) {
     m_ctx->telepathy->leaveChannel(m_local_uid, m_channel);
   } else {
-    m_ctx->telepathy->joinChannel(m_local_uid, m_channel);
+    m_ctx->telepathy->joinChannel(m_local_uid, m_channel, false);
   }
 }
 

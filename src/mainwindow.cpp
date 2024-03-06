@@ -129,8 +129,8 @@ void MainWindow::onOpenJoinChatWindow() {
   m_joinchannel = new JoinChannel(m_ctx, this);
   m_joinchannel->show();
 
-  connect(m_joinchannel, &JoinChannel::joinChannel, [=](QString account, QString channel) {
-    m_ctx->telepathy->joinChannel(account, channel);
+  connect(m_joinchannel, &JoinChannel::joinChannel, [=](QString account, QString channel, bool persistent) {
+    m_ctx->telepathy->joinChannel(account, channel, persistent);
 
     // hack: if we close this window immediately, then the QML overview model will not get
     // updated properly with new changes. The data is updated but the screen wont

@@ -75,6 +75,13 @@ class TelepathyAccount;
 class TelepathyChannel;
 class TelepathyHandler;
 
+class AccountChannel
+{
+public:
+    QString name;
+    bool auto_join;
+    TelepathyChannel* tpChannel = nullptr;
+};
 
 class TelepathyAccount : public QObject {
 Q_OBJECT
@@ -83,10 +90,12 @@ public:
     explicit TelepathyAccount(Tp::AccountPtr macc);
     ~TelepathyAccount() override;
 
+    Tp::AccountPtr acc;
+    QMap<QString, AccountChannel*> channels;
+
     QString nickname() const { return m_nickname; }
     QString protocolName() const { return m_protocol_name; }
     QString name;
-    QStringList configChannels;
 
 signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
@@ -96,7 +105,7 @@ signals:
 
 public slots:
     void sendMessage(const QString &remote_uid, const QString &message);
-    void joinChannel(const QString &channel);
+    void joinChannel(const QString &channel, bool persistent);
     void leaveChannel(const QString &channel);
 
     /* TODO: make these private again and use connect/emit */
@@ -122,10 +131,6 @@ private slots:
     // TODO return value
     // sendChannelMessage (if we cannot just use sendMessage)
 
-public:
-    Tp::AccountPtr acc;
-
-    QMap<QString, TelepathyChannel*> channels;  // channel_name, tp_channel*
 private:
     QString m_nickname;
     QString m_protocol_name;
@@ -136,8 +141,8 @@ private:
     Tp::TextChannel *hgbchan;
     Tp::AccountManagerPtr m_accountmanager;
 
-    QStringList readConfigChannels();
-    void writeConfigChannels();
+    void readGroupchatChannels();
+    void writeGroupchatChannels();
     void _joinChannel(const QString &channel);
 };
 
@@ -147,6 +152,8 @@ Q_OBJECT
 public:
     explicit TelepathyChannel(const Tp::ChannelPtr& mchannel, TelepathyAccount* macc);
     ~TelepathyChannel() override;
+
+    bool auto_join = false;  // auto-join on program startup
 
 public slots:
     void sendMessage(const QString &message) const;
@@ -179,7 +186,7 @@ public:
 
     QList<TelepathyAccount*> accounts;
 
-    void joinChannel(const QString &backend_name, const QString &channel);
+    void joinChannel(const QString &backend_name, const QString &channel, bool persistent);
     void leaveChannel(const QString &backend_name, const QString &channel);
     bool participantOfChannel(const QString &backend_name, const QString &channel);
     TelepathyAccount* rtcomLocalUidToAccount(const QString &backend_name);

@@ -43,6 +43,7 @@ JoinChannel::JoinChannel(Conversations *ctx, QWidget *parent) :
   connect(this->ui->btnJoinChannel, &QPushButton::clicked, [=] {
     QString channel = ui->lineEdit_channel->text();
     QString account = ui->comboAccount->currentText();
+    bool persistent = ui->checkbox_autoJoin->isChecked();
 
     if(channel.isEmpty()) {
       this->messageBox("channel cannot be empty");
@@ -52,7 +53,7 @@ JoinChannel::JoinChannel(Conversations *ctx, QWidget *parent) :
       return;
     }
 
-    emit joinChannel(account, channel);
+    emit joinChannel(account, channel, persistent);
   });
 }
 

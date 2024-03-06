@@ -261,6 +261,13 @@
      </layout>
     </item>
     <item>
+     <widget class="QCheckBox" name="checkbox_autoJoin">
+      <property name="text">
+       <string>auto-join groupchat on startup</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <spacer name="verticalSpacer">
       <property name="orientation">
        <enum>Qt::Vertical</enum>

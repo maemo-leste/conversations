@@ -31,7 +31,7 @@ public:
 
 signals:
     void autoCloseChatWindowsChanged(bool enabled);
-    void joinChannel(QString account, QString channel);
+    void joinChannel(QString account, QString channel, bool persistent = false);
 
 private:
     Conversations *m_ctx;
