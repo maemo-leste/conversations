@@ -38,5 +38,5 @@ namespace qtrtcom {
                           const char *remote_uid, const char *remote_name, const char *abook_uid, const char *text,
                           const char *protocol, const char *channel, const char *group_uid);
 
-    void setFlag(const int event_id, const gchar* flag_value);
+    void setRead(const int event_id, const gboolean read);
 }
