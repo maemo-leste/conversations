@@ -84,6 +84,7 @@ class Q_DECL_EXPORT Notification : public QObject
 		void setHintInt32(const QString & key, qint32 value);
 		void setHintDouble(const QString & key, double value);
 		void setHintString(const QString & key, const QString & value);
+		void setHintBoolean(const QString & key, bool value);
 		void setHintByte(const QString & key, char value);
 		void setHintByteArray(const QString & key, const QByteArray & value);
 		void clearHints();
