@@ -338,8 +338,9 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
         }
     }
 
+    QString remote_name_q = QString(remote_name);
     if (!remote_name && (remote_alias != nullptr)) {
-        remote_name = remote_alias.toLocal8Bit();
+        remote_name_q = QString(remote_alias);
     }
 
     auto self_name_str = m_nickname.toStdString();
@@ -359,15 +360,22 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
     auto event_type = Utils::protocolIsTelephone(protocol) ? "RTCOM_EL_EVENTTYPE_SMS_MESSAGE" : "RTCOM_EL_EVENTTYPE_CHAT_MESSAGE";
 
-    auto *msg = new ChatMessage(1, /* TODO: event id is wrong here but should not matter */
-            service, group_uid,
-            backend_name, remote_uid, QString(remote_name),
+    auto *msg = new ChatMessage(1, /* TODO: event id is wrong here but should not matter? or does it? */
+            service,
+            group_uid,
+            backend_name /* local_uid */,
+            remote_uid,
+            remote_name_q,
             "" /* remote_abook_uid */,
-            text, "" /* icon_name */,
-            epoch, 0,
-            /* group_title */ "",
+            text,
+            "" /* icon_name */,
+            epoch,
+            0 /* count */,
+            "" /* group title */,
             channel_qstr,
-            event_type, outgoing, 0);
+            event_type,
+            outgoing,
+            0);
 
     QSharedPointer<ChatMessage> ptr(msg);
     emit databaseAddition(ptr);
