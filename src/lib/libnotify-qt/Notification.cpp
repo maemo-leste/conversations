@@ -198,9 +198,10 @@ void Notification::setHintBoolean(const QString & key, bool value)
     m_hints.insert(key, value);
 }
 
-void Notification::setHintByte(const QString & key, char value)
+void Notification::setHintByte(const QString & key, uchar value)
 {
-    setHintByteArray(key, QByteArray(1, value));
+    auto var = QVariant::fromValue(value);
+	m_hints.insert(key, var);
 }
 
 void Notification::setHintByteArray(const QString & key, const QByteArray & value)
