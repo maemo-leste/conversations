@@ -119,6 +119,8 @@ Notification* Utils::notification(QString title, QString message, const QSharedP
     notification->setHintString("group", "_grouped_messages");
     notification->setHintString("conversations-groupuid", msg->group_uid());
 
+    notification->setHintByte("persistent", 1);
+
     notification->show();
     return notification;
 }
