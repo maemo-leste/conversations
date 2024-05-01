@@ -3,73 +3,39 @@
 
 #include "models/ChatMessage.h"
 
-ChatMessage::ChatMessage(  // @TODO: cleanup constructor
-    const int event_id, const QString &service, const QString &group_uid,
-    const QString &local_uid, const QString &remote_uid, const QString &remote_name,
-    const QString &remote_ebook_uid, const QString &text, const QString &icon_name,
-    const int timestamp, const int count, const QString &group_title, const QString &channel,
-    const QString &event_type, bool outgoing, const int flags, QObject *parent) :
+ChatMessage::ChatMessage(ChatMessageParams params, QObject *parent) :
     QObject(parent),
-    m_event_id(event_id),
-    m_service(service),
-    m_group_uid(group_uid),
-    m_local_uid(local_uid),
-    m_remote_uid(remote_uid),
-    m_remote_name(remote_name),
-    m_remote_ebook_uid(remote_ebook_uid),
-    m_text(text),
-    m_icon_name(icon_name),
-    m_count(count),
-    m_group_title(group_title),
-    m_channel(channel),
-    m_event_type(event_type),
-    m_outgoing(outgoing),
-    m_flags(flags) {
-  m_date = QDateTime::fromTime_t(timestamp);
-  m_text = m_text.trimmed();
-  m_cid = QString("%1%2").arg(QString::number(outgoing), remote_uid);
+    m_params(params) {
+  m_date = QDateTime::fromTime_t(m_params.timestamp);
+  m_params.text = m_params.text.trimmed();
+  m_cid = QString("%1%2").arg(QString::number(params.outgoing), params.remote_uid);
 }
 
-QString ChatMessage::service() const { return m_service; }
-int ChatMessage::event_id() const { return m_event_id; }
-QString ChatMessage::group_uid() const { return m_group_uid; }
-QString ChatMessage::channel() const { return m_channel; }
-QString ChatMessage::local_uid() const { return m_local_uid; }
-QString ChatMessage::remote_uid() const { return m_remote_uid; }
-QString ChatMessage::remote_name() const { return m_remote_name; }
-QString ChatMessage::remote_ebook_uid() const { return m_remote_ebook_uid; }
 QString ChatMessage::text() const {
   if(join_event()) {
     return QString("%1 joined the groupchat").arg(remote_uid());
   } else if(leave_event()) {
     return QString("%1 has left the groupchat").arg(remote_uid());
   }
-  return m_text;
+  return m_params.text;
 }
+
 QString ChatMessage::textSnippet() const {
   auto max_length = 32;
-  if(m_text.length() >= max_length) {
-    QString snippet = m_text.mid(0, max_length) + "...";
+  if(m_params.text.length() >= max_length) {
+    QString snippet = m_params.text.mid(0, max_length) + "...";
     return snippet;
   }
-  return m_text;
+  return m_params.text;
 }
-QString ChatMessage::icon_name() const { return m_icon_name; }
-int ChatMessage::count() const { return m_count; }
-QString ChatMessage::group_title() const { return m_group_title; }
-QString ChatMessage::event_type() const { return m_event_type; }
-bool ChatMessage::outgoing() const { return m_outgoing; }
-int ChatMessage::flags() const { return m_flags; }
-QString ChatMessage::cid() const { return m_cid; }
-QDateTime ChatMessage::date() const { return m_date; }
 QString ChatMessage::name() const {
-  if(!m_remote_name.isEmpty()) return m_remote_name;
-  return m_remote_uid;
+  if(!m_params.remote_name.isEmpty()) return m_params.remote_name;
+  return m_params.remote_uid;
 }
 QString ChatMessage::overview_name() const {
-  if(!m_channel.isEmpty()) return m_channel;
-  if(!m_remote_name.isEmpty()) return m_remote_name;
-  return m_remote_uid;
+  if(!m_params.channel.isEmpty()) return m_params.channel;
+  if(!m_params.remote_name.isEmpty()) return m_params.remote_name;
+  return m_params.remote_uid;
 }
 bool ChatMessage::isHead() const {
   if(previous == nullptr) return true;

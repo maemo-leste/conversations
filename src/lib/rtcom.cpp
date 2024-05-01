@@ -51,23 +51,25 @@ QList<ChatMessage*> qtrtcom::iterateResults(RTComElQuery *query) {
           "flags",
           NULL);
 
-      auto *item = new ChatMessage(
-          LOOKUP_INT("id"),
-          LOOKUP_STR("service"),
-          LOOKUP_STR("group-uid"),
-          LOOKUP_STR("local-uid"),
-          LOOKUP_STR("remote-uid"),
-          LOOKUP_STR("remote-name"),
-          LOOKUP_STR("remote-ebook-uid"),
-          LOOKUP_STR("content"),
-          LOOKUP_STR("icon-name"),
-          LOOKUP_INT("start-time"),
-          LOOKUP_INT("event-count"),
-          LOOKUP_STR("group-title"),
-          LOOKUP_STR("channel"),
-          LOOKUP_STR("event-type"),
-          LOOKUP_BOOL("outgoing"),
-          LOOKUP_INT("flags"));
+      auto *item = new ChatMessage({
+        .event_id = LOOKUP_INT("id"),
+        .service = LOOKUP_STR("service"),
+        .group_uid = LOOKUP_STR("group-uid"),
+        .local_uid = LOOKUP_STR("local-uid"),
+        .remote_uid = LOOKUP_STR("remote-uid"),
+        .remote_name = LOOKUP_STR("remote-name"),
+        .remote_ebook_uid = LOOKUP_STR("remote-ebook-uid"),
+        .text = LOOKUP_STR("content"),
+        .icon_name = LOOKUP_STR("icon-name"),
+        .timestamp = LOOKUP_INT("start-time"),
+        .count = LOOKUP_INT("event-count"),
+        .group_title = LOOKUP_STR("group-title"),
+        .channel = LOOKUP_STR("channel"),
+        .event_type = LOOKUP_STR("event-type"),
+        .outgoing = LOOKUP_BOOL("outgoing"),
+        .is_read = false,
+        .flags = LOOKUP_INT("flags")
+      });
 
       g_hash_table_destroy(values);
       results << item;

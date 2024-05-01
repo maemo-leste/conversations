@@ -4,36 +4,55 @@
 #include <QDebug>
 #include <QDateTime>
 
+struct ChatMessageParams {
+    unsigned int event_id = -1;
+    QString service;
+    QString group_uid;
+
+    QString local_uid;
+    QString remote_uid;
+    QString remote_name;
+    QString remote_ebook_uid;
+    QString text;
+    QString icon_name;
+    time_t timestamp = -1;
+    unsigned int count = -1;
+    QString group_title;
+    QString channel;
+    QString event_type;
+    bool outgoing = true;
+    bool is_read = false;
+    unsigned int flags = -1;
+};
+
 class ChatMessage : public QObject
 {
 Q_OBJECT
 
 public:
-    explicit ChatMessage(int event_id, const QString &service, const QString &group_uid,
-                const QString &local_uid, const QString &remote_uid, const QString &remote_name,
-                const QString &remote_ebook_uid, const QString &text, const QString &icon_name,
-                int timestamp, int count, const QString &group_title, const QString &channel,
-                const QString &event_type, bool outgoing, int flags, QObject *parent = nullptr);
+    explicit ChatMessage(ChatMessageParams params, QObject *parent = nullptr);
     ~ChatMessage() override;
 
-    int event_id() const;
-    QString service() const;
-    QString group_uid() const;
-    QString local_uid() const;
-    QString remote_uid() const;
-    QString remote_name() const;
-    QString remote_ebook_uid() const;
+    unsigned int event_id() const { return m_params.event_id; }
+    QString service() const { return m_params.service; }
+    QString group_uid() const { return m_params.group_uid; }
+    QString channel() const { return m_params.channel; }
+    QString local_uid() const { return m_params.local_uid; }
+    QString remote_uid() const { return m_params.remote_uid; }
+    QString remote_name() const { return m_params.remote_name; }
+    QString remote_ebook_uid() const { return m_params.remote_ebook_uid; }
+    QString icon_name() const { return m_params.icon_name; }
+    unsigned int count() const { return m_params.count; }
+    QString group_title() const { return m_params.group_title; }
+    QString event_type() const { return m_params.event_type; }
+    bool outgoing() const { return m_params.outgoing; }
+    unsigned int flags() const { return m_params.flags; }
+    QString cid() const { return m_cid; }
+    QDateTime date() const { return m_date; }
+
     QString text() const;
     QString textSnippet() const;
-    QString icon_name() const;
-    QDateTime date() const;
-    int count() const;
-    QString group_title() const;
-    QString channel() const;
-    QString event_type() const;
-    bool outgoing() const;
-    int flags() const;
-    QString cid() const;
+
     QString name() const;
     QString overview_name() const;
 
@@ -59,21 +78,7 @@ public:
     bool isSearchResult = false;
 
 private:
-    int m_event_id;
-    QString m_service;
-    QString m_group_uid;
-    QString m_local_uid;
-    QString m_remote_uid;
-    QString m_remote_name;
-    QString m_remote_ebook_uid;
-    QString m_text;
-    QString m_cid;
-    QString m_icon_name;
+    ChatMessageParams m_params;
     QDateTime m_date;
-    int m_count;
-    QString m_group_title;
-    QString m_channel;
-    QString m_event_type;
-    bool m_outgoing;
-    int m_flags;
+    QString m_cid;
 };

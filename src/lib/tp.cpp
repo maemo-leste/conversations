@@ -146,6 +146,7 @@ bool Telepathy::participantOfChannel(const QString &backend_name, const QString 
 
     if(account->channels.contains(channel))
       return true;
+    return false;
 }
 
 void Telepathy::sendMessage(const QString &backend_name, const QString &remote_uid, const QString &message) {
@@ -360,24 +361,27 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
     auto event_type = Utils::protocolIsTelephone(protocol) ? "RTCOM_EL_EVENTTYPE_SMS_MESSAGE" : "RTCOM_EL_EVENTTYPE_CHAT_MESSAGE";
 
-    auto *msg = new ChatMessage(1, /* TODO: event id is wrong here but should not matter? or does it? */
-            service,
-            group_uid,
-            backend_name /* local_uid */,
-            remote_uid,
-            remote_name_q,
-            "" /* remote_abook_uid */,
-            text,
-            "" /* icon_name */,
-            epoch,
-            0 /* count */,
-            "" /* group title */,
-            channel_qstr,
-            event_type,
-            outgoing,
-            0);
+    auto *chatMessage = new ChatMessage({
+        .event_id = 1,  /* TODO: event id is wrong here but should not matter? or does it? */
+        .service = service,
+        .group_uid = group_uid,
+        .local_uid = backend_name,
+        .remote_uid = remote_uid,
+        .remote_name = remote_name_q,
+        .remote_ebook_uid = "",
+        .text = text,
+        .icon_name = "",
+        .timestamp = epoch,
+        .count = 0,
+        .group_title = "",
+        .channel = channel_qstr,
+        .event_type = event_type,
+        .outgoing = outgoing,
+        .is_read = false,
+        .flags = 0
+      });
 
-    QSharedPointer<ChatMessage> ptr(msg);
+    QSharedPointer<ChatMessage> ptr(chatMessage);
     emit databaseAddition(ptr);
 
     return TRUE;
@@ -485,17 +489,28 @@ void TelepathyAccount::onChannelJoined(const Tp::ChannelRequestPtr &channelReque
     // @TODO: duplicate code like in log_event, refactor
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
     auto text = QString("%1 joined the groupchat").arg(m_nickname);
-    auto *msg = new ChatMessage(1, /* TODO: event id is wrong here but should not matter */
-            service, group_uid,
-            name, m_nickname, QString(remote_name),
-            "" /* remote_abook_uid */,
-            text, "" /* icon_name */,
-            now, 0,
-            /* group_title */ "",
-            channel,
-            "-1", false, 0);
 
-    QSharedPointer<ChatMessage> ptr(msg);
+    auto *chatMessage = new ChatMessage({
+        .event_id = 1,  /* TODO: event id is wrong here but should not matter */
+        .service = service,
+        .group_uid = group_uid,
+        .local_uid = name,
+        .remote_uid = m_nickname,
+        .remote_name = QString(remote_name),
+        .remote_ebook_uid = "",
+        .text = text,
+        .icon_name = "",
+        .timestamp = now,
+        .count = 0,
+        .group_title = "",
+        .channel = channel,
+        .event_type = "-1",
+        .outgoing = false,
+        .is_read = false,
+        .flags = 0
+      });
+
+    QSharedPointer<ChatMessage> ptr(chatMessage);
     emit databaseAddition(ptr);
 }
 
@@ -530,17 +545,27 @@ void TelepathyAccount::onChannelLeft(QString channel) {
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
     auto text = QString("%1 has left the groupchat").arg(m_nickname);
 
-    auto *msg = new ChatMessage(1, /* TODO: event id is wrong here but should not matter */
-            service, group_uid,
-            name, m_nickname, QString(remote_name),
-            "" /* remote_abook_uid */,
-            text, "" /* icon_name */,
-            now, 0,
-            /* group_title */ "",
-            channel,
-            "-1", false, 0);
+    auto *chatMessage = new ChatMessage({
+        .event_id = 1,  /* TODO: event id is wrong here but should not matter? or does it? */
+        .service = service,
+        .group_uid = group_uid,
+        .local_uid = name,
+        .remote_uid = m_nickname,
+        .remote_name = QString(remote_name),
+        .remote_ebook_uid = "",
+        .text = text,
+        .icon_name = "",
+        .timestamp = now,
+        .count = 0,
+        .group_title = "",
+        .channel = channel,
+        .event_type = "-1",
+        .outgoing = false,
+        .is_read = false,
+        .flags = 0
+      });
 
-    QSharedPointer<ChatMessage> ptr(msg);
+    QSharedPointer<ChatMessage> ptr(chatMessage);
     emit databaseAddition(ptr);
 }
 
