@@ -24,7 +24,7 @@ QString OverviewServiceItem::uid() const { return m_uid; }
 OverviewServiceModel::OverviewServiceModel(Conversations *ctx, QObject *parent)
     : m_ctx(ctx), QAbstractListModel(parent) {
 
-  m_rtcomProtocols = qtrtcom::localUIDs();
+  m_rtcomProtocols = ChatModel::localUIDs();
   this->load();
 
   connect(m_ctx->telepathy, &Telepathy::accountManagerReady, this, &OverviewServiceModel::onTPAccountManagerReady);

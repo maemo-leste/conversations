@@ -35,13 +35,13 @@ Components.ChatRoot {
 
         delegate: Rectangle {
             property int itemHeight: isHead ? root.itemHeightDefault : root.itemHeightSmall;
-            property int yoff: Math.round(item.y - chatListView.contentY)
-            property bool isFullyVisible: {
-                let _visible = yoff > chatListView.y && yoff + height < chatListView.y + chatListView.height;
-                if(!message_read && _visible)
-                    chatModel.onMessageRead(event_id);
-                return _visible;
-            }
+            // handy snippet to determine if this current delegate is in view, in case
+            // we need it in the future
+            // property int yoff: Math.round(item.y - chatListView.contentY)
+            // property bool isFullyVisible: {
+            //     let _visible = yoff > chatListView.y && yoff + height < chatListView.y + chatListView.height;
+            //     return _visible;
+            // }
             height: {
                 var implicit = isHead ? textChatMessage.implicitHeight : textChatMessage2.implicitHeight;
                 var dynamic_height = implicit + 4;

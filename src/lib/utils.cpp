@@ -101,29 +101,6 @@ double Utils::roundUp(double value, int decimal_places) {
     const double multiplier = std::pow(10.0, decimal_places);
     return std::ceil(value * multiplier) / multiplier;
 }
-Notification* Utils::notification(QString title, QString message, const QSharedPointer<ChatMessage> &msg) {
-    bool is_sms = msg->event_type() == "RTCOM_EL_EVENTTYPE_SMS_MESSAGE"; // Make this prettier
-    Notification* notification;
-
-    if (is_sms) {
-        notification = new Notification(msg, title, message, "general_sms", 0);
-        notification->setCategory("sms-message");
-        notification->setHintString("led-pattern", "PatternCommunicationSMS");
-    } else {
-        notification = new Notification(msg, title, message, "general_chat", 0);
-        notification->setCategory("chat-message");
-        notification->setHintString("led-pattern", "PatternCommunicationIM");
-    }
-
-    // Currently this will group all notifications together, which is weird
-    notification->setHintString("group", "_grouped_messages");
-    notification->setHintString("conversations-groupuid", msg->group_uid());
-
-    notification->setHintByte("persistent", 1);
-
-    notification->show();
-    return notification;
-}
 
 bool Utils::protocolIsTelephone(const QString &protocol) {
   return protocol.contains("sms") || protocol.contains("tel") || protocol.contains("ofono");

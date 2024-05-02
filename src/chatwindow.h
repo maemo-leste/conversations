@@ -56,7 +56,6 @@ signals:
     void scrollDown();
     void chatPostReady();
     void chatPreReady();
-    void messageRead(int event_id);
 
 private:
     Conversations *m_ctx;

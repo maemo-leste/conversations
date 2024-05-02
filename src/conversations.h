@@ -85,7 +85,6 @@ public slots:
     void onIPCReceived(const QString &cmd);
     void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
     void onNotificationClicked(const QSharedPointer<ChatMessage> &msg);
-    void onMessageRead(int event_id);
 
 private:
     float m_textScaling = 1.0;

@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NOTIFICATION_H
-#define NOTIFICATION_H
+#pragma once
 
 #include <QList>
 #include <QObject>
@@ -57,6 +56,7 @@ class Q_DECL_EXPORT Notification : public QObject
 
 	public:
 		static bool init(const QString & appName);
+    static Notification* issue(QString title, QString message, const QSharedPointer<ChatMessage> &msg);
 		static void uninit();
 		static bool isInitted();
 
@@ -125,5 +125,3 @@ class Q_DECL_EXPORT Notification : public QObject
 		void closed(quint32 reason);
 		void clicked(const QSharedPointer<ChatMessage> &msg);
 };
-
-#endif // NOTIFICATION_H

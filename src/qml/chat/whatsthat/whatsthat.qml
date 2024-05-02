@@ -52,13 +52,13 @@ Components.ChatRoot {
             property int itemHeight: textColumn.implicitHeight + chatListView.itemHeightSpacing
             property bool highlight: root.highlightEventId == event_id
 
-            property int yoff: Math.round(item.y - chatListView.contentY)
-            property bool isFullyVisible: {
-                let _visible = yoff > chatListView.y && yoff + height < chatListView.y + chatListView.height;
-                if(!message_read && _visible && isHead)
-                    chatModel.onLastMessageRead(event_id);
-                return _visible;
-            }
+            // handy snippet to determine if this current delegate is in view, in case
+            // we need it in the future
+            // property int yoff: Math.round(item.y - chatListView.contentY)
+            // property bool isFullyVisible: {
+            //     let _visible = yoff > chatListView.y && yoff + height < chatListView.y + chatListView.height;
+            //     return _visible;
+            // }
 
             height: itemHeight + 12
             width: parent !== null ? parent.width : 0

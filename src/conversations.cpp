@@ -65,17 +65,13 @@ void Conversations::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
         notificationMap[msg->group_uid()] = msg;
 
     auto title = QString("Message from %1").arg(msg->remote_name());
-    auto *notification = Utils::notification(title, msg->textSnippet(), msg);
+    auto *notification = Notification::issue(title, msg->textSnippet(), msg);
     connect(notification, &Notification::clicked, this, &Conversations::onNotificationClicked);
   }
 }
 
 void Conversations::onNotificationClicked(const QSharedPointer<ChatMessage> &msg) {
   emit notificationClicked(msg);
-}
-
-void Conversations::onMessageRead(const int event_id) {
-  qtrtcom::setRead(event_id, true);
 }
 
 void Conversations::onIPCReceived(const QString &cmd) {

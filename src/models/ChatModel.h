@@ -1,5 +1,4 @@
-#ifndef CHATMODEL_H
-#define CHATMODEL_H
+#pragma once
 
 #include <QAbstractListModel>
 #include <QDateTime>
@@ -14,6 +13,7 @@
 #include "qtcsv/writer.h"
 
 #include "models/ChatMessage.h"
+#include "lib/rtcom.h"
 
 
 class ChatModel : public QAbstractListModel
@@ -48,6 +48,15 @@ public:
       this->clear();
     }
 
+    // rtcom
+    static QList<ChatMessage *> iterateRtComEvents(RTComElQuery *query_struct);
+    static QList<QString> localUIDs();
+    unsigned int getMessages(const QString &service_id, const QString &group_uid);
+    unsigned int getMessages(const QString &service_id, const QString &group_uid, int limit, int offset);
+    Q_INVOKABLE unsigned int getPage(int custom_limit=0);
+    Q_INVOKABLE unsigned int searchMessages(const QString &search);
+    Q_INVOKABLE unsigned int searchMessages(const QString &search, const QString &group_uid);
+
     void setGroupUID(const QString &group_uid) { m_group_uid = group_uid; }
     void setServiceID(const QString &service_id) { m_service_id = service_id; }
 
@@ -55,6 +64,7 @@ public:
     void prependMessage(const QSharedPointer<ChatMessage> &message);
     void appendMessage(ChatMessage *message);
     void appendMessage(const QSharedPointer<ChatMessage> &message);
+    void setMessagesRead();
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
@@ -72,13 +82,7 @@ public:
       return m_exhausted;
     }
 
-    Q_INVOKABLE unsigned int getPage(int custom_limit=0);
-    unsigned int getMessages(const QString &service_id, const QString &group_uid);
-    unsigned int getMessages(const QString &service_id, const QString &group_uid, int limit, int offset);
-    Q_INVOKABLE unsigned int searchMessages(const QString &search);
-    Q_INVOKABLE unsigned int searchMessages(const QString &search, const QString &group_uid);
     Q_INVOKABLE int eventIdToIdx(int msg);
-    Q_INVOKABLE void onLastMessageRead(const int event_id);
 
     Q_INVOKABLE void clear();
     static void exportChatToCsv(const QString &service, const QString &group_uid, QObject *parent);
@@ -92,7 +96,7 @@ signals:
     void limitChanged();
     void offsetChanged();
     void countChanged();
-    void messageRead(const int event_id);
+    void messageRead(unsigned int event_id);
 
 protected:
     QHash<int, QByteArray> roleNames() const;
@@ -108,5 +112,3 @@ private:
     QMap<QString, QString> m_lol;
     QString m_filterProtocol;
 };
-
-#endif

@@ -506,7 +506,7 @@ void TelepathyAccount::onChannelJoined(const Tp::ChannelRequestPtr &channelReque
         .channel = channel,
         .event_type = "-1",
         .outgoing = false,
-        .is_read = false,
+        .is_read = true,
         .flags = 0
       });
 
@@ -561,7 +561,7 @@ void TelepathyAccount::onChannelLeft(QString channel) {
         .channel = channel,
         .event_type = "-1",
         .outgoing = false,
-        .is_read = false,
+        .is_read = true,
         .flags = 0
       });
 

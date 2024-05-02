@@ -65,7 +65,6 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   this->chatModel->getMessages(m_chatMessage->service(), m_chatMessage->group_uid());
   if(m_chatMessage->isSearchResult)
     fillBufferUntil(m_chatMessage);
-  connect(this->chatModel, &ChatModel::messageRead, this, &ChatWindow::messageRead);
 
   auto *qctx = ui->quick->rootContext();
   qctx->setContextProperty("chatWindow", this);
@@ -117,6 +116,9 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   connect((QObject*)ui->quick->rootObject(),
           SIGNAL(chatPreReady()), this,
           SLOT(onChatPreReady()));
+
+  // mark messages as read, user opened the chat
+  chatModel->setMessagesRead();
 }
 
 void ChatWindow::onExportToCsv() {
