@@ -86,7 +86,7 @@ target_include_directories(conversations PUBLIC
         )
 
 add_definitions(${QT_DEFINITIONS})
-if(NOT "${CMAKE_BUILD_TYPE}" EQUAL "Debug")
+if(NOT "${CMAKE_BUILD_TYPE}" MATCHES "Debug")
     add_definitions(-DQT_NO_DEBUG)
 endif()
 

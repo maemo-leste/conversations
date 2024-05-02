@@ -28,6 +28,7 @@
 #include <libosso-abook/osso-abook.h>
 
 #include "rtcom-eventlogger/eventlogger-query.h"
+#include "lib/logger.h"
 
 int main(int argc, char *argv[]) {
   Q_INIT_RESOURCE(assets);
@@ -76,6 +77,7 @@ int main(int argc, char *argv[]) {
   QApplication::setApplicationVersion(CONVERSATIONS_VERSION);
 
   QApplication app(argc, argv);
+  qInstallMessageHandler(conversationsMessageHandler);
   app.setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
 
   QMap<QString, QString> info;
@@ -138,6 +140,7 @@ int main(int argc, char *argv[]) {
 
   // initialize application
   auto *ctx = new Conversations(&parser, ipc);
+  logger_ctx = ctx;
   ctx->applicationPath = argv_.at(0);
   ctx->isDebug = debugMode;
 #ifdef MAEMO

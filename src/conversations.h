@@ -62,6 +62,7 @@ public:
     Q_INVOKABLE QString ossoIconLookup(const QString &filename); // /usr/share/icons/hicolor/48x48/hildon/
 
 signals:
+    void applicationLog(QString msg);
     void clockSkewDetected();
     void setTitle(const QString &title); // set window title
     void showChat();
