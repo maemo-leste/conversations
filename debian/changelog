@@ -1,3 +1,12 @@
+conversations (0.6.5) unstable; urgency=medium
+
+  * Add better notification support, having them be persistent, having
+    vibration and sounds. Also show them when conversations is open anyway.
+  * Implement marking messages as read
+  * Initial (wip) group chat support
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Wed, 24 Jan 2024 00:16:24 +0100
+
 conversations (0.6.4) unstable; urgency=medium
 
   * Add backwards compatible group-uid for Fremantle
