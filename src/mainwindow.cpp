@@ -88,20 +88,29 @@ void MainWindow::onOpenChatWindow(int idx) {
 }
 
 void MainWindow::onOpenChatWindow(QString local_uid, QString remote_uid, QString group_uid, QString service, QString channel) {
-  qDebug() << "onOpenChatWindow";
-  auto msg = new ChatMessage(-1, service, group_uid, local_uid, remote_uid,
-          "", /* remote name */
-          "", /* remote_abook_uid */
-          "", /* text */
-          "", /* icon_name */
-          0, /* epoch */
-          0, /* count */
-          "", /* group title */
-          channel,
-          "-1", /* event_type */
-          false, /* outgoing */
-          0 /* flags */);
-  this->onOpenChatWindow(QSharedPointer<ChatMessage>(msg));
+  qDebug() << "onOpenChatWindow" << channel;
+
+  auto *chatMessage = new ChatMessage({
+    .event_id = 1,
+    .service = service,
+    .group_uid = group_uid,
+    .local_uid = local_uid,
+    .remote_uid = remote_uid,
+    .remote_name = "",
+    .remote_ebook_uid = "",
+    .text = "",
+    .icon_name = "",
+    .timestamp = 0,
+    .count = 0,
+    .group_title = "",
+    .channel = channel,
+    .event_type = "-1",
+    .outgoing = false,
+    .is_read = true,
+    .flags = 0
+  });
+
+  this->onOpenChatWindow(QSharedPointer<ChatMessage>(chatMessage));
 }
 
 void MainWindow::onOpenChatWindow(const QSharedPointer<ChatMessage> &msg) {
