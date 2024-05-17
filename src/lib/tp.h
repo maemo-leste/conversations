@@ -99,6 +99,7 @@ public:
 
 signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
+    void openChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
     void removed(TelepathyAccount* account);
     void channelJoined(QString local_uid, QString channel);
     void channelLeft(QString local_uid, QString channel);
@@ -111,6 +112,8 @@ public slots:
     /* TODO: make these private again and use connect/emit */
     void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
     void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
+
+    void TpOpenChannelWindow(Tp::TextChannelPtr channel);
 
     Tp::TextChannel* hasChannel(const QString& remote_uid);
     void _removeChannel(TelepathyChannel* chanptr);
@@ -201,6 +204,7 @@ signals:
 public slots:
     void sendMessage(const QString &backend_name, const QString &remote_uid, const QString &message);
     void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
+    void onOpenChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
 
     void onNewAccount(const Tp::AccountPtr &account);
     void onAccountRemoved(TelepathyAccount* account);

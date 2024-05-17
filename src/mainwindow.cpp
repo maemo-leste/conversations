@@ -48,6 +48,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::onOpenSearchWindow);
 
   connect(m_ctx->telepathy, &Telepathy::accountManagerReady, this, &MainWindow::onTPAccountManagerReady);
+  connect(m_ctx->telepathy, &Telepathy::openChannelWindow, this, QOverload<QString, QString, QString, QString, QString>::of(&MainWindow::onOpenChatWindow));
 }
 
 void MainWindow::createQml() {
@@ -84,6 +85,23 @@ void MainWindow::destroyQml() {
 void MainWindow::onOpenChatWindow(int idx) {
   auto msg = m_ctx->chatOverviewModel->chats.at(idx);
   this->onOpenChatWindow(msg);
+}
+
+void MainWindow::onOpenChatWindow(QString local_uid, QString remote_uid, QString group_uid, QString service, QString channel) {
+  qDebug() << "onOpenChatWindow";
+  auto msg = new ChatMessage(-1, service, group_uid, local_uid, remote_uid,
+          "", /* remote name */
+          "", /* remote_abook_uid */
+          "", /* text */
+          "", /* icon_name */
+          0, /* epoch */
+          0, /* count */
+          "", /* group title */
+          channel,
+          "-1", /* event_type */
+          false, /* outgoing */
+          0 /* flags */);
+  this->onOpenChatWindow(QSharedPointer<ChatMessage>(msg));
 }
 
 void MainWindow::onOpenChatWindow(const QSharedPointer<ChatMessage> &msg) {
