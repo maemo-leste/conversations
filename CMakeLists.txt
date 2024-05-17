@@ -53,3 +53,4 @@ link_directories(${X11_LIBRARIES})
 
 add_subdirectory(src)
 add_subdirectory(desktop)
+add_subdirectory(telepathy)
