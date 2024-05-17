@@ -1,3 +1,9 @@
+conversations (0.6.6) unstable; urgency=medium
+
+  * Install Conversations.client
+
+ -- Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>  Fri, 17 May 2024 12:19:22 +0300
+
 conversations (0.6.5) unstable; urgency=medium
 
   * Add better notification support, having them be persistent, having
