@@ -1,3 +1,9 @@
+conversations (0.6.8) unstable; urgency=medium
+
+  * Actually fix opening channel windows
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Sat, 18 May 2024 17:31:44 +0200
+
 conversations (0.6.7) unstable; urgency=medium
 
   * Attempt to fix opening channel windows
