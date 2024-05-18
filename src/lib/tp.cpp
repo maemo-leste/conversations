@@ -253,8 +253,7 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
         if (matching_channel) {
             if (matching_requestptr) {
                 matching_requestptr->succeeded((Tp::ChannelPtr)matching_channel);
-                // dont auto-open chat windows for now
-                // matching_account->TpOpenChannelWindow(Tp::TextChannelPtr(matching_channel));
+                matching_account->TpOpenChannelWindow(Tp::TextChannelPtr(matching_channel));
             }
         }
     }
