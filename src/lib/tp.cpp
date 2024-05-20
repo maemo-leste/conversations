@@ -445,6 +445,8 @@ void TelepathyAccount::onOnline(bool online) {
     /* We might want to present whether a chat is online or not (if it is not
      * online, we can't send messages? */
     qDebug() << "onOnline: " << online;
+    if(online)
+      this->joinSavedGroupChats();
 }
 
 void TelepathyAccount::joinChannel(const QString &channel, bool persistent) {
@@ -590,12 +592,7 @@ void TelepathyAccount::onChannelLeft(QString channel) {
 }
 
 void TelepathyAccount::onAccReady(Tp::PendingOperation *op) {
-    for(const auto &_channel: channels) {
-        if(_channel->auto_join) {
-            qDebug() << "account:" << name << "joining:" << _channel->name << "- from user config";
-            this->_joinChannel(_channel->name);
-        }
-    }
+  this->joinSavedGroupChats();
 }
 
 Tp::TextChannel* TelepathyAccount::hasChannel(const QString &remote_uid) {
@@ -729,6 +726,15 @@ void TelepathyAccount::writeGroupchatChannels() {
         obj[name] = obj_account;
         auto dumps = QJsonDocument(obj).toJson(QJsonDocument::Compact);
         config()->set(ConfigKeys::GroupChatChannels, dumps);
+    }
+}
+
+void TelepathyAccount::joinSavedGroupChats() {
+    for(const auto &_channel: channels) {
+        if(_channel->auto_join) {
+            qDebug() << "account:" << name << "joining:" << _channel->name << "- from user config";
+            this->_joinChannel(_channel->name);
+        }
     }
 }
 

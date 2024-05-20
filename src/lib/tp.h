@@ -130,6 +130,7 @@ private slots:
     void onChannelJoined(const Tp::ChannelRequestPtr &channelRequest, QString channel);
     void onChannelLeft(QString channel);
     void onRemoved(void);
+    void joinSavedGroupChats();
 
     // TODO return value
     // sendChannelMessage (if we cannot just use sendMessage)
