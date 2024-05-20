@@ -200,6 +200,7 @@ void ChatWindow::onGatherMessage() {
   }
 
   this->ui->chatBox->clear();
+  this->ui->chatBox->setFocus();
 }
 
 void ChatWindow::onGroupchatJoinLeaveRequested() {
