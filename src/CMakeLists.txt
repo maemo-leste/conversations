@@ -63,8 +63,6 @@ if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
     target_compile_definitions(conversations PRIVATE DEBUG=1)
 endif()
 
-message(STATUS "xxx ${TELEPATHY_QT5_INCLUDE_DIR}")
-
 target_include_directories(conversations PUBLIC
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/src/lib/
@@ -154,7 +152,7 @@ install(TARGETS conversations
         DESTINATION bin
         )
 
-message(STATUS "CONVERSATIONS: ${VERSION}")
+message(STATUS "CONVERSATIONS: ${VERSION} ${CMAKE_BUILD_TYPE}")
 if(MAEMO)
     message(STATUS "Maemo build: ON")
 else()

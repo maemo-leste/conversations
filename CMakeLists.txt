@@ -7,14 +7,18 @@ set(VERSION_MINOR "5")
 set(VERSION_REVISION "7")
 set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION}")
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING
+        "Default build type: Debug" FORCE)
+endif()
+
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_SKIP_RPATH ON)
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake")
+
 set(CONVERSATIONS_DESKTOP_DIR /usr/share/applications/hildon)
 set(TELEPATHY_CLIENTS_DIR /usr/share/telepathy/clients)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(CMAKE_SKIP_RPATH ON)
-endif()
 
 configure_file("cmake/config-conversations.h.cmake" "${CMAKE_CURRENT_SOURCE_DIR}/src/config-conversations.h")
 
