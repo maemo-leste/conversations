@@ -39,6 +39,9 @@ void qtrtcom::registerChatJoin(time_t start_time, time_t end_time, const char* s
   } else {
     qDebug() << "registerChatJoin SUCCESS";
   }
+
+  rtcom_el_event_free_contents(ev);
+  rtcom_el_event_free(ev);
 }
 
 void qtrtcom::registerChatLeave(time_t start_time, time_t end_time, const char* self_name, const char* backend_name, const char *remote_uid, const char *remote_name, const char* abook_uid, const char* text, const char* protocol, const char* channel, const char* group_uid) {
@@ -57,6 +60,9 @@ void qtrtcom::registerChatLeave(time_t start_time, time_t end_time, const char* 
   } else {
     qDebug() << "registerChatLeave SUCCESS";
   }
+
+  rtcom_el_event_free_contents(ev);
+  rtcom_el_event_free(ev);
 }
 
 void qtrtcom::registerMessage(time_t start_time, time_t end_time, const char* self_name, const char* backend_name,
@@ -80,6 +86,9 @@ void qtrtcom::registerMessage(time_t start_time, time_t end_time, const char* se
   } else {
     qDebug() << "registerMessage SUCCESS";
   }
+
+  rtcom_el_event_free_contents(ev);
+  rtcom_el_event_free(ev);
 }
 
 void qtrtcom::setRead(const unsigned int event_id, const gboolean read) {
