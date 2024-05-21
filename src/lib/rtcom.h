@@ -8,6 +8,7 @@
 #include "lib/utils.h"
 
 namespace qtrtcom {
+    extern RTComEl *el;
     RTComEl *rtcomel();
 
 #define LOOKUP_INT(x) \

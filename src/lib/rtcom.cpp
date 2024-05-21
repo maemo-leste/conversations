@@ -1,8 +1,8 @@
 #include "lib/rtcom.h"
 
-RTComEl * qtrtcom::rtcomel() {
-  RTComEl *el = NULL;
+RTComEl *qtrtcom::el = NULL;
 
+RTComEl * qtrtcom::rtcomel() {
   if (!el)
     el = rtcom_el_new();
 
