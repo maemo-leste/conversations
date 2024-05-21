@@ -79,6 +79,8 @@ int main(int argc, char *argv[]) {
   QApplication app(argc, argv);
   qInstallMessageHandler(conversationsMessageHandler);
   app.setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
+  app.setAttribute(Qt::AA_CompressTabletEvents);
+  app.setAttribute(Qt::AA_CompressHighFrequencyEvents);
 
   QMap<QString, QString> info;
   info["Qt"] = QT_VERSION_STR;
