@@ -67,7 +67,10 @@ int main(int argc, char *argv[]) {
 #endif
 
   intl("conversations-ui");
+
+#ifdef DISABLE_QML_DISK_CACHE
   qputenv("QML_DISABLE_DISK_CACHE", "1");
+#endif
 
   //QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
   QApplication::setApplicationName("conversations");

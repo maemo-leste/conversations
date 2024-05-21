@@ -16,6 +16,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_SKIP_RPATH ON)
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake")
 
+option(DISABLE_QML_DISK_CACHE "Disables the disk cache and forces QML/JS re-compilation. Should be ON during QML development." OFF)
+
 set(CONVERSATIONS_DESKTOP_DIR /usr/share/applications/hildon)
 set(TELEPATHY_CLIENTS_DIR /usr/share/telepathy/clients)
 set(THREADS_PREFER_PTHREAD_FLAG ON)

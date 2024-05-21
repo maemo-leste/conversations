@@ -59,6 +59,11 @@ if(RTCOM)
     target_compile_definitions(conversations PRIVATE RTCOM=1)
 endif()
 
+if(DISABLE_QML_DISK_CACHE)
+  message(STATUS "QML disk cache: off")
+  target_compile_definitions(conversations PRIVATE DISABLE_QML_DISK_CACHE=1)
+endif()
+
 if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
     target_compile_definitions(conversations PRIVATE DEBUG=1)
 endif()
