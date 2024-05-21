@@ -105,9 +105,9 @@ signals:
     void channelLeft(QString local_uid, QString channel);
 
 public slots:
-    void sendMessage(const QString &remote_uid, const QString &message);
-    void joinChannel(const QString &channel, bool persistent);
-    void leaveChannel(const QString &channel);
+    void sendMessage(const QString &remote_id, const QString &message);
+    void joinChannel(const QString &remote_id, bool persistent);
+    void leaveChannel(const QString &remote_id);
 
     /* TODO: make these private again and use connect/emit */
     void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
@@ -115,7 +115,7 @@ public slots:
 
     void TpOpenChannelWindow(Tp::TextChannelPtr channel);
 
-    Tp::TextChannel* hasChannel(const QString& remote_uid);
+    Tp::TextChannel* hasChannel(const QString& remote_id);
     void _removeChannel(TelepathyChannel* chanptr);
 
     bool log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias);
@@ -190,9 +190,9 @@ public:
 
     QList<TelepathyAccount*> accounts;
 
-    void joinChannel(const QString &backend_name, const QString &channel, bool persistent);
-    void leaveChannel(const QString &backend_name, const QString &channel);
-    bool participantOfChannel(const QString &backend_name, const QString &channel);
+    void joinChannel(const QString &backend_name, const QString &remote_id, bool persistent);
+    void leaveChannel(const QString &backend_name, const QString &remote_id);
+    bool participantOfChannel(const QString &backend_name, const QString &remote_id);
     TelepathyAccount* rtcomLocalUidToAccount(const QString &backend_name);
 
 signals:
@@ -203,7 +203,8 @@ signals:
     void channelLeft(QString backend_name, QString channel);
 
 public slots:
-    void sendMessage(const QString &backend_name, const QString &remote_uid, const QString &message);
+    void sendMessage(const QString &backend_name, const QString &remote_id, const QString &message);
+
     void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
     void onOpenChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
 
