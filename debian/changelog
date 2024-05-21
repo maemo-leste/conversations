@@ -1,3 +1,11 @@
+conversations (0.6.9) unstable; urgency=medium
+
+  * Various memory leak fixes
+  * Focus input field after sending a message
+  * Auto rejoin groupchats when going back online
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Tue, 21 May 2024 21:51:45 +0200
+
 conversations (0.6.8) unstable; urgency=medium
 
   * Actually fix opening channel windows
