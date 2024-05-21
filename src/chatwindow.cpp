@@ -187,17 +187,21 @@ void ChatWindow::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
   }
 }
 
+QString ChatWindow::remoteId() const
+{
+  if (m_chatMessage->channel().isEmpty())
+    return m_chatMessage->remote_uid();
+  else
+    return m_chatMessage->channel();
+}
+
 void ChatWindow::onGatherMessage() {
   QString _msg = this->ui->chatBox->toPlainText();
   _msg = _msg.trimmed();
   if(_msg.isEmpty())
     return;
 
-  if (m_chatMessage->channel() != "") {
-    emit sendMessage(m_chatMessage->local_uid(), m_chatMessage->channel(), _msg);
-  } else {
-    emit sendMessage(m_chatMessage->local_uid(), m_chatMessage->remote_uid(), _msg);
-  }
+  emit sendMessage(m_chatMessage->local_uid(), remoteId(), _msg);
 
   this->ui->chatBox->clear();
   this->ui->chatBox->setFocus();
@@ -235,19 +239,39 @@ Conversations *ChatWindow::getContext() {
   return pChatWindow->m_ctx;
 }
 
+void ChatWindow::setChatState(Tp::ChannelChatState state) const
+{
+  if (!m_chatMessage.isNull())
+    m_ctx->telepathy->setChatState(m_local_uid, remoteId(), state);
+}
+
 bool ChatWindow::eventFilter(QObject *watched, QEvent *event) {
-  if(event->type() == QKeyEvent::KeyPress) {
-    auto *ke = static_cast<QKeyEvent*>(event);
-    if(m_enterKeySendsChat &&
-       (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter)) {
-      this->onGatherMessage();
-      return true;
+  switch(event->type()) {
+    case QKeyEvent::KeyPress:
+    {
+      auto *ke = static_cast<QKeyEvent*>(event);
+
+      if(m_enterKeySendsChat &&
+         (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter)) {
+          this->onGatherMessage();
+          return true;
+        }
+
+      break;
     }
+    case QEvent::WindowActivate:
+      setChatState(Tp::ChannelChatStateActive);
+      break;
+    case QEvent::WindowDeactivate:
+      setChatState(Tp::ChannelChatStateInactive);
+      break;
   }
+
   return QMainWindow::eventFilter(watched, event);
 }
 
 void ChatWindow::closeEvent(QCloseEvent *event) {
+  setChatState(Tp::ChannelChatStateInactive);
   this->chatModel->clear();
   emit closed(m_chatMessage->group_uid());
   m_chatMessage.clear();

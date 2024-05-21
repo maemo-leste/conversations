@@ -70,6 +70,8 @@ private:
     unsigned int m_windowFocus = 0; // seconds
 
     void fillBufferUntil(const QSharedPointer<ChatMessage> &msg) const;
+    QString remoteId() const;
+    void setChatState(Tp::ChannelChatState state) const;
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;

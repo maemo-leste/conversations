@@ -108,6 +108,7 @@ public slots:
     void sendMessage(const QString &remote_id, const QString &message);
     void joinChannel(const QString &remote_id, bool persistent);
     void leaveChannel(const QString &remote_id);
+    void setChatState(const QString &remote_id, Tp::ChannelChatState state);
 
     /* TODO: make these private again and use connect/emit */
     void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
@@ -204,12 +205,14 @@ signals:
 
 public slots:
     void sendMessage(const QString &backend_name, const QString &remote_id, const QString &message);
+    void setChatState(const QString &backend_name, const QString &remote_id, Tp::ChannelChatState state);
 
     void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
     void onOpenChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
 
     void onNewAccount(const Tp::AccountPtr &account);
     void onAccountRemoved(TelepathyAccount* account);
+
 
 private slots:
     void onAccountManagerReady(Tp::PendingOperation *op);

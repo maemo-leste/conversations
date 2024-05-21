@@ -161,6 +161,14 @@ void Telepathy::sendMessage(const QString &backend_name, const QString &remote_i
     account->sendMessage(remote_id, message);
 }
 
+void Telepathy::setChatState(const QString &backend_name, const QString &remote_id, Tp::ChannelChatState state)
+{
+  auto account = rtcomLocalUidToAccount(backend_name);
+  if(account == nullptr)
+      return;
+  account->setChatState(remote_id, state);
+}
+
 TelepathyAccount* Telepathy::rtcomLocalUidToAccount(const QString &backend_name) {
     /* Find account given the backend_name */
     for (TelepathyAccount *account: accounts) {
@@ -672,6 +680,14 @@ void TelepathyAccount::sendMessage(const QString &remote_id, const QString &mess
             auto text_channel = (Tp::TextChannel*)channel.data();
             text_channel->send(message);
     });
+}
+
+void TelepathyAccount::setChatState(const QString &remote_id, Tp::ChannelChatState state)
+{
+  qDebug() << "setChatState: remote_id:" << remote_id;
+  Tp::TextChannel* channel = hasChannel(remote_id);
+  if (channel)
+    channel->requestChatState(state);
 }
 
 void TelepathyAccount::onRemoved() {
