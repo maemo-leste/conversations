@@ -3,5 +3,6 @@
         <file>bg.png</file>
         <file>whatsthat.png</file>
         <file>whatsthat.qml</file>
+        <file>MessageDelegate.qml</file>
     </qresource>
 </RCC>
