@@ -1,0 +1,20 @@
+* {
+  color: "white";
+  font-size: 16pt;
+}
+
+span {
+  display: block;
+}
+
+.small {
+  font-size: 14pt;
+}
+
+.text-muted {
+  color: "grey";
+}
+
+.header {
+  font-size: 20pt;
+}

@@ -133,7 +133,7 @@ void ChatModel::exportChatToCsv(const QString &service, const QString &group_uid
     row << QString::number(chat->epoch()) << chat->service() << chat->fulldate() << chat->remote_uid() << chat->name() << chat->text();
     data.addRow(row);
   }
-  
+
   const auto fn = QString("%1-%2-%3.csv").arg(service).arg(now).arg(group_uid);
   const auto path = QString("%1/MyDocs/%2").arg(QDir::homePath()).arg(fn);
 
@@ -182,45 +182,6 @@ void ChatModel::clear() {
   this->countChanged();
 }
 
-void ChatModel::onProtocolFilter(QString protocol) {
-  m_filterProtocol = protocol;
-  onGetOverviewMessages();
-}
-
-void ChatModel::onGetOverviewMessages(const int limit, const int offset) {
-  this->clear();
-
-  RTComElQuery *query = qtrtcom::startQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_GROUP);
-  bool query_prepared = FALSE;
-
-  if(m_filterProtocol.isEmpty()) {
-    gint service_id = rtcom_el_get_service_id(qtrtcom::rtcomel(), "RTCOM_EL_SERVICE_CALL");
-    query_prepared = rtcom_el_query_prepare(query, "service-id", service_id, RTCOM_EL_OP_NOT_EQUAL,  NULL);
-  } else {
-    gint service_id = (m_filterProtocol == "sms" || m_filterProtocol == "tel" || m_filterProtocol == "ofono") ?
-                      rtcom_el_get_service_id(qtrtcom::rtcomel(), "RTCOM_EL_SERVICE_SMS") :
-                      rtcom_el_get_service_id(qtrtcom::rtcomel(), "RTCOM_EL_SERVICE_CHAT");
-
-    QString filterProtocol = QString("%%/" + m_filterProtocol + "/%%");
-    query_prepared = rtcom_el_query_prepare(query,
-                                            "service-id", service_id, RTCOM_EL_OP_EQUAL,
-                                            "local-uid", filterProtocol.toStdString().c_str(), RTCOM_EL_OP_STR_LIKE, NULL);
-  }
-
-  if(!query_prepared) {
-    qCritical() << "Couldn't prepare query";
-    g_object_unref(query);
-    return;
-  }
-
-  auto results = ChatModel::iterateRtComEvents(query);
-
-  g_object_unref(query);
-
-  for (const auto &message: results)
-    this->appendMessage(message);
-}
-
 unsigned int ChatModel::getMessages(const QString &service_id, const QString &group_uid) {
   auto count = this->getMessages(service_id, group_uid, m_limit, m_offset);
   if(count < m_limit) {
@@ -266,7 +227,7 @@ unsigned int ChatModel::searchMessages(const QString &search, const QString &gro
     return 0;
   }
 
-  auto results = ChatModel::iterateRtComEvents(query);
+  auto results = iterateRtComEvents(query);
 
   g_object_unref(query);
 
@@ -279,9 +240,6 @@ unsigned int ChatModel::searchMessages(const QString &search, const QString &gro
 }
 
 unsigned int ChatModel::getMessages(const QString &service_id, const QString &group_uid, const int limit, const int offset) {
-#ifndef RTCOM
-  return 0;
-#else
   m_group_uid = group_uid;
   m_service_id = service_id;
 
@@ -299,7 +257,7 @@ unsigned int ChatModel::getMessages(const QString &service_id, const QString &gr
     return 0;
   }
 
-  auto results = ChatModel::iterateRtComEvents(query);
+  auto results = iterateRtComEvents(query);
 
   g_object_unref(query);
 
@@ -320,7 +278,6 @@ unsigned int ChatModel::getMessages(const QString &service_id, const QString &gr
   }
 
   return results.length();
-#endif
 }
 
 int ChatModel::eventIdToIdx(int event_id) {
@@ -359,88 +316,4 @@ unsigned int ChatModel::getPage(int custom_limit) {
   }
 
   return count;
-}
-
-QList<ChatMessage*> ChatModel::iterateRtComEvents(RTComElQuery *query) {
-  QList<ChatMessage *> results;
-  RTComElIter *it = rtcom_el_get_events(qtrtcom::rtcomel(), query);
-
-  if(it && rtcom_el_iter_first(it)) {
-    do {
-      GHashTable *values = NULL;
-
-      values = rtcom_el_iter_get_value_map(
-          it,
-          "id",
-          "service",
-          "group-uid",
-          "local-uid",
-          "remote-uid",
-          "remote-name",
-          "remote-ebook-uid",
-          "content",
-          "icon-name",
-          "start-time",
-          "event-count",
-          "group-title",
-          "channel",
-          "event-type",
-          "outgoing",
-          "is-read",
-          "flags",
-          NULL);
-
-      auto *item = new ChatMessage({
-        .event_id = LOOKUP_INT("id"),
-        .service = LOOKUP_STR("service"),
-        .group_uid = LOOKUP_STR("group-uid"),
-        .local_uid = LOOKUP_STR("local-uid"),
-        .remote_uid = LOOKUP_STR("remote-uid"),
-        .remote_name = LOOKUP_STR("remote-name"),
-        .remote_ebook_uid = LOOKUP_STR("remote-ebook-uid"),
-        .text = LOOKUP_STR("content"),
-        .icon_name = LOOKUP_STR("icon-name"),
-        .timestamp = LOOKUP_INT("start-time"),
-        .count = LOOKUP_INT("event-count"),
-        .group_title = LOOKUP_STR("group-title"),
-        .channel = LOOKUP_STR("channel"),
-        .event_type = LOOKUP_STR("event-type"),
-        .outgoing = LOOKUP_BOOL("outgoing"),
-        .is_read = LOOKUP_BOOL("is-read"),
-        .flags = LOOKUP_INT("flags")
-      });
-
-      g_hash_table_destroy(values);
-      results << item;
-    } while (rtcom_el_iter_next(it));
-
-    g_object_unref(it);
-  } else {
-    qCritical() << "Failed to init iterator to start";
-  }
-
-  return results;
-}
-
-QList<QString> ChatModel::localUIDs() {
-  QList<QString> protocols;
-  RTComElQuery *query = qtrtcom::startQuery(0, 0, RTCOM_EL_QUERY_GROUP_BY_EVENTS_LOCAL_UID);
-  if(!rtcom_el_query_prepare(query, NULL)) {
-    qCritical() << __FUNCTION__ << "Could not prepare query";
-    g_object_unref(query);
-    return protocols;
-  }
-
-  auto items = ChatModel::iterateRtComEvents(query);
-  for(auto &item: items) {
-    auto local_uid = item->local_uid();
-    if(local_uid.count("/") != 2) continue;
-    auto protocol = local_uid.split("/").at(1);
-    protocols << protocol;
-  }
-  qDeleteAll(items);
-
-  g_object_unref(query);
-
-  return protocols;
 }

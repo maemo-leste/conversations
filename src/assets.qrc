@@ -2,9 +2,9 @@
     <qresource prefix="/">
         <file>assets/appicon.icns</file>
         <file>assets/images/video_tab_icon.svg</file>
+        <file alias="overviewRichDelegate.css">overview/overviewRichDelegate.css</file>
 
         <file>qml/Main.qml</file>
-        <file>qml/Overview.qml</file>
         <file>qml/Search.qml</file>
 
         <file alias="avatar.jpg">assets/images/avatar.jpeg</file>

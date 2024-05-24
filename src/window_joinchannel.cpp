@@ -40,7 +40,7 @@ JoinChannel::JoinChannel(Conversations *ctx, QWidget *parent) :
     ui->lblAccountWarning->show();
   }
 
-  connect(this->ui->btnJoinChannel, &QPushButton::clicked, [=] {
+  connect(this->ui->btnJoinChannel, &QPushButton::clicked, [this] {
     QString channel = ui->lineEdit_channel->text();
     QString account = ui->comboAccount->currentText();
     bool persistent = ui->checkbox_autoJoin->isChecked();

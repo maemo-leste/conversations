@@ -49,7 +49,6 @@ public:
     }
 
     // rtcom
-    static QList<ChatMessage *> iterateRtComEvents(RTComElQuery *query_struct);
     static QList<QString> localUIDs();
     unsigned int getMessages(const QString &service_id, const QString &group_uid);
     unsigned int getMessages(const QString &service_id, const QString &group_uid, int limit, int offset);
@@ -87,10 +86,6 @@ public:
     Q_INVOKABLE void clear();
     static void exportChatToCsv(const QString &service, const QString &group_uid, QObject *parent);
 
-public slots:
-  void onGetOverviewMessages(int limit = 9999, int offset = 0);
-  void onProtocolFilter(QString protocol);
-
 signals:
     void exhaustedChanged();
     void limitChanged();
@@ -109,6 +104,4 @@ private:
     int m_offset = 0;
     int m_count = 0;
     bool m_exhausted = false;
-    QMap<QString, QString> m_lol;
-    QString m_filterProtocol;
 };

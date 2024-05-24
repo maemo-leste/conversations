@@ -9,6 +9,7 @@
 /*
  * TODO:
  * Priority:
+ * - We need a signal when a new TP account is added, so the UI can act
  * - On incoming messages, let's make sure we match them to an account using
  *   abook, see
  *   https://github.com/maemo-leste/osso-abook/blob/master/lib/osso-abook-aggregator.h#L140
@@ -474,7 +475,7 @@ void TelepathyAccount::_joinChannel(const QString &remote_id) {
     qDebug() << "_joinChannel" << remote_id;
     auto *pending = acc->ensureTextChatroom(remote_id);
 
-    connect(pending, &Tp::PendingChannelRequest::channelRequestCreated, this, [=](const Tp::ChannelRequestPtr &channelRequest) {
+    connect(pending, &Tp::PendingChannelRequest::channelRequestCreated, this, [this, remote_id](const Tp::ChannelRequestPtr &channelRequest) {
       if(channelRequest->isValid()) {
         this->onChannelJoined(channelRequest, remote_id);
       }
@@ -634,7 +635,7 @@ void TelepathyAccount::leaveChannel(const QString &channel) {
 
     // request groupchat leave
     auto pending = ((Tp::TextChannel*)tpChannel->m_channel.data())->requestLeave(leave_message);
-    connect(pending, &Tp::PendingOperation::finished, [=](Tp::PendingOperation *op) {
+    connect(pending, &Tp::PendingOperation::finished, [this, channel](Tp::PendingOperation *op) {
         if(op->isError()) {
             // @TODO: do something useful
             qWarning() << "leaveChannel" << channel << op->errorMessage();
@@ -673,7 +674,7 @@ void TelepathyAccount::sendMessage(const QString &remote_id, const QString &mess
 
     auto *pending = acc->ensureTextChat(remote_id);
 
-    connect(pending, &Tp::PendingChannelRequest::finished, [=](Tp::PendingOperation *op){
+    connect(pending, &Tp::PendingChannelRequest::finished, [message](Tp::PendingOperation *op){
             auto *_pending = (Tp::PendingChannelRequest*)op;
             auto chanrequest = _pending->channelRequest();
             auto channel = chanrequest->channel();

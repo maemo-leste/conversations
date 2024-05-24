@@ -13,6 +13,8 @@ file(GLOB SOURCE_FILES
         "lib/*.cpp"
         "models/*.h"
         "models/*.cpp"
+        "overview/*.cpp"
+        "overview/*.h"
         "lib/libnotify-qt/*.h"
         "lib/libnotify-qt/*.cpp"
         "lib/qtcsv/*.h"

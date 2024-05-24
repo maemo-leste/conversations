@@ -29,6 +29,9 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   qDebug() << QString("%1x%2 (%3 DPI)").arg(
       this->screenRect.width()).arg(this->screenRect.height()).arg(this->screenDpi);
 
+  m_widgetOverview = new OverviewWidget(ctx, this);
+  ui->mainLayout->addWidget(m_widgetOverview);
+
   // js: cfg.get(Config.MaemoTest);  |  cfg.set(Config.MaemoTest , "foo");
   qmlRegisterUncreatableMetaObject(
       ConfigKeys::staticMetaObject,
@@ -49,38 +52,10 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
 
   connect(m_ctx->telepathy, &Telepathy::accountManagerReady, this, &MainWindow::onTPAccountManagerReady);
   connect(m_ctx->telepathy, &Telepathy::openChannelWindow, this, QOverload<QString, QString, QString, QString, QString>::of(&MainWindow::onOpenChatWindow));
-}
-
-void MainWindow::createQml() {
-  if(m_quickWidget != nullptr) return;
-  m_quickWidget = new QQuickWidget(this);
-
-  auto *qctx = m_quickWidget->rootContext();
-  qctx->setContextProperty("cfg", config());
-  qctx->setContextProperty("ctx", m_ctx);
-  qctx->setContextProperty("theme", m_ctx->theme);
-  qctx->setContextProperty("mainWindow", this);
-  qctx->setContextProperty("chatOverviewModel", m_ctx->chatOverviewModel);
-  qctx->setContextProperty("overviewServiceModel", m_ctx->overviewServiceModel);
-  MainWindow::qmlInjectPalette(qctx, m_ctx);
-
-  m_quickWidget->setSource(QUrl("qrc:/qml/Overview.qml"));
-  m_quickWidget->setAttribute(Qt::WA_AlwaysStackOnTop);
-  m_quickWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
-
-  connect((QObject*)m_quickWidget->rootObject(), SIGNAL(overviewRowClicked(int)), this, SLOT(onOpenChatWindow(int)));
-
-  ui->centralWidget->layout()->addWidget(m_quickWidget);
+  connect(m_ctx->overviewModel, &OverviewModel::overviewRowClicked, this, [this](auto &ptr){ this->onOpenChatWindow(ptr); });
 }
 
 void MainWindow::onTPAccountManagerReady() {}
-
-void MainWindow::destroyQml() {
-  if(m_quickWidget == nullptr) return;
-  m_quickWidget->disconnect();
-  m_quickWidget->deleteLater();
-  m_quickWidget = nullptr;
-}
 
 void MainWindow::onOpenChatWindow(int idx) {
   auto msg = m_ctx->chatOverviewModel->chats.at(idx);
@@ -155,7 +130,7 @@ void MainWindow::onOpenJoinChatWindow() {
   m_joinchannel = new JoinChannel(m_ctx, this);
   m_joinchannel->show();
 
-  connect(m_joinchannel, &JoinChannel::joinChannel, [=](QString account, QString channel, bool persistent) {
+  connect(m_joinchannel, &JoinChannel::joinChannel, [this](QString account, QString channel, bool persistent) {
     m_ctx->telepathy->joinChannel(account, channel, persistent);
 
     // hack: if we close this window immediately, then the QML overview model will not get
@@ -182,11 +157,11 @@ void MainWindow::onOpenSettingsWindow() {
 
   connect(m_settings, &Settings::textScalingChanged, this->m_ctx, &Conversations::onTextScalingChanged);
   connect(m_settings, &Settings::autoCloseChatWindowsChanged, this->m_ctx, &Conversations::autoCloseChatWindowsChanged);
-  connect(m_settings, &Settings::inheritSystemThemeToggled, this, [=](bool toggled){
+  connect(m_settings, &Settings::inheritSystemThemeToggled, this, [this](bool toggled){
     m_ctx->inheritSystemTheme = toggled;
     m_ctx->inheritSystemThemeChanged(toggled);
   });
-  connect(m_settings, &Settings::enableDisplayGroupchatJoinLeaveToggled, this, [=](bool toggled){
+  connect(m_settings, &Settings::enableDisplayGroupchatJoinLeaveToggled, this, [this](bool toggled){
     m_ctx->displayGroupchatJoinLeave = toggled;
     m_ctx->displayGroupchatJoinLeaveChanged(toggled);
   });
@@ -215,7 +190,6 @@ void MainWindow::onChatWindowClosed(const QString &group_uid) {
 }
 
 void MainWindow::onShowApplication() {
-  this->createQml();
   this->show();
 
   m_ctx->isBackground = false;
@@ -226,18 +200,7 @@ void MainWindow::onShowApplication() {
 
 void MainWindow::onHideApplication() {
   this->hide();
-  this->destroyQml();
   m_ctx->isBackground = true;
-}
-
-void MainWindow::qmlInjectPalette(QQmlContext *qctx, Conversations *ctx) {
-//  qctx->setContextProperty("colorWindow", ctx->colorWindow);
-//  qctx->setContextProperty("colorBase", ctx->colorBase);
-//  qctx->setContextProperty("colorText", ctx->colorText);
-//  qctx->setContextProperty("colorButton", ctx->colorButton);
-//  qctx->setContextProperty("colorButtonText", ctx->colorButtonText);
-//  qctx->setContextProperty("colorBrightText", ctx->colorBrightText);
-//  qctx->setContextProperty("colorHighlight", ctx->colorHighlight);
 }
 
 MainWindow *MainWindow::getInstance() {

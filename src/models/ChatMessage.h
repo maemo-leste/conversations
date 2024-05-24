@@ -8,21 +8,21 @@
 
 struct ChatMessageParams {
     unsigned int event_id = -1;
-    QString service;
-    QString group_uid;
+    const QString service;
+    const QString group_uid;
 
-    QString local_uid;
-    QString remote_uid;
-    QString remote_name;
-    QString remote_ebook_uid;
+    const QString local_uid;
+    const QString remote_uid;
+    const QString remote_name;
+    const QString remote_ebook_uid;
     QString text;
-    QString icon_name;
+    const QString icon_name;
     time_t timestamp = -1;
     unsigned int count = -1;
-    QString group_title;
-    QString channel;
-    QString event_type;
-    bool outgoing = true;
+    const QString group_title;
+    const QString channel;
+    const QString event_type;
+    const bool outgoing = true;
     bool is_read = false;
     unsigned int flags = -1;
 };
@@ -57,13 +57,15 @@ public:
 
     QString name() const;
     QString overview_name() const;
+    QString protocol;
+    QString overviewItemDelegateRichText;
+    void generateOverviewItemDelegateRichText();
 
     QString fulldate() const { return m_date.toString("yyyy-MM-dd hh:mm:ss"); }
     QString hourstr() const { return m_date.toString("hh:mm"); }
     QString datestr() const { return m_date.toString("dd/MM/yyyy"); }
     time_t epoch() const { return m_date.toTime_t(); }
     void set_message_read() {
-      qtrtcom::setRead(this->event_id(), true);
       m_params.is_read = true;
     }
     bool message_read() { return m_params.is_read; }
@@ -84,3 +86,5 @@ private:
     QDateTime m_date;
     QString m_cid;
 };
+
+QList<ChatMessage *> iterateRtComEvents(RTComElQuery *query_struct);

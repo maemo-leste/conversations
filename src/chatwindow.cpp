@@ -73,7 +73,6 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   qctx->setContextProperty("theme", m_ctx->theme);
   const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
   qctx->setContextProperty("fixedFont", fixedFont);
-  MainWindow::qmlInjectPalette(qctx, m_ctx);
 
   ui->quick->setAttribute(Qt::WA_AlwaysStackOnTop);
 
@@ -87,7 +86,7 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
 
   // auto-close inactivity timer
   m_windowFocusTimer->setInterval(1000);
-  connect(m_windowFocusTimer, &QTimer::timeout, [=] {
+  connect(m_windowFocusTimer, &QTimer::timeout, [this] {
      auto *window = QApplication::activeWindow();
      if(window == nullptr || window->windowTitle() != this->windowTitle()) {
        m_windowFocus += 1;

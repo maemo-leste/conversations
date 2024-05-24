@@ -13,7 +13,7 @@
 #include "lib/libnotify-qt/Notification.h"
 #include "models/ChatModel.h"
 #include "models/ChatMessage.h"
-#include "models/OverviewServiceModel.h"
+#include "overview/OverviewModel.h"
 
 class Conversations : public QObject {
     Q_OBJECT
@@ -52,8 +52,10 @@ public:
     static void createConfigDirectory(const QString &dir) ;
 
     ChatModel *chatOverviewModel;
-    OverviewServiceModel *overviewServiceModel;
+    OverviewModel *overviewModel;
+    OverviewProxyModel *overviewProxyModel;
     Telepathy *telepathy;
+    QList<QSharedPointer<ServiceAccount>> serviceAccounts;
 
     // keep track of previous libnotify broadcasts to prevent notification spam
     QMap<QString, QSharedPointer<ChatMessage>> notificationMap;  // remote_uid, context
@@ -86,6 +88,7 @@ public slots:
     void onIPCReceived(const QString &cmd);
     void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
     void onNotificationClicked(const QSharedPointer<ChatMessage> &msg);
+    void onGetAvailableServiceAccounts();
 
 private:
     float m_textScaling = 1.0;

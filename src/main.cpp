@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
   }
 
   // Listen on IPC
-  QTimer::singleShot(0, ipc, [=]{ ipc->bind(); });
+  QTimer::singleShot(0, ipc, [ipc]{ ipc->bind(); });
 
   // initialize application
   auto *ctx = new Conversations(&parser, ipc);

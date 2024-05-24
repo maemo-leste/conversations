@@ -27,11 +27,11 @@ Compose::Compose(Conversations *ctx, QWidget *parent) :
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
 
-  connect(this->ui->btnTo, &QPushButton::clicked, [=]{
+  connect(this->ui->btnTo, &QPushButton::clicked, [this]{
     //
   });
 
-  connect(this->ui->btnSend, &QPushButton::clicked, [=]{
+  connect(this->ui->btnSend, &QPushButton::clicked, [this]{
     //
   });
 }

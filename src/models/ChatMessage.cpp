@@ -9,6 +9,11 @@ ChatMessage::ChatMessage(ChatMessageParams params, QObject *parent) :
   m_date = QDateTime::fromTime_t(m_params.timestamp);
   m_params.text = m_params.text.trimmed();
   m_cid = QString("%1%2").arg(QString::number(params.outgoing), params.remote_uid);
+
+  // extract protocol from local_uid
+  if(m_params.local_uid.count("/") == 2) {
+    protocol = m_params.local_uid.split("/").at(1);
+  }
 }
 
 QString ChatMessage::text() const {
@@ -50,8 +55,85 @@ bool ChatMessage::isLast() const {
   return false;
 }
 
+void ChatMessage::generateOverviewItemDelegateRichText(){
+  const auto overview_name = this->overview_name();
+  // Stylesheet: overview/overviewRichDelegate.css
+  auto richtext = QString("<span class=\"header\">%1</b>").arg(this->overview_name());
+  richtext += QString("<span class=\"small\">&nbsp;&nbsp;%1</span>").arg(this->local_uid());
+  richtext += QString("<span class=\"small text-muted\">&nbsp;&nbsp;%1 %2</span>").arg(this->datestr(), this->hourstr());
+  richtext += "<br>";
+  
+  // do not allow messages to provide their own tags as they end up in QTextDocument @ lib/QRichItemDelegate.cpp
+  auto textSnippet = this->textSnippet();
+  textSnippet = textSnippet.replace('<', '');
+
+  richtext += QString("<span class=\"text-muted\">%1</span>").arg(textSnippet);
+  overviewItemDelegateRichText = richtext;
+}
+
 ChatMessage::~ChatMessage() {
-//#ifdef DEBUG
+// #ifdef DEBUG
 //  qDebug() << "ChatMessage::destructor";
-//#endif
+// #endif
+}
+
+QList<ChatMessage*> iterateRtComEvents(RTComElQuery *query) {
+  QList<ChatMessage *> results;
+  RTComElIter *it = rtcom_el_get_events(qtrtcom::rtcomel(), query);
+
+  if(it && rtcom_el_iter_first(it)) {
+    do {
+      GHashTable *values = NULL;
+
+      values = rtcom_el_iter_get_value_map(
+          it,
+          "id",
+          "service",
+          "group-uid",
+          "local-uid",
+          "remote-uid",
+          "remote-name",
+          "remote-ebook-uid",
+          "content",
+          "icon-name",
+          "start-time",
+          "event-count",
+          "group-title",
+          "channel",
+          "event-type",
+          "outgoing",
+          "is-read",
+          "flags",
+          NULL);
+
+      auto *item = new ChatMessage({
+        .event_id = LOOKUP_INT("id"),
+        .service = LOOKUP_STR("service"),
+        .group_uid = LOOKUP_STR("group-uid"),
+        .local_uid = LOOKUP_STR("local-uid"),
+        .remote_uid = LOOKUP_STR("remote-uid"),
+        .remote_name = LOOKUP_STR("remote-name"),
+        .remote_ebook_uid = LOOKUP_STR("remote-ebook-uid"),
+        .text = LOOKUP_STR("content"),
+        .icon_name = LOOKUP_STR("icon-name"),
+        .timestamp = LOOKUP_INT("start-time"),
+        .count = LOOKUP_INT("event-count"),
+        .group_title = LOOKUP_STR("group-title"),
+        .channel = LOOKUP_STR("channel"),
+        .event_type = LOOKUP_STR("event-type"),
+        .outgoing = LOOKUP_BOOL("outgoing"),
+        .is_read = LOOKUP_BOOL("is-read"),
+        .flags = LOOKUP_INT("flags")
+      });
+
+      g_hash_table_destroy(values);
+      results << item;
+    } while (rtcom_el_iter_next(it));
+
+    g_object_unref(it);
+  } else {
+    qCritical() << "Failed to init iterator to start";
+  }
+
+  return results;
 }

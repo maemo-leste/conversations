@@ -1,6 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
-
+#pragma once
 #include <QtGlobal>
 #include <QResource>
 #include <QApplication>
@@ -8,9 +6,6 @@
 #include <QtWidgets/QMenu>
 #include <QMainWindow>
 #include <QObject>
-#include <QQuickWidget>
-#include <QQuickView>
-#include <QQmlContext>
 #include <QtCore>
 #include <QLabel>
 #include <QtGui>
@@ -25,6 +20,7 @@
 #include "settings.h"
 #include "composewindow.h"
 #include "window_joinchannel.h"
+#include "overview/overviewwidget.h"
 #include "lib/config.h"
 #include "lib/libnotify-qt/Notification.h"
 
@@ -39,7 +35,6 @@ public:
     explicit MainWindow(Conversations *ctx, QWidget *parent = nullptr);
     static MainWindow *getInstance();
     static Conversations *getContext();
-    static void qmlInjectPalette(QQmlContext *qctx, Conversations *ctx);
     ~MainWindow() override;
     Ui::MainWindow *ui;
 
@@ -74,7 +69,7 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private:
-    QQuickWidget *m_quickWidget = nullptr;
+    OverviewWidget *m_widgetOverview = nullptr;
     Conversations *m_ctx;
     static MainWindow *pMainWindow;
     QMap<QString, ChatWindow*> m_chatWindows;
@@ -83,9 +78,4 @@ private:
     JoinChannel *m_joinchannel = nullptr;
     SearchWindow *m_searchWindow = nullptr;
     bool m_autoHideWindow = true;
-
-    void createQml();
-    void destroyQml();
 };
-
-#endif

@@ -14,12 +14,20 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   Notification::init(QApplication::applicationName());
 
   this->telepathy =new Telepathy(this);
-  this->overviewServiceModel = new OverviewServiceModel(this);
-
   this->cmdargs = cmdargs;
 
   this->ipc = ipc;
   connect(ipc, &IPC::commandReceived, this, &Conversations::onIPCReceived);
+
+  // chat overview models
+  overviewModel = new OverviewModel(this);
+  overviewModel->onLoad();
+  connect(telepathy, &Telepathy::accountManagerReady, overviewModel, &OverviewModel::onLoad);
+  // @TODO: do not refresh the whole overview table on new messages, edit specific entries 
+  // instead. For now though, it is not that important as it is still performant enough.
+  connect(telepathy, &Telepathy::databaseAddition, overviewModel, &OverviewModel::onLoad);
+  overviewProxyModel = new OverviewProxyModel(this);
+  overviewProxyModel->setSourceModel(overviewModel);
 
   // Paths
   pathGenericData = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
@@ -43,21 +51,45 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   qDebug() << "THEME: " << theme->name;
   chatOverviewModel = new ChatModel();
 
-  this->chatOverviewModel->onGetOverviewMessages();
-
   connect(telepathy, &Telepathy::databaseAddition, this, &Conversations::onDatabaseAddition);
-  connect(overviewServiceModel, &OverviewServiceModel::protocolFilterChanged, chatOverviewModel, &ChatModel::onProtocolFilter);
 
   inheritSystemTheme = config()->get(ConfigKeys::EnableInheritSystemTheme).toBool();
   emit inheritSystemThemeChanged(inheritSystemTheme);
 
   displayGroupchatJoinLeave = config()->get(ConfigKeys::EnableDisplayGroupchatJoinLeave).toBool();
   emit displayGroupchatJoinLeaveChanged(displayGroupchatJoinLeave);
+
+  this->onGetAvailableServiceAccounts();
+}
+
+// get a list of 'service accounts' (AKA protocols) from both TP and rtcom
+void Conversations::onGetAvailableServiceAccounts() {
+  serviceAccounts.clear();
+
+  RTComElQuery *query = qtrtcom::startQuery(0, 0, RTCOM_EL_QUERY_GROUP_BY_EVENTS_LOCAL_UID);
+  if(!rtcom_el_query_prepare(query, NULL)) {
+    qCritical() << "Could not prepare query";
+    g_object_unref(query);
+  } else {
+    auto items = iterateRtComEvents(query);
+    for(auto &item: items) {
+      auto local_uid = item->local_uid();
+      auto *sa = ServiceAccount::fromRtComUID(local_uid);
+      QSharedPointer<ServiceAccount> ptr(sa);
+      serviceAccounts << ptr;
+    }
+    qDeleteAll(items);
+    g_object_unref(query);
+  }
+
+  for(const auto &acc: this->telepathy->accounts) {
+    auto *sa = ServiceAccount::fromTpProtocol(acc->getLocalUid(), acc->protocolName());
+    QSharedPointer<ServiceAccount> ptr(sa);
+    serviceAccounts << ptr;
+  }
 }
 
 void Conversations::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
-  this->chatOverviewModel->onGetOverviewMessages();
-
   // chat message notification
   auto notificationsEnabled = config()->get(ConfigKeys::EnableNotifications).toBool();
   if (notificationsEnabled && !msg->outgoing()) {
@@ -92,7 +124,10 @@ void Conversations::setWindowTitle(const QString &title) {
 }
 
 QString Conversations::ossoIconLookup(const QString &filename) {
-  if(ossoIconCache.contains(filename)) return ossoIconCache[filename];
+  if(filename.isEmpty()) {
+    qWarning() << "ossoIconLookup called with empty filename";
+    return {};
+  }
 
   auto fn = QString("/usr/share/icons/hicolor/48x48/hildon/%1").arg(filename);
   auto fn_qrc = QString("qrc:///%1").arg(filename);

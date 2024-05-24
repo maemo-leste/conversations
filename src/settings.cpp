@@ -44,7 +44,7 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
   else
     ui->radio_theme_whatsthat->setChecked(true);
 
-  connect(ui->themeRadioGroup, QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked), [=](QAbstractButton *button) {
+  connect(ui->themeRadioGroup, QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked), [this](QAbstractButton *button) {
       auto name = button->objectName();
       if(name == "radio_theme_whatsthat") {
         config()->set(ConfigKeys::ChatTheme, "whatsthat");
@@ -75,14 +75,14 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
 
   // respect system themes
   ui->checkBox_enableInheritSystemTheme->setChecked(config()->get(ConfigKeys::EnableInheritSystemTheme).toBool());
-  connect(ui->checkBox_enableInheritSystemTheme, &QCheckBox::toggled, [=](bool toggled){
+  connect(ui->checkBox_enableInheritSystemTheme, &QCheckBox::toggled, [this](bool toggled){
     config()->set(ConfigKeys::EnableInheritSystemTheme, toggled);
     emit inheritSystemThemeToggled(toggled);
   });
 
   // groupchat join/leave
   ui->checkBox_enableDisplayGroupchatJoinLeave->setChecked(config()->get(ConfigKeys::EnableDisplayGroupchatJoinLeave).toBool());
-  connect(ui->checkBox_enableDisplayGroupchatJoinLeave, &QCheckBox::toggled, [=](bool toggled){
+  connect(ui->checkBox_enableDisplayGroupchatJoinLeave, &QCheckBox::toggled, [this](bool toggled){
     config()->set(ConfigKeys::EnableDisplayGroupchatJoinLeave, toggled);
     emit enableDisplayGroupchatJoinLeaveToggled(toggled);
   });
