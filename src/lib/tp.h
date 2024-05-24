@@ -81,6 +81,8 @@ public:
     QString name;
     bool auto_join;
     TelepathyChannel* tpChannel = nullptr;
+
+    bool hasActiveChannel() { return tpChannel != nullptr; }
 };
 
 class TelepathyAccount : public QObject {

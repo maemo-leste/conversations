@@ -112,8 +112,8 @@ void Telepathy::onOpenChannelWindow(const QString& local_uid, const QString &rem
 }
 
 void Telepathy::onNewAccount(const Tp::AccountPtr &account) {
-    qDebug() << "adding account" << account;
     auto myacc = new TelepathyAccount(account);
+    qDebug() << "onNewAccount" << myacc->getLocalUid();
     accounts << myacc;
 
     /* Connect this account signal to our general TP instance */
@@ -149,10 +149,10 @@ bool Telepathy::participantOfChannel(const QString &backend_name, const QString 
     auto account = rtcomLocalUidToAccount(backend_name);
     if(account == nullptr)
         return false;
+    else if(!account->channels.contains(remote_id))
+        return false;
 
-    if(account->channels.contains(remote_id))
-      return true;
-    return false;
+    return account->channels[remote_id]->hasActiveChannel();
 }
 
 void Telepathy::sendMessage(const QString &backend_name, const QString &remote_id, const QString &message) {
@@ -238,7 +238,6 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
 
             matching_account = ma;
             matching_channel = (Tp::TextChannel*)ma->hasChannel(channelptr->targetId());
-            qDebug() << "handleChannels: channel exists already?" << matching_channel;
 
             if (matching_channel == nullptr) {
                 matching_channel = (Tp::TextChannel*)channelptr.data();
@@ -247,12 +246,15 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
                 auto channel_name = mychan->m_channel.data()->targetId();
 
                 if(!ma->channels.contains(channel_name)) {
+                    qDebug() << "handleChannels(), new channel:" << channel_name;
                     ma->channels[channel_name] = new AccountChannel;
                 }
 
                 ma->channels[channel_name]->name = channel_name;
                 ma->channels[channel_name]->tpChannel = mychan;
                 emit ma->channelJoined(ma->getLocalUid(), channel_name);
+            } else {
+              qWarning() << "handleChannels: channel exists already" << matching_channel;
             }
 
             break;
@@ -460,6 +462,7 @@ void TelepathyAccount::onOnline(bool online) {
 
 void TelepathyAccount::joinChannel(const QString &remote_id, bool persistent) {
     if(!channels.contains(remote_id)) {
+        qDebug() << "joinChannel(), new channel:" << remote_id;
         channels[remote_id] = new AccountChannel;
         channels[remote_id]->name = remote_id;
         channels[remote_id]->auto_join = persistent;
@@ -718,6 +721,7 @@ void TelepathyAccount::readGroupchatChannels() {
             auto auto_join = obj_channel["auto_join"].toBool();
 
             if(!channels.contains(channel)) {
+                qDebug() << "readGroupchatChannels(), new channel:" << channel;
                 channels[channel] = new AccountChannel;
                 channels[channel]->name = channel;
                 channels[channel]->auto_join = auto_join;

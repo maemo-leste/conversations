@@ -31,6 +31,7 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   m_local_uid = m_chatMessage->local_uid();
   m_channel = m_chatMessage->channel();
   groupchat = !m_chatMessage->channel().isEmpty();
+  qDebug() << "open chatWindow(" << m_local_uid << ", " << m_channel << ") groupchat:" << groupchat << ")";
 
   // [window]
   // title
