@@ -65,7 +65,7 @@ void ChatMessage::generateOverviewItemDelegateRichText(){
   
   // do not allow messages to provide their own tags as they end up in QTextDocument @ lib/QRichItemDelegate.cpp
   auto textSnippet = this->textSnippet();
-  textSnippet = textSnippet.replace('<', '');
+  textSnippet = textSnippet.replace("<", "");
 
   richtext += QString("<span class=\"text-muted\">%1</span>").arg(textSnippet);
   overviewItemDelegateRichText = richtext;
