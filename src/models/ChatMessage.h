@@ -66,6 +66,7 @@ public:
     QString datestr() const { return m_date.toString("dd/MM/yyyy"); }
     time_t epoch() const { return m_date.toTime_t(); }
     void set_message_read() {
+      qtrtcom::setRead(this->event_id(), true);
       m_params.is_read = true;
     }
     bool message_read() { return m_params.is_read; }
