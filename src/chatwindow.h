@@ -49,6 +49,7 @@ private slots:
     void onChannelJoinedOrLeft(const QString &local_uid, const QString &channel);
     void onSetupGroupchat();
     void onAutoJoinToggled();
+    void onSetWindowTitle();
 
 signals:
     void closed(const QString &remote_uid);
@@ -69,9 +70,11 @@ private:
 
     QTimer *m_windowFocusTimer;
     unsigned int m_windowFocus = 0; // seconds
+    bool m_active = false;  // do we have an active Tp connection?
 
     void fillBufferUntil(const QSharedPointer<ChatMessage> &msg) const;
     QString remoteId() const;
+    void detectActiveChannel();
     void setChatState(Tp::ChannelChatState state) const;
 
 protected:

@@ -36,22 +36,13 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   if(groupchat) {
     auto *acc = m_ctx->telepathy->accountByName(m_local_uid);
     acc->ensureChannel(m_channel);
+    this->detectActiveChannel();
   }
 
   // [window]
   // title
-  QString protocol = "Unknown";
-  if(m_chatMessage->local_uid().count('/') == 2)
-    protocol = m_chatMessage->local_uid().split("/").at(1);
-  if (m_chatMessage->channel() != "") {
-      this->setWindowTitle(QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->channel()));
-  } else {
-      if (m_chatMessage->remote_name() != "") {
-          this->setWindowTitle(QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->remote_name()));
-      } else {
-          this->setWindowTitle(QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->remote_uid()));
-      }
-  }
+  this->onSetWindowTitle();
+
   // properties
   setProperty("X-Maemo-Orientation", 2);
   setProperty("X-Maemo-StackedWindow", 0);
@@ -268,8 +259,36 @@ void ChatWindow::onSetupGroupchat() {
 
 void ChatWindow::onChannelJoinedOrLeft(const QString &local_uid, const QString &channel) {
   if(local_uid == m_local_uid && channel == m_channel) {
+    // change some UI
+    this->detectActiveChannel();
+    this->onSetWindowTitle();
     onSetupGroupchat();
   }
+}
+
+void ChatWindow::onSetWindowTitle() {
+  QString protocol = "Unknown";
+  QString windowTitle;
+  if(m_chatMessage->local_uid().count('/') == 2)
+    protocol = m_chatMessage->local_uid().split("/").at(1);
+  if (m_chatMessage->channel() != "") {
+      windowTitle = QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->channel());
+  } else {
+      if (m_chatMessage->remote_name() != "") {
+          windowTitle = QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->remote_name());
+      } else {
+          windowTitle = QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->remote_uid());
+      }
+  }
+  if(!m_active)
+    windowTitle += " (inactive)";
+
+  this->setWindowTitle(windowTitle);
+}
+
+void ChatWindow::detectActiveChannel() {
+  auto *chan = m_ctx->telepathy->channelByName(m_local_uid, m_channel);
+  m_active = chan->hasActiveChannel();
 }
 
 Conversations *ChatWindow::getContext() {
