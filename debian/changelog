@@ -1,3 +1,16 @@
+conversations (0.7.0) unstable; urgency=medium
+
+  * Reimplemented overview in QtWidgets as opposed to QtQuick resulting in significantly lower memory consumption
+  * Telepathy chat state support 'Active/Inactive'
+  * Auto-join toggle option in the menu of a chat window
+  * Enabled QML disk cache
+  * Optimized some QML components to be more cache friendly
+  * Joining/leaving groupchats is more robust now
+  * Append '(inactive)' in chat window titlebar when there is no active Tp connection
+  * Fixed "empty" name writes to rtcom, which resulted in blank names in the chat window
+
+ -- Sander <sander@sanderf.nl>  Sun, 26 May 2024 01:10:45 +0200
+
 conversations (0.6.9) unstable; urgency=medium
 
   * Various memory leak fixes
