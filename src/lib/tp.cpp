@@ -391,6 +391,9 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
         remote_name_q = QString(remote_alias);
     }
 
+    if(!remote_name)
+      remote_name = remote_alias.toLocal8Bit().constData();
+
     auto self_name_str = m_nickname.toStdString();
     auto self_name = self_name_str.c_str();
     auto protocol_str = m_protocol_name.toStdString();
