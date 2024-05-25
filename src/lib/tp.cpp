@@ -645,12 +645,8 @@ void TelepathyAccount::leaveChannel(const QString &channel) {
         return;
 
     auto tpChannel = channels[channel]->tpChannel;
-    if(tpChannel == nullptr) {
-        delete channels[channel];
-        channels.remove(channel);
-        this->writeGroupchatChannels();
+    if(tpChannel == nullptr)
         return;
-    }
 
     // request groupchat leave
     auto pending = ((Tp::TextChannel*)tpChannel->m_channel.data())->requestLeave(leave_message);
@@ -665,9 +661,8 @@ void TelepathyAccount::leaveChannel(const QString &channel) {
             return;
         }
 
-        auto _channel = channels[channel];
-        delete _channel;
-        channels.remove(channel);
+        // we keep `channels[channel]` (AccountChannel*) around; we use it for other purposes too, and can be re-used.
+        channels[channel]->tpChannel = nullptr;
 
         this->onChannelLeft(channel);     // rtcom registration
         this->writeGroupchatChannels();   // user-config registration
@@ -677,10 +672,8 @@ void TelepathyAccount::leaveChannel(const QString &channel) {
 
 // called by `TelepathyChannel::onInvalidated`
 void TelepathyAccount::_removeChannel(TelepathyChannel* chanptr) {
-    if (chanptr != nullptr) {
-        channels.remove(chanptr->m_channel->targetId());
+    if (chanptr != nullptr)
         chanptr->deleteLater();
-      }
 }
 
 void TelepathyAccount::sendMessage(const QString &remote_id, const QString &message) {
