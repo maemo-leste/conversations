@@ -99,6 +99,9 @@ public:
     QString protocolName() const { return m_protocol_name; }
     QString name;
 
+    void setAutoJoin(const QString &remote_id, bool autoJoin);
+    void ensureChannel(const QString &remote_id);
+
 signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
     void openChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
@@ -193,6 +196,8 @@ public:
 
     QList<TelepathyAccount*> accounts;
 
+    TelepathyAccount* accountByName(const QString &backend_name);
+    AccountChannel* channelByName(const QString &backend_name, const QString &remote_id);
     void joinChannel(const QString &backend_name, const QString &remote_id, bool persistent);
     void leaveChannel(const QString &backend_name, const QString &remote_id);
     bool participantOfChannel(const QString &backend_name, const QString &remote_id);

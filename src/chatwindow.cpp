@@ -33,6 +33,11 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   groupchat = !m_chatMessage->channel().isEmpty();
   qDebug() << "open chatWindow(" << m_local_uid << ", " << m_channel << ") groupchat:" << groupchat << ")";
 
+  if(groupchat) {
+    auto *acc = m_ctx->telepathy->accountByName(m_local_uid);
+    acc->ensureChannel(m_channel);
+  }
+
   // [window]
   // title
   QString protocol = "Unknown";
@@ -107,6 +112,7 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
 
   // groupchat
   this->onSetupGroupchat();
+  connect(ui->actionAuto_join_groupchat, &QAction::triggered, this, &ChatWindow::onAutoJoinToggled);
   connect(ui->actionLeave_channel, &QAction::triggered, this, &ChatWindow::onGroupchatJoinLeaveRequested);
   connect(m_ctx->telepathy, &Telepathy::channelJoined, this, &ChatWindow::onChannelJoinedOrLeft);
   connect(m_ctx->telepathy, &Telepathy::channelLeft, this, &ChatWindow::onChannelJoinedOrLeft);
@@ -119,6 +125,26 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
 
   // mark messages as read, user opened the chat
   chatModel->setMessagesRead();
+}
+
+void ChatWindow::onAutoJoinToggled() {
+  auto *acc = m_ctx->telepathy->accountByName(m_local_uid);
+  auto *chan = m_ctx->telepathy->channelByName(m_local_uid, m_channel);
+  if(acc == nullptr || chan == nullptr)
+    return;
+
+  acc->setAutoJoin(chan->name, !chan->auto_join);
+
+  // join while we are at it
+  if(chan->auto_join && !chan->hasActiveChannel())
+    m_ctx->telepathy->joinChannel(m_local_uid, m_channel, true);
+
+  // ui text
+  if(chan->auto_join) {
+    ui->actionAuto_join_groupchat->setText("Disable auto-join");
+  } else {
+    ui->actionAuto_join_groupchat->setText("Enable auto-join");
+  }
 }
 
 void ChatWindow::onExportToCsv() {
@@ -219,13 +245,24 @@ void ChatWindow::onSetupGroupchat() {
   // do some UI stuff in case this is a groupchat
   if(!groupchat) {
     ui->actionLeave_channel->setVisible(false);
+    ui->actionLeave_channel->setVisible(false);
     return;
   }
 
+  // setup initial join/leave UI text
   if(!m_ctx->telepathy->participantOfChannel(m_local_uid, m_channel)) {
     ui->actionLeave_channel->setText("Join groupchat");
   } else {
     ui->actionLeave_channel->setText("Leave groupchat");
+  }
+
+  // setup initial auto-join UI text
+  auto *chan = m_ctx->telepathy->channelByName(m_local_uid, m_channel);
+  if(chan != nullptr) {
+    QString auto_join_text = chan->auto_join ? "Disable auto-join" : "Enable auto-join";
+    ui->actionAuto_join_groupchat->setText(auto_join_text);
+  } else {
+    ui->actionAuto_join_groupchat->setText("Enable auto-join");
   }
 }
 

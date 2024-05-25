@@ -117,17 +117,18 @@
     <addaction name="actionSearchChat"/>
     <addaction name="actionExportChatToCsv"/>
     <addaction name="actionLeave_channel"/>
+    <addaction name="actionAuto_join_groupchat"/>
    </widget>
    <addaction name="menuChatWindow"/>
   </widget>
+  <action name="actionLeave_channel">
+   <property name="text">
+    <string>Leave groupchat</string>
+   </property>
+  </action>
   <action name="actionSearchChat">
    <property name="text">
     <string>Search chat</string>
-   </property>
-  </action>
-  <action name="actionExportChatToCsv">
-   <property name="text">
-    <string>Export chat</string>
    </property>
   </action>
   <action name="actionInvite">
@@ -146,9 +147,14 @@
     <string>Participants</string>
    </property>
   </action>
-  <action name="actionLeave_channel">
+  <action name="actionAuto_join_groupchat">
    <property name="text">
-    <string>Leave groupchat</string>
+    <string>Enable auto-join</string>
+   </property>
+  </action>
+  <action name="actionExportChatToCsv">
+   <property name="text">
+    <string>Export chat</string>
    </property>
   </action>
  </widget>

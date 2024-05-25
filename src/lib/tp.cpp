@@ -131,6 +131,22 @@ void Telepathy::onAccountRemoved(TelepathyAccount* account) {
     delete account;
 }
 
+AccountChannel* Telepathy::channelByName(const QString &backend_name, const QString &remote_id) {
+    auto account = rtcomLocalUidToAccount(backend_name);
+    if(account == nullptr)
+        return nullptr;
+    if(!account->channels.contains(remote_id))
+      return nullptr;
+    return account->channels[remote_id];
+}
+
+TelepathyAccount* Telepathy::accountByName(const QString &backend_name) {
+    auto account = rtcomLocalUidToAccount(backend_name);
+    if(account == nullptr)
+        return nullptr;
+    return account;
+}
+
 void Telepathy::joinChannel(const QString &backend_name, const QString &remote_id, bool persistent) {
     auto account = rtcomLocalUidToAccount(backend_name);
     if(account == nullptr)
@@ -686,6 +702,22 @@ void TelepathyAccount::sendMessage(const QString &remote_id, const QString &mess
     });
 }
 
+// Ensure AccountChannel* exists, even though it may not be associated with any 
+// TelepathyChannel* instance. We need it to represent e.g channels from the config.
+void TelepathyAccount::ensureChannel(const QString &remote_id) {
+  channels[remote_id] = new AccountChannel;
+  channels[remote_id]->name = remote_id;
+}
+
+void TelepathyAccount::setAutoJoin(const QString &remote_id, bool autoJoin) {
+  if(!channels.contains(remote_id))
+    this->ensureChannel(remote_id);
+
+  channels[remote_id]->auto_join = autoJoin;
+  qDebug() << "setAutoJoin channel:" << remote_id << "set to" << autoJoin;
+  this->writeGroupchatChannels();
+}
+
 void TelepathyAccount::setChatState(const QString &remote_id, Tp::ChannelChatState state)
 {
   qDebug() << "setChatState: remote_id:" << remote_id;
@@ -725,12 +757,15 @@ void TelepathyAccount::readGroupchatChannels() {
                 channels[channel] = new AccountChannel;
                 channels[channel]->name = channel;
                 channels[channel]->auto_join = auto_join;
+            } else {
+              channels[channel]->auto_join = auto_join;
             }
         }
     }
 }
 
 void TelepathyAccount::writeGroupchatChannels() {
+    qDebug() << "writeGroupchatChannels()";
     QJsonObject obj_account;
     QJsonArray  obj_channels;
     for(const auto &channel: channels.keys()) {

@@ -48,6 +48,7 @@ private slots:
     void onGroupchatJoinLeaveRequested();
     void onChannelJoinedOrLeft(const QString &local_uid, const QString &channel);
     void onSetupGroupchat();
+    void onAutoJoinToggled();
 
 signals:
     void closed(const QString &remote_uid);
