@@ -701,6 +701,8 @@ void TelepathyAccount::sendMessage(const QString &remote_id, const QString &mess
 // Ensure AccountChannel* exists, even though it may not be associated with any 
 // TelepathyChannel* instance. We need it to represent e.g channels from the config.
 void TelepathyAccount::ensureChannel(const QString &remote_id) {
+  if(channels.contains(remote_id)) 
+    return;
   channels[remote_id] = new AccountChannel;
   channels[remote_id]->name = remote_id;
 }
