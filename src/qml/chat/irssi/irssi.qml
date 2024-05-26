@@ -24,30 +24,10 @@ Components.ChatRoot {
     historyPopupBackgroundColor: ctx.inheritSystemTheme ? theme.colors.statusBarBackgroundColor : "262d31"
     historyPopupTextColor: ctx.inheritSystemTheme ? theme.colors.statusBarTextColor : "white"
 
-    Rectangle {
-        z: parent.z + 1
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        height: 26 * ctx.scaleFactor
-        color: statusBarBackgroundColor
-
-        Components.PlainText {
-            id: statusBarText
-            color: statusBarTextColor
-            text: chatModel.remote_uid
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.leftMargin: 12
-            anchors.left: parent.left
-            font.pointSize: 14 * ctx.scaleFactor
-        }
-    }
-
     Components.ChatListView {
         id: chatListView
 
         anchors.fill: parent
-        anchors.topMargin: 26 * ctx.scaleFactor
         anchors.leftMargin: 4
         anchors.rightMargin: 4
 
@@ -107,9 +87,9 @@ Components.ChatRoot {
                 font.family: fixedFont
                 font.pointSize: 14 * ctx.scaleFactor
                 text: message
-                color: "white"
+                color: !chat_event ? textGreyColor : "white"
                 Layout.fillWidth: true
-                wrapMode: Text.WordWrap
+                wrapMode: hardWordWrap ? Text.WrapAnywhere : Text.WordWrap
             }
 
             Item {
