@@ -114,7 +114,7 @@ RowLayout {
                     visible: isHead || display_timestamp
 
                     Components.PlainText {
-                        visible: !outgoing && isHead
+                        visible: (!outgoing && isHead) || display_timestamp
                         font.pointSize: 14 * ctx.scaleFactor
                         font.bold: true
                         color: root.colorTextThem
