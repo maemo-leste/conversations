@@ -285,8 +285,8 @@ void ChatWindow::onSetWindowTitle() {
           windowTitle = QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->remote_uid());
       }
   }
-  if(!m_active)
-    windowTitle += " (inactive)";
+  if(!m_active && groupchat)
+    windowTitle += " (left or inactive)";
 
   this->setWindowTitle(windowTitle);
 }
