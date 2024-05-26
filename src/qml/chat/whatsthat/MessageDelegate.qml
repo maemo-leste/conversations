@@ -6,8 +6,11 @@ import "../components" as Components
 
 RowLayout {
     id: item
-    property int itemHeightSpacing: ctx.scaleFactor == 1 ? 12 : 32
-    property int itemHeight: textColumn.implicitHeight + item.itemHeightSpacing
+    property int itemHeightSpacing: ctx.scaleFactor == 1 ? 12 : 18
+    property int itemHeight: {
+      if(!chat_event) return 18;  // join/leave
+      return textColumn.implicitHeight + item.itemHeightSpacing;  // normal msg
+    }
     property bool highlight: false
 
     // handy snippet to determine if this current delegate is in view, in case
@@ -25,46 +28,46 @@ RowLayout {
     // (group)join, leave events, etc. are displayed differently
     Item {
         visible: !chat_event && ctx.displayGroupchatJoinLeave
-        Layout.preferredHeight: 32
+        Layout.preferredHeight: 18
         Layout.fillWidth: true
 
         RowLayout {
             anchors.fill: parent
-            Layout.preferredHeight: 32
+            Layout.preferredHeight: 18
             Layout.fillWidth: true
             spacing: 32
 
             Item {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 32
+                Layout.preferredHeight: 18
             }
 
             Components.PlainText {
-                Layout.preferredHeight: 32
+                Layout.preferredHeight: 18
                 Layout.alignment: Qt.AlignHCenter
 
                 text: message
                 color: root.colorTextSelf
                 wrapMode: Text.WordWrap
-                font.pointSize: 16 * ctx.scaleFactor
+                font.pointSize: 14
                 font.bold: false
             }
 
             Components.PlainText {
-                Layout.preferredHeight: 32
+                Layout.preferredHeight: 18
                 Layout.alignment: Qt.AlignHCenter
 
                 text: datestr + " " + hourstr
                 color: root.colorTextSelf
                 wrapMode: Text.WordWrap
-                font.pointSize: 14 * ctx.scaleFactor
+                font.pointSize: 14
                 font.bold: false
                 opacity: 0.7
             }
 
             Item {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 32
+                Layout.preferredHeight: 18
             }
         }
     }
