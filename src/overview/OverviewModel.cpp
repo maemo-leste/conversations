@@ -33,6 +33,8 @@ void ServiceAccount::setName(const QString &protocol) {
     this->title = QString("SMS");
   else if(protocol == "xmpp" || protocol == "jabber")
     this->title = QString("XMPP");
+  else if(protocol == "telegram" || protocol == "telegram_tdlib")
+    this->title = QString("Telegram");
   else
     this->title = "unknown";
 
