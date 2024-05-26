@@ -538,9 +538,9 @@ void TelepathyAccount::onChannelJoined(const Tp::ChannelRequestPtr &channelReque
     time_t now = QDateTime::currentDateTime().toTime_t();
     const char* remote_name = nullptr;
 
-    qtrtcom::registerChatJoin(now, now, _remote_uid, _local_uid,
-                          _remote_uid, remote_name, abook_uid,
-                          "join", _protocol, _channel, _group_uid);
+    // qtrtcom::registerChatJoin(now, now, _remote_uid, _local_uid,
+    //                      _remote_uid, remote_name, abook_uid,
+    //                      "join", _protocol, _channel, _group_uid);
 
     // @TODO: duplicate code like in log_event, refactor
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
@@ -593,9 +593,9 @@ void TelepathyAccount::onChannelLeft(QString channel) {
     time_t now = QDateTime::currentDateTime().toTime_t();
     const char* remote_name = nullptr;
 
-    qtrtcom::registerChatLeave(now, now, _remote_uid, _local_uid,
-                               _remote_uid, remote_name, abook_uid,
-                               "left", _protocol, _channel, _group_uid);
+    // qtrtcom::registerChatLeave(now, now, _remote_uid, _local_uid,
+    //                           _remote_uid, remote_name, abook_uid,
+    //                           "left", _protocol, _channel, _group_uid);
 
     // @TODO: duplicate code like in log_event, refactor
     auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
