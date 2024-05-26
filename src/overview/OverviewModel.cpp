@@ -31,7 +31,7 @@ void ServiceAccount::setName(const QString &protocol) {
     this->title = QString("IRC");
   else if(protocol == "tel") 
     this->title = QString("SMS");
-  else if(protocol == "xmpp") 
+  else if(protocol == "xmpp" || protocol == "jabber")
     this->title = QString("XMPP");
   else
     this->title = "unknown";
