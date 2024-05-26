@@ -26,7 +26,7 @@ QString ChatMessage::text() const {
 }
 
 QString ChatMessage::textSnippet() const {
-  auto max_length = 32;
+  auto max_length = 64;
   if(m_params.text.length() >= max_length) {
     QString snippet = m_params.text.mid(0, max_length) + "...";
     return snippet;
