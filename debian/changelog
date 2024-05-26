@@ -1,3 +1,14 @@
+conversations (0.7.2) unstable; urgency=medium
+
+  * overview: increase text snippet length
+  * chatModel: increase message fetch limit to 20
+  * overviewwidget: support to refresh the protocol buttons in overview
+  * chatWindow: Change '(inactive)' in titlebar to '(left or inactive)' and only display when it is a groupchat
+  * overviewwidget: Correctly display xmpp/telegram/skype/slack/sip on the overview screen
+  * overviewmodel: add 'general_sms' to pixmap cache
+
+ -- Sander <sander@sanderf.nl>  Sun, 26 May 2024 23:45:45 +0200
+
 conversations (0.7.1) unstable; urgency=medium
 
   * qml/whatsthat: Compact messages, in favor of keeping as much vertical screen real-estate as possible
