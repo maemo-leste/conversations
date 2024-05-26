@@ -95,6 +95,7 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
     }
   });
   connect(m_ctx, &Conversations::autoCloseChatWindowsChanged, this, &ChatWindow::onAutoCloseChatWindowsChanged);
+  connect(m_ctx, &Conversations::enterKeySendsChatToggled, this, &ChatWindow::onEnterKeySendsChatToggled);
   auto autoCloseChatWindowsEnabled = config()->get(ConfigKeys::EnableAutoCloseChatWindows).toBool();
   this->onAutoCloseChatWindowsChanged(autoCloseChatWindowsEnabled);
 
@@ -149,6 +150,10 @@ void ChatWindow::onExportToCsv() {
 void ChatWindow::onAutoCloseChatWindowsChanged(bool enabled) {
   m_windowFocus = 0;
   enabled ? m_windowFocusTimer->start() : m_windowFocusTimer->stop();
+}
+
+void ChatWindow::onEnterKeySendsChatToggled(bool enabled) {
+  m_enterKeySendsChat = enabled;
 }
 
 void ChatWindow::onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg) {

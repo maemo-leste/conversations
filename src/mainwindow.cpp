@@ -165,6 +165,7 @@ void MainWindow::onOpenSettingsWindow() {
     m_ctx->displayGroupchatJoinLeave = toggled;
     m_ctx->displayGroupchatJoinLeaveChanged(toggled);
   });
+  connect(m_settings, &Settings::enterKeySendsChatToggled, m_ctx, &Conversations::enterKeySendsChatToggled);
 }
 
 void MainWindow::onNotificationClicked(const QSharedPointer<ChatMessage> &msg) {

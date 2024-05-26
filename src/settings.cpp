@@ -57,8 +57,9 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
 
   // Enter key sends chat message toggle
   ui->checkBox_enterKeySendsChat->setChecked(config()->get(ConfigKeys::EnterKeySendsChat).toBool());
-  connect(ui->checkBox_enterKeySendsChat, &QCheckBox::toggled, [](bool toggled){
+  connect(ui->checkBox_enterKeySendsChat, &QCheckBox::toggled, [this](bool toggled){
     config()->set(ConfigKeys::EnterKeySendsChat, toggled);
+    emit enterKeySendsChatToggled(toggled);
   });
 
   // Enable notifications

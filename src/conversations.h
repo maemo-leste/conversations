@@ -80,6 +80,7 @@ signals:
     void autoCloseChatWindowsChanged(bool enabled);
     void inheritSystemThemeChanged(bool enabled);
     void displayGroupchatJoinLeaveChanged(bool enabled);
+    void enterKeySendsChatToggled(bool enabled);
     void hildonThemeChanged();
 
 public slots:

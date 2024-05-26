@@ -47,6 +47,7 @@ private slots:
     void onSearchResultClicked(const QSharedPointer<ChatMessage> &msg);
     void onGroupchatJoinLeaveRequested();
     void onChannelJoinedOrLeft(const QString &local_uid, const QString &channel);
+    void onEnterKeySendsChatToggled(bool enabled);
     void onSetupGroupchat();
     void onAutoJoinToggled();
     void onSetWindowTitle();
