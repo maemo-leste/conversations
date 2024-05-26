@@ -232,7 +232,8 @@ void OverviewModel::preloadPixmaps() {
     "general_conference_avatar",
     "general_default_avatar",
     "chat_unread_sms",
-    "general_chat"
+    "general_chat",
+    "general_sms"
   };
 
   for(const auto &icon: icons) {
