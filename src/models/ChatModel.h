@@ -40,7 +40,8 @@ public:
         ChatEventRole,
         JoinEventRole,
         LeaveEventRole,
-        MessageReadRole
+        MessageReadRole,
+        displayTimestampRole
     };
 
     explicit ChatModel(QObject *parent = nullptr);

@@ -47,10 +47,26 @@ bool ChatMessage::isHead() const {
   if(previous->cid() == m_cid) return false;
   return true;
 }
+
 bool ChatMessage::isLast() const {
   if(previous == nullptr || next == nullptr) return false;
   if(previous->cid() == m_cid && next->cid() != m_cid) {
     return true;
+  }
+  return false;
+}
+
+bool ChatMessage::displayTimestamp() const {
+  // returns False if the previous message is:
+  // - from the same author
+  // - occured within 30 secs
+  // Used in the UI to save some vertical space in chat message bubbles.
+  const unsigned int max_delta = 30;
+  if(this->isHead() || previous == nullptr)
+    return true;
+  if(previous->cid() == m_cid) {
+    auto delta = previous->date().secsTo(m_date);
+    return delta >= max_delta;
   }
   return false;
 }

@@ -77,6 +77,8 @@ public:
 
     bool isHead() const;
     bool isLast() const;
+    bool displayTimestamp() const;
+
     QSharedPointer<ChatMessage> previous = nullptr;
     QSharedPointer<ChatMessage> next = nullptr;
 

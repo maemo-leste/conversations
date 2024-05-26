@@ -110,6 +110,8 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
     return message->leave_event();
   else if (role == MessageReadRole)
     return message->message_read();
+  else if (role == displayTimestampRole)
+    return message->displayTimestamp();
   return QVariant();
 }
 
@@ -164,6 +166,7 @@ QHash<int, QByteArray> ChatModel::roleNames() const {
   roles[JoinEventRole] = "join_event";
   roles[LeaveEventRole] = "leave_event";
   roles[MessageReadRole] = "message_read";
+  roles[displayTimestampRole] = "display_timestamp";
   return roles;
 }
 

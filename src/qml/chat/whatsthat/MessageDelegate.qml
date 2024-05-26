@@ -111,26 +111,22 @@ RowLayout {
                 RowLayout {
                     id: metaRow
                     spacing: 8
-
-                    Item {
-                        visible: !isHead
-                        Layout.fillWidth: true
-                    }
+                    visible: isHead || display_timestamp
 
                     Components.PlainText {
                         visible: !outgoing && isHead
-                        font.pointSize: 12 * ctx.scaleFactor
+                        font.pointSize: 14 * ctx.scaleFactor
+                        font.bold: true
                         color: root.colorTextThem
-                        opacity: 0.6
                         text: name
                     }
 
                     Item {
-                        visible: isHead
                         Layout.fillWidth: true
                     }
 
                     Components.PlainText {
+                        visible: display_timestamp
                         font.pointSize: 12 * ctx.scaleFactor
                         color: outgoing ? root.colorTextSelf : root.colorTextThem
                         text: datestr + " " + hourstr
