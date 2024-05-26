@@ -45,7 +45,7 @@ Components.ChatRoot {
             // }
             height: itemHeight
             width: parent !== null ? parent.width : 0
-            spacing: 0
+            spacing: 3
 
             Components.PlainText {
                 font.pointSize: 14 * ctx.scaleFactor
@@ -57,6 +57,7 @@ Components.ChatRoot {
             }
 
             Components.PlainText {
+                visible: chat_event
                 font.pointSize: 12 * ctx.scaleFactor
                 font.family: fixedFont
                 color: textGreyColor
@@ -74,6 +75,7 @@ Components.ChatRoot {
             }
 
             Components.PlainText {
+                visible: chat_event
                 font.pointSize: 12 * ctx.scaleFactor
                 font.family: fixedFont
                 color: textGreyColor
