@@ -7,7 +7,7 @@ OverviewWidget::OverviewWidget(Conversations *ctx, QWidget *parent) :
     ui(new Ui::OverviewWidget)
 {
   ui->setupUi(this);
-  this->setupUIAccounts();
+  this->onSetupUIAccounts();
   this->setupUITable();
 }
 
@@ -51,8 +51,9 @@ void OverviewWidget::setupUITable() {
 }
 
 // populate the account 'filter' buttons
-void OverviewWidget::setupUIAccounts() {
-  // @TODO: clear layout
+void OverviewWidget::onSetupUIAccounts() {
+  this->clearAccountButtons();
+
   // the default; All
   this->addAccountButton("All", "*");
   m_accountButtons["*"]->setChecked(true);
@@ -73,6 +74,19 @@ void OverviewWidget::addAccountButton(const QString title, const QString service
 
   // add to UI
   ui->protocolLayout->insertWidget(insert_pos, item);
+}
+
+void OverviewWidget::clearAccountButtons() {
+  while(ui->protocolLayout->count() > 0){
+    QLayoutItem *item = ui->protocolLayout->takeAt(0);
+    QWidget* widget = item->widget();
+    if(widget)
+      delete widget;
+    delete item;
+  }
+  ui->protocolLayout->addStretch();
+
+  m_accountButtons.clear();
 }
 
 void OverviewWidget::onAccountButtonClicked(const QString service) {

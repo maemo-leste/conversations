@@ -31,14 +31,15 @@ public:
 
 private slots:
   void onAccountButtonClicked(const QString service);
+  void onSetupUIAccounts();
 
 signals:
   void overviewRowClicked(int idx);
 
 private:
   QMap<QString, OverviewBtnWidget*> m_accountButtons;
-  void setupUIAccounts();
   void setupUITable();
+  void clearAccountButtons();
   void addAccountButton(const QString title, const QString service);
 
   Ui::OverviewWidget *ui;
