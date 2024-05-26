@@ -29,14 +29,20 @@ ServiceAccount* ServiceAccount::fromRtComUID(const QString &local_uid) {
 void ServiceAccount::setName(const QString &protocol) {
   if(protocol == "irc") 
     this->title = QString("IRC");
-  else if(protocol == "tel") 
+  else if(protocol == "tel" || protocol == "ofono")
     this->title = QString("SMS");
+  else if(protocol == "sip")
+    this->title = QString("SIP");
   else if(protocol == "xmpp" || protocol == "jabber")
     this->title = QString("XMPP");
   else if(protocol == "telegram" || protocol == "telegram_tdlib")
     this->title = QString("Telegram");
+  else if(protocol == "skype")
+    this->title = QString("Skype");
+  else if(protocol == "slack")
+    this->title = QString("Slack");
   else
-    this->title = "unknown";
+    this->title = protocol;
 
   this->title = this->title.left(1).toUpper() + this->title.mid(1);
 }
