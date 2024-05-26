@@ -139,7 +139,7 @@ RowLayout {
                     id: textMessage
                     color: outgoing ? root.colorTextSelf : root.colorTextThem
                     text: message
-                    wrapMode: Text.WordWrap
+                    wrapMode: hardWordWrap ? Text.WrapAnywhere : Text.WordWrap
                     width: parent.width
                     font.pointSize: 14 * ctx.scaleFactor
                     Layout.preferredWidth: parent.width

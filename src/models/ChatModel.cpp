@@ -112,6 +112,8 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
     return message->message_read();
   else if (role == displayTimestampRole)
     return message->displayTimestamp();
+  else if (role == shouldHardWordWrapRole)
+    return message->shouldHardWordWrap();
   return QVariant();
 }
 
@@ -167,6 +169,7 @@ QHash<int, QByteArray> ChatModel::roleNames() const {
   roles[LeaveEventRole] = "leave_event";
   roles[MessageReadRole] = "message_read";
   roles[displayTimestampRole] = "display_timestamp";
+  roles[shouldHardWordWrapRole] = "hardWordWrap";
   return roles;
 }
 

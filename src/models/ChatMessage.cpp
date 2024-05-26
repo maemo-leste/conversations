@@ -71,6 +71,14 @@ bool ChatMessage::displayTimestamp() const {
   return false;
 }
 
+bool ChatMessage::shouldHardWordWrap() const {
+  if(m_params.text.length() <= 32) return false;
+  for(const auto &word: m_params.text.split(" "))
+    if(word.length() >= 32)
+      return true;
+  return false;
+}
+
 void ChatMessage::generateOverviewItemDelegateRichText(){
   const auto overview_name = this->overview_name();
   // Stylesheet: overview/overviewRichDelegate.css
