@@ -1,3 +1,13 @@
+conversations (0.7.1) unstable; urgency=medium
+
+  * qml/whatsthat: Compact messages, in favor of keeping as much vertical screen real-estate as possible
+  * chatmessage: Hard wordwrap on continuous character sequences in chat messages
+  * lib/tp: rtcom database addition fix for 'remote_name'
+  * qml/irssi: remove status bar
+  * propagate settings toggle 'Enter key sends chat' changes to currently opened chat windows
+
+ -- Sander <sander@sanderf.nl>  Sun, 26 May 2024 17:28:45 +0200
+
 conversations (0.7.0) unstable; urgency=medium
 
   * Reimplemented overview in QtWidgets as opposed to QtQuick resulting in significantly lower memory consumption
