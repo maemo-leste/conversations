@@ -1,3 +1,9 @@
+conversations (0.7.5) unstable; urgency=medium
+
+  * qml/whatsthat: remove superfluous 't' from message
+
+ -- Sander <sander@sanderf.nl>  Tue, 28 May 2024 16:56:00 +0200
+
 conversations (0.7.4) unstable; urgency=medium
 
   * qml/whatsthat: use NameRole for names, move NameRole to use message->name() instead
