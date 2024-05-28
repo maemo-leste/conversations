@@ -141,7 +141,7 @@ RowLayout {
                 Components.PlainText {
                     id: textMessage
                     color: outgoing ? root.colorTextSelf : root.colorTextThem
-                    text: message + "t"
+                    text: message
                     wrapMode: hardWordWrap ? Text.WrapAnywhere : Text.WordWrap
                     width: parent.width
                     font.pointSize: 14 * ctx.scaleFactor
