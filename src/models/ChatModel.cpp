@@ -78,8 +78,10 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
     return message->group_uid();
   else if (role == LocalUIDRole)
     return message->local_uid();
-  else if (role == RemoteNameRole || role == NameRole)
+  else if (role == RemoteNameRole)
     return message->remote_name();
+  else if (role == NameRole)
+    return message->name();
   else if (role == RemoteUIDRole)
       return message->remote_uid();
   else if (role == DateRole)

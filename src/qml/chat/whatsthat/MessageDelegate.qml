@@ -121,7 +121,7 @@ RowLayout {
                         font.pointSize: 14 * ctx.scaleFactor
                         font.bold: true
                         color: root.colorTextThem
-                        text: overview_name
+                        text: name
                     }
 
                     Item {
