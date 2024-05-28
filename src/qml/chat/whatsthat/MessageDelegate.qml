@@ -117,11 +117,11 @@ RowLayout {
                     visible: isHead || display_timestamp
 
                     Components.PlainText {
-                        visible: (!outgoing && isHead) || display_timestamp
+                        visible: (!outgoing && isHead) || (!outgoing && display_timestamp)
                         font.pointSize: 14 * ctx.scaleFactor
                         font.bold: true
                         color: root.colorTextThem
-                        text: name
+                        text: overview_name
                     }
 
                     Item {
@@ -141,7 +141,7 @@ RowLayout {
                 Components.PlainText {
                     id: textMessage
                     color: outgoing ? root.colorTextSelf : root.colorTextThem
-                    text: message
+                    text: message + "t"
                     wrapMode: hardWordWrap ? Text.WrapAnywhere : Text.WordWrap
                     width: parent.width
                     font.pointSize: 14 * ctx.scaleFactor
