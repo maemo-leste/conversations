@@ -9,6 +9,7 @@
 #include "conversations.h"
 #include "lib/utils.h"
 #include "lib/globals.h"
+#include "mainwindow.h"
 
 Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   Notification::init(QApplication::applicationName());
@@ -93,8 +94,13 @@ void Conversations::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
   // chat message notification
   auto notificationsEnabled = config()->get(ConfigKeys::EnableNotifications).toBool();
   if (notificationsEnabled && !msg->outgoing()) {
+    QWidget *chatWindow = MainWindow::getChatWindow(msg->group_uid());
+
+    if (chatWindow && chatWindow->isActiveWindow())
+      return;
+
     if (!notificationMap.contains(msg->group_uid()))
-        notificationMap[msg->group_uid()] = msg;
+      notificationMap[msg->group_uid()] = msg;
 
     auto title = QString("Message from %1").arg(msg->remote_name());
     auto *notification = Notification::issue(title, msg->textSnippet(), msg);

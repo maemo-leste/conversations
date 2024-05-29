@@ -212,6 +212,14 @@ Conversations *MainWindow::getContext(){
   return pMainWindow->m_ctx;
 }
 
+QWidget *MainWindow::getChatWindow(const QString &group_uid)
+{
+  if (!pMainWindow || !pMainWindow->m_chatWindows.contains(group_uid))
+    return nullptr;
+
+  return pMainWindow->m_chatWindows[group_uid];
+}
+
 MainWindow::~MainWindow() {
   delete ui;
 }

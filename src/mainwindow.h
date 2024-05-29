@@ -35,6 +35,7 @@ public:
     explicit MainWindow(Conversations *ctx, QWidget *parent = nullptr);
     static MainWindow *getInstance();
     static Conversations *getContext();
+    static QWidget *getChatWindow(const QString &group_uid);
     ~MainWindow() override;
     Ui::MainWindow *ui;
 
