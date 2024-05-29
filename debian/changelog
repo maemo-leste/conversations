@@ -1,3 +1,11 @@
+conversations (0.7.6) unstable; urgency=medium
+
+  * lib/tp: Use remote timestamp for the incoming messages, not the local one
+  * lib/tp: mark own incomming messages as outgoing
+  * do not issue notifications for currently active chat window
+
+ -- Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>  Wed, 29 May 2024 20:14:23 +0300
+
 conversations (0.7.5) unstable; urgency=medium
 
   * qml/whatsthat: remove superfluous 't' from message
