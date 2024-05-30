@@ -442,7 +442,9 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
 
 /* Slot for when we have received a message */
 void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel) {
-    qDebug() << "onMessageReceived" << message.sent() << message.senderNickname() << message.text();
+    QDateTime dt = message.sent().isValid() ? message.sent() : message.received();
+
+    qDebug() << "onMessageReceived" << dt << message.senderNickname() << message.text();
     qDebug() << "isDeliveryReport" << message.isDeliveryReport();
     qDebug() << "isScrollback" << message.isScrollback();
     qDebug() << "isRescued" << message.isRescued();
@@ -453,7 +455,6 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
         return;
     }
 
-    auto epoch = message.sent().toTime_t();
     auto remote_uid = message.sender()->id();
     auto remote_alias = message.sender()->alias();
     auto text = message.text().toLocal8Bit();
@@ -474,7 +475,7 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
 
     qDebug() << "log_event";
 
-    log_event(epoch, text, outgoing, channel, remote_uid, remote_alias);
+    log_event(dt.toTime_t(), text, outgoing, channel, remote_uid, remote_alias);
 }
 
 /* When we have managed to send a message */
