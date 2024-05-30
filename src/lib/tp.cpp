@@ -458,20 +458,7 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
     auto remote_uid = message.sender()->id();
     auto remote_alias = message.sender()->alias();
     auto text = message.text().toLocal8Bit();
-
-    /* from tp-glib specs:
-       TpContact::identifier - The contact's identifier in the instant messaging
-           protocol (e.g. XMPP JID, SIP URI, AOL screenname or IRC nick -
-           whatever the underlying protocol uses to identify a user)
-       TpAccount::normalized-name  - The normalized form of the user's own
-           unique identifier on this protocol. For example, on XMPP accounts
-           this is the user's JID; on ICQ this is the user's UIN; and so on.
-
-       So, my understanding is that if those match, and message is scrollback,
-       then this is a message from me, coming as a scrollback from another
-       device
-    */
-    bool outgoing = message.isScrollback() && acc->normalizedName() == remote_uid;
+    bool outgoing = message.isScrollback() && channel->groupSelfContact()->id() == remote_uid;
 
     qDebug() << "log_event";
 
