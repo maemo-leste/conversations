@@ -1,3 +1,10 @@
+conversations (0.7.7) unstable; urgency=medium
+
+  * lib/tp: Fix scrollback own messages recognition
+  * lib/tp: Fix received messages timestamp
+
+ -- Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>  Thu, 30 May 2024 15:27:51 +0300
+
 conversations (0.7.6) unstable; urgency=medium
 
   * lib/tp: Use remote timestamp for the incoming messages, not the local one
