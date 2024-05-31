@@ -728,8 +728,9 @@ void TelepathyAccount::setAutoJoin(const QString &remote_id, bool autoJoin) {
 void TelepathyAccount::setChatState(const QString &remote_id, Tp::ChannelChatState state)
 {
   qDebug() << "setChatState: remote_id:" << remote_id;
-  Tp::TextChannel* channel = hasChannel(remote_id);
-  if (channel)
+  Tp::TextChannel *channel = hasChannel(remote_id);
+
+  if (channel && channel->hasChatStateInterface())
     channel->requestChatState(state);
 }
 
