@@ -1,3 +1,10 @@
+conversations (0.7.8) unstable; urgency=medium
+
+  * lib/tp: Use handles too, when trying to recognize own scrollback messages
+  * lib/tp: Do not set chat state if channel does not support it
+
+ -- Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>  Fri, 31 May 2024 09:26:36 +0300
+
 conversations (0.7.7) unstable; urgency=medium
 
   * lib/tp: Fix scrollback own messages recognition
