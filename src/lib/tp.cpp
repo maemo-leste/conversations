@@ -455,10 +455,13 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
         return;
     }
 
+    auto groupSelfContact = channel->groupSelfContact();
     auto remote_uid = message.sender()->id();
     auto remote_alias = message.sender()->alias();
     auto text = message.text().toLocal8Bit();
-    bool outgoing = message.isScrollback() && channel->groupSelfContact()->id() == remote_uid;
+    bool outgoing = message.isScrollback() &&
+                    (groupSelfContact->handle() == message.sender()->handle() ||
+                     groupSelfContact->id() == remote_uid);
 
     qDebug() << "log_event";
 
