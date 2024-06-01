@@ -28,6 +28,12 @@ namespace Ui {
     class MainWindow;
 }
 
+struct FilterProtocolItem {
+    QString title;
+    QString filterKey;
+    QAction *action;
+};
+
 class MainWindow : public QMainWindow {
 Q_OBJECT
 
@@ -62,6 +68,9 @@ public slots:
     void onTPAccountManagerReady();
     void onNotificationClicked(const QSharedPointer<ChatMessage> &msg);
 
+private slots:
+    void onProtocolFilterClicked(const QString service);
+
 signals:
     void requestOverviewSearchWindow();
     void inheritSystemThemeChanged(bool toggled);
@@ -79,4 +88,8 @@ private:
     JoinChannel *m_joinchannel = nullptr;
     SearchWindow *m_searchWindow = nullptr;
     bool m_autoHideWindow = true;
+    QMap<QString, FilterProtocolItem*> m_filterProtocols;
+
+    void onSetupUIAccounts();
+    void addProtocol(const QString title, const QString service);
 };

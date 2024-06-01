@@ -7,7 +7,6 @@ OverviewWidget::OverviewWidget(Conversations *ctx, QWidget *parent) :
     ui(new Ui::OverviewWidget)
 {
   ui->setupUi(this);
-  this->onSetupUIAccounts();
   this->setupUITable();
 }
 
@@ -48,60 +47,6 @@ void OverviewWidget::setupUITable() {
     // the actual signal.
     m_ctx->overviewProxyModel->onOverviewRowClicked(idx.row());
   });
-}
-
-// populate the account 'filter' buttons
-void OverviewWidget::onSetupUIAccounts() {
-  this->clearAccountButtons();
-
-  // the default; All
-  this->addAccountButton("All", "*");
-  m_accountButtons["*"]->setChecked(true);
-
-  // accounts from rtcom & tp
-  for(const QSharedPointer<ServiceAccount> &acc: m_ctx->serviceAccounts)
-    this->addAccountButton(acc->title, acc->protocol);
-}
-
-void OverviewWidget::addAccountButton(const QString title, const QString service) {
-  if(m_accountButtons.contains(service))
-    return;
-
-  const auto item = new OverviewBtnWidget(title, service);
-  connect(item, &OverviewBtnWidget::clicked, this, &OverviewWidget::onAccountButtonClicked);
-  auto insert_pos = m_accountButtons.keys().size();
-  m_accountButtons[service] = item;
-
-  // add to UI
-  ui->protocolLayout->insertWidget(insert_pos, item);
-}
-
-void OverviewWidget::clearAccountButtons() {
-  while(ui->protocolLayout->count() > 0){
-    QLayoutItem *item = ui->protocolLayout->takeAt(0);
-    QWidget* widget = item->widget();
-    if(widget)
-      delete widget;
-    delete item;
-  }
-  ui->protocolLayout->addStretch();
-
-  m_accountButtons.clear();
-}
-
-void OverviewWidget::onAccountButtonClicked(const QString service) {
-  for(const auto &k: m_accountButtons.keys())  // reset all to False
-    m_accountButtons[k]->setChecked(false);
-
-  if(!m_accountButtons.contains(service)) {
-    return;
-  }
-
-  auto *item = m_accountButtons[service];
-  item->setChecked(true);
-
-  // filter overview table
-  m_ctx->overviewProxyModel->setProtocolFilter(item->service);
 }
 
 OverviewWidget::~OverviewWidget() {

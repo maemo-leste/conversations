@@ -29,18 +29,11 @@ public:
   explicit OverviewWidget(Conversations *ctx, QWidget *parent = nullptr);
   ~OverviewWidget() override;
 
-private slots:
-  void onAccountButtonClicked(const QString service);
-  void onSetupUIAccounts();
-
 signals:
   void overviewRowClicked(int idx);
 
 private:
-  QMap<QString, OverviewBtnWidget*> m_accountButtons;
   void setupUITable();
-  void clearAccountButtons();
-  void addAccountButton(const QString title, const QString service);
 
   Ui::OverviewWidget *ui;
   Conversations *m_ctx;

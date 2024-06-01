@@ -32,6 +32,9 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   m_widgetOverview = new OverviewWidget(ctx, this);
   ui->mainLayout->addWidget(m_widgetOverview);
 
+  // Setup filter protocol menu items
+  this->onSetupUIAccounts();
+
   // js: cfg.get(Config.MaemoTest);  |  cfg.set(Config.MaemoTest , "foo");
   qmlRegisterUncreatableMetaObject(
       ConfigKeys::staticMetaObject,
@@ -202,6 +205,41 @@ void MainWindow::onShowApplication() {
 void MainWindow::onHideApplication() {
   this->hide();
   m_ctx->isBackground = true;
+}
+
+// populate the account filter menu
+void MainWindow::onSetupUIAccounts() {
+  // the default; All
+  this->addProtocol("Show all", "*");
+
+  // accounts from rtcom & tp
+  for(const QSharedPointer<ServiceAccount> &acc: m_ctx->serviceAccounts)
+    this->addProtocol(acc->title, acc->protocol);
+}
+
+void MainWindow::addProtocol(const QString title, const QString service) {
+  if(m_filterProtocols.contains(service))
+    return;
+
+  auto *item = new FilterProtocolItem;
+  item->title = title;
+  item->filterKey = service;
+  item->action = new QAction(title);
+  m_filterProtocols[service] = item;
+
+  connect(item->action, &QAction::triggered, [this, service]{
+    this->onProtocolFilterClicked(service);
+  });
+  ui->menuFilters->addAction(item->action);
+}
+
+void MainWindow::onProtocolFilterClicked(const QString service) {
+  if(!m_filterProtocols.contains(service)) {
+    return;
+  }
+
+  auto *item = m_filterProtocols[service];
+  m_ctx->overviewProxyModel->setProtocolFilter(item->filterKey);
 }
 
 MainWindow *MainWindow::getInstance() {
