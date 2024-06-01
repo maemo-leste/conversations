@@ -83,7 +83,7 @@ void ChatMessage::generateOverviewItemDelegateRichText(){
   const auto overview_name = this->overview_name();
   // Stylesheet: overview/overviewRichDelegate.css
   auto richtext = QString("<span class=\"header\">%1</b>").arg(this->overview_name());
-  richtext += QString("<span class=\"small\">&nbsp;&nbsp;%1</span>").arg(this->local_uid());
+  richtext += QString("<span class=\"small\">&nbsp;&nbsp;%1</span>").arg(this->protocol);
   richtext += QString("<span class=\"small text-muted\">&nbsp;&nbsp;%1 %2</span>").arg(this->datestr(), this->hourstr());
   richtext += "<br>";
   
