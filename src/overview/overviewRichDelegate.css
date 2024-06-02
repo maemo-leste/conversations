@@ -1,6 +1,6 @@
 * {
   color: "white";
-  font-size: 16pt;
+  font-size: {{ font_size }}pt;
 }
 
 span {
@@ -8,7 +8,7 @@ span {
 }
 
 .small {
-  font-size: 14pt;
+  font-size: {{ font_size_small }}pt;
 }
 
 .text-muted {
@@ -16,5 +16,5 @@ span {
 }
 
 .header {
-  font-size: 20pt;
+  font-size: {{ font_size_big }}pt;
 }

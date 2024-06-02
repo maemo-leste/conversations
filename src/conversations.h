@@ -24,7 +24,7 @@ class Conversations : public QObject {
     Q_PROPERTY(QString accountName MEMBER accountName);
     Q_PROPERTY(bool isDebug MEMBER isDebug NOTIFY debugChanged);
     Q_PROPERTY(float isMaemo MEMBER isMaemo NOTIFY isMaemoChanged);
-    Q_PROPERTY(float scaleFactor MEMBER m_textScaling NOTIFY textScalingChanged);
+    Q_PROPERTY(float scaleFactor MEMBER textScaling NOTIFY textScalingChanged);
     Q_PROPERTY(bool inheritSystemTheme MEMBER inheritSystemTheme NOTIFY inheritSystemThemeChanged);
     Q_PROPERTY(bool displayGroupchatJoinLeave MEMBER displayGroupchatJoinLeave NOTIFY displayGroupchatJoinLeaveChanged);
 
@@ -47,6 +47,7 @@ public:
 
     HildonTheme *theme;
     bool inheritSystemTheme;
+    float textScaling = 1.0;
     bool displayGroupchatJoinLeave;
 
     static void createConfigDirectory(const QString &dir) ;
@@ -92,7 +93,6 @@ public slots:
     void onGetAvailableServiceAccounts();
 
 private:
-    float m_textScaling = 1.0;
     QMap<QString, QString> ossoIconCache;
     QTimer m_hibernateTimer;
     std::chrono::seconds m_hibernateDetectInterval{300};

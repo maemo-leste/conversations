@@ -38,7 +38,7 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   configDirectory = QString("%1/.config/%2/").arg(configRoot, QCoreApplication::applicationName());
   createConfigDirectory(configDirectory);
 
-  m_textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
+  textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
 
   Tp::registerTypes();
 #ifdef DEBUG
@@ -150,7 +150,7 @@ QString Conversations::ossoIconLookup(const QString &filename) {
 }
 
 void Conversations::onTextScalingChanged() {
-  m_textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
+  textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
   emit textScalingChanged();
 }
 

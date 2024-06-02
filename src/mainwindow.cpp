@@ -31,6 +31,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
 
   m_widgetOverview = new OverviewWidget(ctx, this);
   ui->mainLayout->addWidget(m_widgetOverview);
+  connect(m_ctx, &Conversations::textScalingChanged, m_widgetOverview, &OverviewWidget::onSetColumnStyleDelegate);
 
   // Setup filter protocol menu items
   this->onSetupUIAccounts();

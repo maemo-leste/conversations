@@ -31,9 +31,7 @@ void OverviewWidget::setupUITable() {
 
   table->setModel(m_ctx->overviewProxyModel);
 
-  auto richItemDelegate = new RichItemDelegate(this);
-  richItemDelegate->setStyleSheet(QString(Utils::fileOpen(":/overviewRichDelegate.css")));
-  table->setItemDelegateForColumn(OverviewModel::ContentRole, richItemDelegate);
+  this->onSetColumnStyleDelegate();
 
   header->setSectionResizeMode(0, QHeaderView::ResizeToContents);
   header->setSectionResizeMode(1, QHeaderView::Stretch);
@@ -47,6 +45,27 @@ void OverviewWidget::setupUITable() {
     // the actual signal.
     m_ctx->overviewProxyModel->onOverviewRowClicked(idx.row());
   });
+}
+
+void OverviewWidget::onSetColumnStyleDelegate() {
+  if(m_richItemDelegate != nullptr)
+    m_richItemDelegate->deleteLater();
+
+  m_richItemDelegate = new RichItemDelegate(this);
+  auto css_tmpl = QString(Utils::fileOpen(":/overviewRichDelegate.css"));
+  
+  //auto systemFontSize = QApplication::font().pointSize();  // @TODO: returns 18?!
+  auto systemFontSize = 14;
+  unsigned int systemFontSizeScaled = systemFontSize * m_ctx->textScaling;
+
+  //qDebug() << "scalefactor" << m_ctx->textScaling;
+  //qDebug() << "size" << QString::number(systemFontSize);
+
+  css_tmpl = css_tmpl.replace("{{ font_size }}", QString::number(systemFontSizeScaled));
+  css_tmpl = css_tmpl.replace("{{ font_size_small }}", QString::number(systemFontSizeScaled - 2));
+  css_tmpl = css_tmpl.replace("{{ font_size_big }}", QString::number(systemFontSizeScaled + 2));
+  m_richItemDelegate->setStyleSheet(css_tmpl);
+  ui->tableOverview->setItemDelegateForColumn(OverviewModel::ContentRole, m_richItemDelegate);
 }
 
 OverviewWidget::~OverviewWidget() {
