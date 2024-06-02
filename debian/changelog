@@ -1,3 +1,9 @@
+conversations (0.7.9) unstable; urgency=medium
+
+  * Move protocol filters to main menu (requires new qt-platform-module)
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Sun, 02 Jun 2024 19:02:32 +0200
+
 conversations (0.7.8) unstable; urgency=medium
 
   * lib/tp: Use handles too, when trying to recognize own scrollback messages
