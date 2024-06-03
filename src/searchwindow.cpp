@@ -44,7 +44,6 @@ SearchWindow::SearchWindow(Conversations *ctx, QString group_uid, QWidget *paren
 
 void SearchWindow::onItemClicked(int idx) {
   auto msg = searchModel->chats.at(idx);
-  msg->isSearchResult = true;
   emit searchResultClicked(msg);
 }
 

@@ -108,7 +108,7 @@ void Telepathy::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
 }
 
 void Telepathy::onOpenChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel) {
-    emit openChannelWindow(local_uid, remote_uid, group_uid, service, channel);
+    emit openChannelWindow(local_uid, remote_uid, group_uid, channel, service);
 }
 
 void Telepathy::onNewAccount(const Tp::AccountPtr &account) {
@@ -310,7 +310,7 @@ void TelepathyAccount::TpOpenChannelWindow(Tp::TextChannelPtr channel) {
     auto local_uid = name;
     auto remote_uid = getRemoteUid(Tp::TextChannelPtr(channel));
     auto group_uid = getGroupUid(Tp::TextChannelPtr(channel));
-    auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
+    auto service = getServiceName();
     QString channelstr;
 
     if (channel->targetHandleType() != Tp::HandleTypeContact) {
@@ -411,7 +411,7 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
         channel_str, group_uid);
 
     // @TODO: duplicate code like in onJoinChannel, refactor
-    auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
+    auto service = getServiceName();
     auto event_type = Utils::protocolIsTelephone(protocol) ? "RTCOM_EL_EVENTTYPE_SMS_MESSAGE" : "RTCOM_EL_EVENTTYPE_CHAT_MESSAGE";
 
     auto *chatMessage = new ChatMessage({
@@ -508,7 +508,8 @@ void TelepathyAccount::_joinChannel(const QString &remote_id) {
 
     connect(pending, &Tp::PendingChannelRequest::channelRequestCreated, this, [this, remote_id](const Tp::ChannelRequestPtr &channelRequest) {
       if(channelRequest->isValid()) {
-        this->onChannelJoined(channelRequest, remote_id);
+        // @TODO: for now, we do not register chat join/leave events
+        //this->onChannelJoined(channelRequest, remote_id);
       }
       else {
         qWarning() << "_joinChannel failed for " << remote_id;
@@ -544,12 +545,12 @@ void TelepathyAccount::onChannelJoined(const Tp::ChannelRequestPtr &channelReque
     time_t now = QDateTime::currentDateTime().toTime_t();
     const char* remote_name = nullptr;
 
-    // qtrtcom::registerChatJoin(now, now, _remote_uid, _local_uid,
-    //                      _remote_uid, remote_name, abook_uid,
-    //                      "join", _protocol, _channel, _group_uid);
+    qtrtcom::registerChatJoin(now, now, _remote_uid, _local_uid,
+                         _remote_uid, remote_name, abook_uid,
+                         "join", _protocol, _channel, _group_uid);
 
     // @TODO: duplicate code like in log_event, refactor
-    auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
+    auto service = getServiceName();
     auto text = QString("%1 joined the groupchat").arg(m_nickname);
 
     auto *chatMessage = new ChatMessage({
@@ -599,12 +600,12 @@ void TelepathyAccount::onChannelLeft(QString channel) {
     time_t now = QDateTime::currentDateTime().toTime_t();
     const char* remote_name = nullptr;
 
-    // qtrtcom::registerChatLeave(now, now, _remote_uid, _local_uid,
-    //                           _remote_uid, remote_name, abook_uid,
-    //                           "left", _protocol, _channel, _group_uid);
+    qtrtcom::registerChatLeave(now, now, _remote_uid, _local_uid,
+                              _remote_uid, remote_name, abook_uid,
+                              "left", _protocol, _channel, _group_uid);
 
     // @TODO: duplicate code like in log_event, refactor
-    auto service = Utils::protocolToRTCOMServiceID(m_protocol_name);
+    auto service = getServiceName();
     auto text = QString("%1 has left the groupchat").arg(m_nickname);
 
     auto *chatMessage = new ChatMessage({
@@ -676,7 +677,8 @@ void TelepathyAccount::leaveChannel(const QString &channel) {
         // we keep `channels[channel]` (AccountChannel*) around; we use it for other purposes too, and can be re-used.
         channels[channel]->tpChannel = nullptr;
 
-        this->onChannelLeft(channel);     // rtcom registration
+        // @TODO: for now, we do not register chat join/leave events
+        //this->onChannelLeft(channel);
         this->writeGroupchatChannels();   // user-config registration
         emit channelLeft(name, channel);
     });
@@ -739,16 +741,7 @@ void TelepathyAccount::onRemoved() {
 }
 
 void TelepathyAccount::readGroupchatChannels() {
-    auto data = config()->get(ConfigKeys::GroupChatChannels).toByteArray();
-    if(data.isEmpty()) return;
-
-    auto doc = QJsonDocument::fromJson(data);
-    if(doc.isNull() || !doc.isObject()) {
-        qWarning() << "invalid json encountered parsing Config::autoJoinChatChannels";
-        return;
-    }
-
-    auto obj = doc.object();
+    auto obj = Utils::getUserGroupChatChannels();
     if(obj.contains(name)) {
         auto obj_account = obj[name].toObject();
         if(!obj_account.contains("channels"))
@@ -760,10 +753,15 @@ void TelepathyAccount::readGroupchatChannels() {
             auto channel = obj_channel["name"].toString();
             auto auto_join = obj_channel["auto_join"].toBool();
 
+            qint64 created = 0;
+            if(obj_channel.contains("created"))
+              created = obj_channel["created"].toString().toLongLong();
+
             if(!channels.contains(channel)) {
-                qDebug() << "readGroupchatChannels(), new channel:" << channel;
+                qDebug() << "readGroupchatChannels(), new channel:" << channel << "created" << created;
                 channels[channel] = new AccountChannel;
                 channels[channel]->name = channel;
+                channels[channel]->created = created;
                 channels[channel]->auto_join = auto_join;
             } else {
               channels[channel]->auto_join = auto_join;
@@ -781,6 +779,7 @@ void TelepathyAccount::writeGroupchatChannels() {
         QJsonObject obj_channel;
         obj_channel["name"] = ac->name;
         obj_channel["auto_join"] = ac->auto_join;
+        obj_channel["created"] = QString::number(QDateTime::currentSecsSinceEpoch());  // Qt5 does not support QJsonValue::toInteger like in Qt6 so unfortunately we need to use QString to represent a qint64
         obj_channels << obj_channel;
     }
     obj_account["channels"] = obj_channels;
@@ -802,6 +801,10 @@ void TelepathyAccount::joinSavedGroupChats() {
             this->_joinChannel(_channel->name);
         }
     }
+}
+
+QString TelepathyAccount::getServiceName() {
+  return Utils::protocolToRTCOMServiceID(m_protocol_name);
 }
 
 TelepathyAccount::~TelepathyAccount() {

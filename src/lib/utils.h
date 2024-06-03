@@ -27,6 +27,7 @@ public:
     static QString protocolToRTCOMServiceID(const QString &protocol);
     static QMap<QString, QString> readSystemConfig(const QString &path);
     static bool protocolIsTelephone(const QString &protocol);
+    static QJsonObject getUserGroupChatChannels();
 };
 
 class Conversations;

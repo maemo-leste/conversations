@@ -204,9 +204,6 @@ unsigned int ChatModel::searchMessages(const QString &search) {
 }
 
 unsigned int ChatModel::searchMessages(const QString &search, const QString &group_uid) {
-#ifndef RTCOM
-  return 0;
-#else
   this->clear();
 
   RTComElQuery *query = qtrtcom::startQuery(20, 0, RTCOM_EL_QUERY_GROUP_BY_NONE);
@@ -244,7 +241,6 @@ unsigned int ChatModel::searchMessages(const QString &search, const QString &gro
   }
 
   return results.length();
-#endif
 }
 
 unsigned int ChatModel::getMessages(const QString &service_id, const QString &group_uid, const int limit, const int offset) {

@@ -21,7 +21,7 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   connect(ipc, &IPC::commandReceived, this, &Conversations::onIPCReceived);
 
   // chat overview models
-  overviewModel = new OverviewModel(this);
+  overviewModel = new OverviewModel(telepathy, this);
   overviewModel->onLoad();
   connect(telepathy, &Telepathy::accountManagerReady, overviewModel, &OverviewModel::onLoad);
   // @TODO: do not refresh the whole overview table on new messages, edit specific entries 

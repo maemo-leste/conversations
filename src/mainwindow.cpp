@@ -66,47 +66,32 @@ void MainWindow::onOpenChatWindow(int idx) {
   this->onOpenChatWindow(msg);
 }
 
-void MainWindow::onOpenChatWindow(QString local_uid, QString remote_uid, QString group_uid, QString service, QString channel) {
+void MainWindow::onOpenChatWindow(QString local_uid, QString remote_uid, QString group_uid, QString channel, QString service) {
   qDebug() << "onOpenChatWindow" << channel;
-
-  auto *chatMessage = new ChatMessage({
-    .event_id = 1,
-    .service = service,
-    .group_uid = group_uid,
-    .local_uid = local_uid,
-    .remote_uid = remote_uid,
-    .remote_name = "",
-    .remote_ebook_uid = "",
-    .text = "",
-    .icon_name = "",
-    .timestamp = 0,
-    .count = 0,
-    .group_title = "",
-    .channel = channel,
-    .event_type = "-1",
-    .outgoing = false,
-    .is_read = true,
-    .flags = 0
-  });
-
-  this->onOpenChatWindow(QSharedPointer<ChatMessage>(chatMessage));
-}
-
-void MainWindow::onOpenChatWindow(const QSharedPointer<ChatMessage> &msg) {
-  auto uid = msg->group_uid();
-  if(m_chatWindows.contains(uid)) {
-    m_chatWindows[uid]->setFocus();
-    m_chatWindows[uid]->activateWindow();
-
+  if(m_chatWindows.contains(group_uid)) {
+    m_chatWindows[group_uid]->setFocus();
+    m_chatWindows[group_uid]->activateWindow();
     return;
   }
 
-  auto *window = new ChatWindow(m_ctx, msg, this);
-  m_chatWindows[uid] = window;
+  auto *window = new ChatWindow(m_ctx, local_uid, remote_uid, group_uid, channel, service, this);
+  m_chatWindows[group_uid] = window;
   window->show();
 
   connect(window, &ChatWindow::sendMessage, this->m_ctx, &Conversations::onSendOutgoingMessage);
   connect(window, &ChatWindow::closed, this, &MainWindow::onChatWindowClosed);
+}
+
+void MainWindow::onOpenChatWindow(const QSharedPointer<ChatMessage> &msg) {
+  onOpenChatWindow(msg->local_uid(), msg->remote_uid(), msg->group_uid(), msg->channel(), msg->service());
+}
+
+void MainWindow::onOpenChatWindowWithHighlight(const QSharedPointer<ChatMessage> &msg) {
+  auto group_uid = msg->group_uid();
+  onOpenChatWindow(msg->local_uid(), msg->remote_uid(), group_uid, msg->channel(), msg->service());
+
+  if(m_chatWindows.contains(group_uid))
+    m_chatWindows[group_uid]->setHighlight(msg->event_id());
 }
 
 void MainWindow::onQuitApplication() {
@@ -120,7 +105,7 @@ void MainWindow::onOpenSearchWindow() {
 
   connect(m_searchWindow,
           SIGNAL(searchResultClicked(QSharedPointer<ChatMessage>)), this,
-          SLOT(onOpenChatWindow(QSharedPointer<ChatMessage>)));
+          SLOT(onOpenChatWindowWithHighlight(QSharedPointer<ChatMessage>)));
 
   connect(m_searchWindow, &SearchWindow::searchResultClicked, this, &MainWindow::onCloseSearchWindow);
 }

@@ -18,30 +18,41 @@
 
 
 ChatWindow * ChatWindow::pChatWindow = nullptr;
-ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWidget *parent) :
+ChatWindow::ChatWindow(
+  Conversations *ctx,
+  const QString &local_uid,   // e.g idle/irc/myself
+  const QString &remote_uid,  // e.g cool_username (counterparty)
+  const QString &group_uid,   // e.g idle/irc/myself-##maemotest
+  const QString &channel,     // e.g ##maemotest
+  const QString &service_uid, // e.g RTCOM_EL_SERVICE_SMS
+  QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::ChatWindow),
-    m_chatMessage(msg),
+    local_uid(local_uid),
+    remote_uid(remote_uid),
+    group_uid(group_uid),
+    channel(channel),
+    service_uid(service_uid),
     m_windowFocusTimer(new QTimer(this)),
+    groupchat(!channel.isEmpty()),
     m_ctx(ctx) {
   pChatWindow = this;
   ui->setupUi(this);
   ui->menuBar->hide();
 
-  m_local_uid = m_chatMessage->local_uid();
-  m_channel = m_chatMessage->channel();
-  groupchat = !m_chatMessage->channel().isEmpty();
-  qDebug() << "open chatWindow(" << m_local_uid << ", " << m_channel << ") groupchat:" << groupchat << ")";
+  qDebug() << "ChatWindow()";
+  qDebug() << "local_uid:" << local_uid;
+  qDebug() << "group_uid:" << group_uid;
+  qDebug() << "remote_uid:" << remote_uid;
+  qDebug() << "channel:" << channel;
+  qDebug() << "service:" << service_uid;
+  qDebug() << "groupchat:" << groupchat;
 
   if(groupchat) {
-    auto *acc = m_ctx->telepathy->accountByName(m_local_uid);
-    acc->ensureChannel(m_channel);
+    auto *acc = m_ctx->telepathy->accountByName(local_uid);
+    acc->ensureChannel(channel);
     this->detectActiveChannel();
   }
-
-  // [window]
-  // title
-  this->onSetWindowTitle();
 
   // properties
   setProperty("X-Maemo-Orientation", 2);
@@ -59,9 +70,7 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
   m_enterKeySendsChat = config()->get(ConfigKeys::EnterKeySendsChat).toBool();
 
   this->chatModel = new ChatModel(this);
-  this->chatModel->getMessages(m_chatMessage->service(), m_chatMessage->group_uid());
-  if(m_chatMessage->isSearchResult)
-    fillBufferUntil(m_chatMessage);
+  this->chatModel->getMessages(service_uid, group_uid);
 
   auto *qctx = ui->quick->rootContext();
   qctx->setContextProperty("chatWindow", this);
@@ -117,11 +126,12 @@ ChatWindow::ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWid
 
   // mark messages as read, user opened the chat
   chatModel->setMessagesRead();
+  this->onSetWindowTitle();
 }
 
 void ChatWindow::onAutoJoinToggled() {
-  auto *acc = m_ctx->telepathy->accountByName(m_local_uid);
-  auto *chan = m_ctx->telepathy->channelByName(m_local_uid, m_channel);
+  auto *acc = m_ctx->telepathy->accountByName(local_uid);
+  auto *chan = m_ctx->telepathy->channelByName(local_uid, channel);
   if(acc == nullptr || chan == nullptr)
     return;
 
@@ -129,7 +139,7 @@ void ChatWindow::onAutoJoinToggled() {
 
   // join while we are at it
   if(chan->auto_join && !chan->hasActiveChannel())
-    m_ctx->telepathy->joinChannel(m_local_uid, m_channel, true);
+    m_ctx->telepathy->joinChannel(local_uid, channel, true);
 
   // ui text
   if(chan->auto_join) {
@@ -141,7 +151,7 @@ void ChatWindow::onAutoJoinToggled() {
 
 void ChatWindow::onExportToCsv() {
     qDebug() << __FUNCTION__;
-    ChatModel::exportChatToCsv(m_chatMessage->service(), m_chatMessage->group_uid(), this);
+    ChatModel::exportChatToCsv(service_uid, group_uid, this);
     QMessageBox msgBox;
     msgBox.setText(QString("File written to ~/MyDocs/"));
     msgBox.exec();
@@ -162,7 +172,7 @@ void ChatWindow::onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg) {
 }
 
 void ChatWindow::onOpenSearchWindow() {
-  m_searchWindow = new SearchWindow(m_ctx, m_chatMessage->group_uid(), this);
+  m_searchWindow = new SearchWindow(m_ctx, group_uid, this);
   m_searchWindow->show();
 
   connect(m_searchWindow, &SearchWindow::searchResultClicked, this, &ChatWindow::onSearchResultClicked);
@@ -170,51 +180,42 @@ void ChatWindow::onOpenSearchWindow() {
 }
 
 void ChatWindow::onSearchResultClicked(const QSharedPointer<ChatMessage> &msg) {
-  m_chatMessage = msg;
-  this->onChatPreReady();
+  this->setHighlight(msg->event_id());
 }
 
-void ChatWindow::fillBufferUntil(const QSharedPointer<ChatMessage> &msg) const {
-  // fill the message buffer list until we find the relevant message
-  qDebug() << __FUNCTION__;
+void ChatWindow::setHighlight(const unsigned int event_id) {
+  emit chatPreReady();
+
+  fillBufferUntil(event_id);
+  emit jumpToMessage(event_id);
+
+  emit chatPostReady();
+}
+
+void ChatWindow::fillBufferUntil(const unsigned int event_id) const {
   unsigned int limit = 0;
   const unsigned int perPage = 100;
 
-  while(chatModel->eventIdToIdx(msg->event_id()) == -1) {
+  while(chatModel->eventIdToIdx(event_id) == -1) {
     chatModel->getPage(perPage);
     limit += 1;
   }
 }
 
 void ChatWindow::onChatPreReady() {
-  qDebug() << __FUNCTION__;
   emit chatPreReady();
-
-  // check if we need to 'jump' to a 'requested' message;
-  if(m_chatMessage->isSearchResult) {
-    fillBufferUntil(m_chatMessage);
-    qDebug() << "jump to message " << m_chatMessage->event_id();
-    emit jumpToMessage(m_chatMessage->event_id());
-  } else {
-    qDebug() << "forcing scroll down";
-    emit scrollDown();
-  }
-
+  emit scrollDown();
   emit chatPostReady();
 }
 
 void ChatWindow::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
-  if(m_chatMessage->local_uid() == msg->local_uid() && m_chatMessage->group_uid() == msg->group_uid()) {
+  if(local_uid == msg->local_uid() && group_uid == msg->group_uid()) {
     this->chatModel->appendMessage(msg);
   }
 }
 
-QString ChatWindow::remoteId() const
-{
-  if (m_chatMessage->channel().isEmpty())
-    return m_chatMessage->remote_uid();
-  else
-    return m_chatMessage->channel();
+QString ChatWindow::remoteId() const {
+  return groupchat ? channel : remote_uid;
 }
 
 void ChatWindow::onGatherMessage() {
@@ -223,17 +224,17 @@ void ChatWindow::onGatherMessage() {
   if(_msg.isEmpty())
     return;
 
-  emit sendMessage(m_chatMessage->local_uid(), remoteId(), _msg);
+  emit sendMessage(local_uid, remoteId(), _msg);
 
   this->ui->chatBox->clear();
   this->ui->chatBox->setFocus();
 }
 
 void ChatWindow::onGroupchatJoinLeaveRequested() {
-  if(m_ctx->telepathy->participantOfChannel(m_local_uid, m_channel)) {
-    m_ctx->telepathy->leaveChannel(m_local_uid, m_channel);
+  if(m_ctx->telepathy->participantOfChannel(local_uid, channel)) {
+    m_ctx->telepathy->leaveChannel(local_uid, channel);
   } else {
-    m_ctx->telepathy->joinChannel(m_local_uid, m_channel, false);
+    m_ctx->telepathy->joinChannel(local_uid, channel, false);
   }
 }
 
@@ -246,14 +247,14 @@ void ChatWindow::onSetupGroupchat() {
   }
 
   // setup initial join/leave UI text
-  if(!m_ctx->telepathy->participantOfChannel(m_local_uid, m_channel)) {
+  if(!m_ctx->telepathy->participantOfChannel(local_uid, channel)) {
     ui->actionLeave_channel->setText("Join groupchat");
   } else {
     ui->actionLeave_channel->setText("Leave groupchat");
   }
 
   // setup initial auto-join UI text
-  auto *chan = m_ctx->telepathy->channelByName(m_local_uid, m_channel);
+  auto *chan = m_ctx->telepathy->channelByName(local_uid, channel);
   if(chan != nullptr) {
     QString auto_join_text = chan->auto_join ? "Disable auto-join" : "Enable auto-join";
     ui->actionAuto_join_groupchat->setText(auto_join_text);
@@ -262,8 +263,8 @@ void ChatWindow::onSetupGroupchat() {
   }
 }
 
-void ChatWindow::onChannelJoinedOrLeft(const QString &local_uid, const QString &channel) {
-  if(local_uid == m_local_uid && channel == m_channel) {
+void ChatWindow::onChannelJoinedOrLeft(const QString &_local_uid, const QString &_channel) {
+  if(_local_uid == local_uid && _channel == channel) {
     // change some UI
     this->detectActiveChannel();
     this->onSetWindowTitle();
@@ -274,17 +275,25 @@ void ChatWindow::onChannelJoinedOrLeft(const QString &local_uid, const QString &
 void ChatWindow::onSetWindowTitle() {
   QString protocol = "Unknown";
   QString windowTitle;
-  if(m_chatMessage->local_uid().count('/') == 2)
-    protocol = m_chatMessage->local_uid().split("/").at(1);
-  if (m_chatMessage->channel() != "") {
-      windowTitle = QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->channel());
+
+  QString remote_name;
+  if(!this->chatModel->chats.isEmpty())
+    remote_name = this->chatModel->chats.last()->remote_name();
+
+  if(local_uid.count('/') == 2)
+    windowTitle += local_uid.split("/").at(1);
+  else
+    windowTitle += protocol.toUpper();
+
+  if(groupchat) {
+      windowTitle +=  " - " + channel;
   } else {
-      if (m_chatMessage->remote_name() != "") {
-          windowTitle = QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->remote_name());
-      } else {
-          windowTitle = QString("%1 - %2").arg(protocol.toUpper(), m_chatMessage->remote_uid());
-      }
+    if(!remote_name.isEmpty())
+      windowTitle += " - " + remote_name;
+    else
+      windowTitle += " - " + remote_uid;
   }
+
   if(!m_active && groupchat)
     windowTitle += " (left or inactive)";
 
@@ -292,7 +301,7 @@ void ChatWindow::onSetWindowTitle() {
 }
 
 void ChatWindow::detectActiveChannel() {
-  auto *chan = m_ctx->telepathy->channelByName(m_local_uid, m_channel);
+  auto *chan = m_ctx->telepathy->channelByName(local_uid, channel);
   m_active = chan->hasActiveChannel();
 }
 
@@ -302,8 +311,10 @@ Conversations *ChatWindow::getContext() {
 
 void ChatWindow::setChatState(Tp::ChannelChatState state) const
 {
-  if (!m_chatMessage.isNull())
-    m_ctx->telepathy->setChatState(m_local_uid, remoteId(), state);
+  if(local_uid.isEmpty() || remote_uid.isEmpty())
+    return;
+
+  m_ctx->telepathy->setChatState(local_uid, remoteId(), state);
 }
 
 bool ChatWindow::eventFilter(QObject *watched, QEvent *event) {
@@ -334,8 +345,7 @@ bool ChatWindow::eventFilter(QObject *watched, QEvent *event) {
 void ChatWindow::closeEvent(QCloseEvent *event) {
   setChatState(Tp::ChannelChatStateInactive);
   this->chatModel->clear();
-  emit closed(m_chatMessage->group_uid());
-  m_chatMessage.clear();
+  emit closed(group_uid);
   QWidget::closeEvent(event);
 }
 

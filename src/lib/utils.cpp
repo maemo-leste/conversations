@@ -130,3 +130,16 @@ QMap<QString, QString> Utils::readSystemConfig(const QString &path) {
 
   return rtn;
 }
+
+QJsonObject Utils::getUserGroupChatChannels() {
+  auto data = config()->get(ConfigKeys::GroupChatChannels).toByteArray();
+  if(data.isEmpty()) return {};
+
+  auto doc = QJsonDocument::fromJson(data);
+  if(doc.isNull() || !doc.isObject()) {
+    qWarning() << "invalid json encountered parsing Config::autoJoinChatChannels";
+    return {};
+  }
+
+  return doc.object();
+}

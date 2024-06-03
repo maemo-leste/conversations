@@ -62,10 +62,10 @@
 #include "lib/utils.h"
 #include "lib/config.h"
 #include "models/ChatMessage.h"
-#ifdef RTCOM
+
 #include "lib/rtcom.h"
 #include <rtcom-eventlogger/eventlogger.h>
-#endif
+
 #ifdef OSSO_ABOOK
 #include <libosso-abook/osso-abook.h>
 #endif
@@ -80,6 +80,7 @@ class AccountChannel
 public:
     QString name;
     bool auto_join;
+    qint64 created = 0;
     TelepathyChannel* tpChannel = nullptr;
 
     bool hasActiveChannel() { return tpChannel != nullptr; }
@@ -97,6 +98,7 @@ public:
 
     QString nickname() const { return m_nickname; }
     QString protocolName() const { return m_protocol_name; }
+    QString getServiceName();
     QString name;
 
     void setAutoJoin(const QString &remote_id, bool autoJoin);

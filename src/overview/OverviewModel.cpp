@@ -94,7 +94,8 @@ void OverviewProxyModel::onOverviewRowClicked(uint32_t idx) {
   emit mdl->overviewRowClicked(msg);
 }
 
-OverviewModel::OverviewModel(QObject *parent) : 
+OverviewModel::OverviewModel(Telepathy *tp, QObject *parent) :
+    m_tp(tp),
     QAbstractListModel(parent) {
   this->preloadPixmaps();
 }
@@ -136,14 +137,17 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
   else if(role == Qt::DecorationRole) {
     switch (index.column()) {
       case OverviewModel::MsgStatusIcon: {
+        const auto icon_default = "general_chat";
         const auto icon = message->icon_name();
         if(!icon.isEmpty()) {
           if(m_pixmaps.contains(icon))
             return m_pixmaps[icon];
           else {
             qWarning() << "icon" << icon << "does not exist";
-            return {};
+            return m_pixmaps[icon_default];
           }
+        } else {
+          return m_pixmaps[icon_default];
         }
       }
       case OverviewModel::ChatTypeIcon: {
@@ -185,8 +189,14 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
 }
 
 void OverviewModel::onLoad() {
+  // First we query rtcom for the overview messages and then
+  // we check TP because we could be connected to a groupchat
+  // that has no rtcom-registered messages yet
   this->onClear();
 
+  QStringList group_uids;
+
+  // rtcom
   const uint32_t limit = 50000;
   const uint32_t offset = 0;
   RTComElQuery *query = qtrtcom::startQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_GROUP);
@@ -202,8 +212,42 @@ void OverviewModel::onLoad() {
   }
 
   auto results = iterateRtComEvents(query);
+  for(const auto *msg: results)
+    group_uids << msg->group_uid();
 
   g_object_unref(query);
+
+  // tp
+  for(const auto &account: m_tp->accounts) {
+    for(const auto &channel_key: account->channels.keys()) {
+      const auto &channel = account->channels[channel_key];
+      auto group_uid = QString("%1-%2").arg(account->name, channel->name);
+
+      if(!group_uids.contains(group_uid)) {
+        results << new ChatMessage({
+          .event_id = -1,
+          .service = account->getServiceName(),
+          .group_uid = group_uid,
+          .local_uid = account->getLocalUid(),
+          .remote_uid = "",
+          .remote_name = "",
+          .remote_ebook_uid = "",
+          .text = "",
+          .icon_name = "",
+          .timestamp = channel->created,
+          .count = 0,
+          .group_title = "",
+          .channel = channel->name,
+          .event_type = "-1",
+          .outgoing = false,
+          .is_read = true,
+          .flags = 0
+        });
+
+        group_uids << group_uid;
+      }
+    }
+  }
 
   beginInsertRows(QModelIndex(), 0, results.size());
   for (const auto &message: results)

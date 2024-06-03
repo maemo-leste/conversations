@@ -7,7 +7,7 @@
 #include "lib/rtcom.h"
 
 struct ChatMessageParams {
-    unsigned int event_id = -1;
+    int event_id = -1;
     const QString service;
     const QString group_uid;
 
@@ -82,8 +82,6 @@ public:
 
     QSharedPointer<ChatMessage> previous = nullptr;
     QSharedPointer<ChatMessage> next = nullptr;
-
-    bool isSearchResult = false;
 
 private:
     ChatMessageParams m_params;

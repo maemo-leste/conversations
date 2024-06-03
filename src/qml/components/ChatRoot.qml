@@ -228,7 +228,8 @@ Rectangle {
         target: chatWindow
         onScrollDown: {
             console.log('Connections: onScrollDown()');
-            root.scrollToBottom();
+            while(!chatList.atBottom)
+              chatList.positionViewAtEnd();
         }
         onJumpToMessage: {
             console.log('Connections: onJumpToMessage()', event_id);

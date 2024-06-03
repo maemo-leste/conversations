@@ -7,13 +7,12 @@
 #include <QStringList>
 #include <QDir>
 
-#ifdef RTCOM
 #include <glib.h>
 #include <glib/gstdio.h>
-#include "lib/rtcom.h"
-#endif
 
 #include "lib/utils.h"
+#include "lib/rtcom.h"
+#include "lib/tp.h"
 #include "lib/QRichItemDelegate.h"
 #include "models/ChatMessage.h"
 
@@ -66,18 +65,17 @@ public:
     COUNT
   };
 
-  explicit OverviewModel(QObject *parent = nullptr);
+  explicit OverviewModel(Telepathy *tp, QObject *parent = nullptr);
   ~OverviewModel() override {
     this->onClear();
   }
 
-  QList<QSharedPointer<ChatMessage>> messages;
-
   int rowCount(const QModelIndex &parent = QModelIndex()) const override;
   int columnCount(const QModelIndex &parent = QModelIndex()) const override;
   QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-
+public:
   uint32_t itemHeight = 80;
+  QList<QSharedPointer<ChatMessage>> messages;
 
 public slots:
   void onLoad();
@@ -91,5 +89,7 @@ protected:
 
 private:
   void preloadPixmaps();
+private:
+  Telepathy *m_tp = nullptr;
   QMap<QString, QPixmap> m_pixmaps;
 };

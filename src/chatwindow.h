@@ -23,16 +23,23 @@ namespace Ui {
 }
 
 class ChatWindow : public QMainWindow {
-    Q_OBJECT
+Q_OBJECT
 
 public:
     Ui::ChatWindow *ui;
-    explicit ChatWindow(Conversations *ctx, QSharedPointer<ChatMessage> msg, QWidget *parent = nullptr);
+    explicit ChatWindow(Conversations *ctx, const QString &local_uid, const QString &remote_uid, const QString &group_uid, const QString &channel, const QString &service_uid, QWidget *parent = nullptr);
     static Conversations *getContext();
     ~ChatWindow() override;
-
-    ChatModel *chatModel;
-    bool groupchat;
+public:
+    const QString local_uid;
+    const QString group_uid;
+    const QString remote_uid;
+    const QString channel;
+    const QString service_uid;
+    const bool groupchat;
+public:
+    void setHighlight(const unsigned int event_id);
+    void fillBufferUntil(const unsigned int event_id) const;
 
 public slots:
   void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
@@ -46,7 +53,7 @@ private slots:
     void onAutoCloseChatWindowsChanged(bool enabled);
     void onSearchResultClicked(const QSharedPointer<ChatMessage> &msg);
     void onGroupchatJoinLeaveRequested();
-    void onChannelJoinedOrLeft(const QString &local_uid, const QString &channel);
+    void onChannelJoinedOrLeft(const QString &_local_uid, const QString &_channel);
     void onEnterKeySendsChatToggled(bool enabled);
     void onSetupGroupchat();
     void onAutoJoinToggled();
@@ -54,7 +61,7 @@ private slots:
 
 signals:
     void closed(const QString &remote_uid);
-    void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
+    void sendMessage(const QString &_local_uid, const QString &_remote_uid, const QString &message);
     void jumpToMessage(int event_id);
     void scrollDown();
     void chatPostReady();
@@ -62,22 +69,18 @@ signals:
 
 private:
     Conversations *m_ctx;
+    ChatModel *chatModel;
     static ChatWindow *pChatWindow;
-    QSharedPointer<ChatMessage> m_chatMessage;
-    QString m_channel;
-    QString m_local_uid;
-    bool m_enterKeySendsChat = false;
     SearchWindow *m_searchWindow = nullptr;
-
+private:
     QTimer *m_windowFocusTimer;
+    bool m_enterKeySendsChat = false;
     unsigned int m_windowFocus = 0; // seconds
     bool m_active = false;  // do we have an active Tp connection?
-
-    void fillBufferUntil(const QSharedPointer<ChatMessage> &msg) const;
+private:
     QString remoteId() const;
     void detectActiveChannel();
     void setChatState(Tp::ChannelChatState state) const;
-
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
