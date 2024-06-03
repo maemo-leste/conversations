@@ -1,3 +1,16 @@
+conversations (0.7.10) unstable; urgency=medium
+
+  * tp: prevent duplicate rtcom insertions from scrollback
+  * Use menu action group for account protocol filtering
+  * overview: sort on date
+  * overview: model now displays channels that are not registered in rtcom yet
+  * overview: follow text scaling from settings
+  * Completely disable join/leave events (for now)
+  * Default icon for OverviewModel::MsgStatusIcon role
+  * Fix QML to force scroll down at chatwindow spawn
+
+ -- Sander <sander@sanderf.nl>  Tue, 04 Jun 2024 00:02:32 +0200
+
 conversations (0.7.9) unstable; urgency=medium
 
   * Move protocol filters to main menu (requires new qt-platform-module)
