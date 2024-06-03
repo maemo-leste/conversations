@@ -78,11 +78,12 @@ class TelepathyHandler;
 class AccountChannel
 {
 public:
+    explicit AccountChannel();
     QString name;
-    bool auto_join;
-    qint64 created = 0;
+    bool auto_join = false;
+    qint64 date_created;
     TelepathyChannel* tpChannel = nullptr;
-
+public:
     bool hasActiveChannel() { return tpChannel != nullptr; }
 };
 

@@ -33,6 +33,10 @@
  * - https://telepathy.freedesktop.org/spec/Channel_Type_Contact_Search.html
  */
 
+AccountChannel::AccountChannel() :
+  date_created(QDateTime::currentSecsSinceEpoch())
+{}
+
 Telepathy::Telepathy(QObject *parent) : QObject(parent) {
     Tp::AccountFactoryPtr accountFactory = Tp::AccountFactory::create(
                 QDBusConnection::sessionBus(),
@@ -263,7 +267,7 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
 
                 if(!ma->channels.contains(channel_name)) {
                     qDebug() << "handleChannels(), new channel:" << channel_name;
-                    ma->channels[channel_name] = new AccountChannel;
+                    ma->channels[channel_name] = new AccountChannel();
                 }
 
                 ma->channels[channel_name]->name = channel_name;
@@ -491,7 +495,7 @@ void TelepathyAccount::onOnline(bool online) {
 void TelepathyAccount::joinChannel(const QString &remote_id, bool persistent) {
     if(!channels.contains(remote_id)) {
         qDebug() << "joinChannel(), new channel:" << remote_id;
-        channels[remote_id] = new AccountChannel;
+        channels[remote_id] = new AccountChannel();
         channels[remote_id]->name = remote_id;
         channels[remote_id]->auto_join = persistent;
     } else {
@@ -714,7 +718,7 @@ void TelepathyAccount::sendMessage(const QString &remote_id, const QString &mess
 void TelepathyAccount::ensureChannel(const QString &remote_id) {
   if(channels.contains(remote_id)) 
     return;
-  channels[remote_id] = new AccountChannel;
+  channels[remote_id] = new AccountChannel();
   channels[remote_id]->name = remote_id;
 }
 
@@ -753,18 +757,20 @@ void TelepathyAccount::readGroupchatChannels() {
             auto channel = obj_channel["name"].toString();
             auto auto_join = obj_channel["auto_join"].toBool();
 
-            qint64 created = 0;
-            if(obj_channel.contains("created"))
-              created = obj_channel["created"].toString().toLongLong();
+            qint64 date_created = 0;
+            if(obj_channel.contains("date_created"))
+              date_created = obj_channel["date_created"].toString().toLongLong();
 
             if(!channels.contains(channel)) {
-                qDebug() << "readGroupchatChannels(), new channel:" << channel << "created" << created;
-                channels[channel] = new AccountChannel;
-                channels[channel]->name = channel;
-                channels[channel]->created = created;
-                channels[channel]->auto_join = auto_join;
+                qDebug() << "readGroupchatChannels(), new channel:" << channel << "date_created" << date_created;
+                auto *ac = new AccountChannel();
+                ac->name = channel;
+                ac->date_created = date_created;
+                ac->auto_join = auto_join;
+                channels[channel] = ac;
             } else {
               channels[channel]->auto_join = auto_join;
+              channels[channel]->date_created = date_created;
             }
         }
     }
@@ -779,7 +785,8 @@ void TelepathyAccount::writeGroupchatChannels() {
         QJsonObject obj_channel;
         obj_channel["name"] = ac->name;
         obj_channel["auto_join"] = ac->auto_join;
-        obj_channel["created"] = QString::number(QDateTime::currentSecsSinceEpoch());  // Qt5 does not support QJsonValue::toInteger like in Qt6 so unfortunately we need to use QString to represent a qint64
+        // @TODO: unfortunately we need to use QString to represent a qint64, Qt6 has QJsonValue::toInteger()
+        obj_channel["date_created"] = QString::number(ac->date_created);
         obj_channels << obj_channel;
     }
     obj_account["channels"] = obj_channels;

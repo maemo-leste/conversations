@@ -234,7 +234,7 @@ void OverviewModel::onLoad() {
           .remote_ebook_uid = "",
           .text = "",
           .icon_name = "",
-          .timestamp = channel->created,
+          .timestamp = channel->date_created,
           .count = 0,
           .group_title = "",
           .channel = channel->name,
