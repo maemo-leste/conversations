@@ -30,12 +30,15 @@ void OverviewWidget::setupUITable() {
   verticalHeader->setDefaultSectionSize(m_ctx->overviewModel->itemHeight);
 
   table->setModel(m_ctx->overviewProxyModel);
+  table->setColumnHidden(OverviewModel::ProtocolRole, true);
+  table->setColumnHidden(OverviewModel::TimeRole, true);
+  table->setColumnHidden(OverviewModel::COUNT, true);
 
   this->onSetColumnStyleDelegate();
 
-  header->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-  header->setSectionResizeMode(1, QHeaderView::Stretch);
-  header->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+  header->setSectionResizeMode(OverviewModel::MsgStatusIcon, QHeaderView::ResizeToContents);
+  header->setSectionResizeMode(OverviewModel::ContentRole, QHeaderView::Stretch);
+  header->setSectionResizeMode(OverviewModel::ChatTypeIcon, QHeaderView::ResizeToContents);
   table->setFocusPolicy(Qt::NoFocus);
 
   // table click handler

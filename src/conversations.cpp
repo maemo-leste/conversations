@@ -29,6 +29,9 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   connect(telepathy, &Telepathy::databaseAddition, overviewModel, &OverviewModel::onLoad);
   overviewProxyModel = new OverviewProxyModel(this);
   overviewProxyModel->setSourceModel(overviewModel);
+  overviewProxyModel->setSortRole(OverviewModel::TimeRole);
+  overviewProxyModel->sort(OverviewModel::TimeRole, Qt::DescendingOrder);
+  overviewProxyModel->setDynamicSortFilter(true);
 
   // Paths
   pathGenericData = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);

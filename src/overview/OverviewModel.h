@@ -44,12 +44,10 @@ public slots:
 
 protected:
   bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
-  bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const override;
   int rowCount(const QModelIndex &parent) const override;
 
 private:
   QString m_protocolFilter = "";
-  const QList<uint16_t> m_visibleColumns;
 };
 
 
@@ -64,6 +62,7 @@ public:
     OverviewNameRole,
     ProtocolRole,
     ChatTypeIcon,
+    TimeRole,
     COUNT
   };
 

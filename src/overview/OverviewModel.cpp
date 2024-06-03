@@ -47,13 +47,7 @@ void ServiceAccount::setName(const QString &protocol) {
   this->title = this->title.left(1).toUpper() + this->title.mid(1);
 }
 
-OverviewProxyModel::OverviewProxyModel(QObject *parent) : 
-    QSortFilterProxyModel(parent),
-    m_visibleColumns({OverviewModel::MsgStatusIcon, 
-                      OverviewModel::ContentRole,
-                      OverviewModel::ChatTypeIcon}) {
-}
-
+OverviewProxyModel::OverviewProxyModel(QObject *parent) : QSortFilterProxyModel(parent) {}
 void OverviewProxyModel::setProtocolFilter(QString protocol) {
   qDebug() << "proxy filter" << protocol;
   if(protocol == "*")
@@ -64,11 +58,6 @@ void OverviewProxyModel::setProtocolFilter(QString protocol) {
     auto mdl = dynamic_cast<OverviewModel*>(this->sourceModel());
     this->invalidate();
   }
-}
-
-// show only specific columns
-bool OverviewProxyModel::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const {
-  return m_visibleColumns.contains(source_column);
 }
 
 // optionally filter on protocol (SMS, Telegram, etc.)
@@ -137,6 +126,9 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
       case OverviewModel::ProtocolRole: {
         return message->protocol;
       }
+      case OverviewModel::TimeRole: {
+        return message->date();
+      }
       default:
         return QVariant();
     }
@@ -184,6 +176,9 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
         return QVariant();
       }
     }
+  }
+  else if(role == OverviewModel::TimeRole) {  // for sort
+    return message->date();
   }
 
   return {};
