@@ -463,11 +463,21 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
     auto remote_uid = message.sender()->id();
     auto remote_alias = message.sender()->alias();
     auto text = message.text().toLocal8Bit();
-    bool outgoing = message.isScrollback() &&
+    auto isScrollback = message.isScrollback();
+    bool outgoing = isScrollback &&
                     (groupSelfContact->handle() == message.sender()->handle() ||
                      groupSelfContact->id() == remote_uid);
 
-    qDebug() << "log_event";
+    if(isScrollback) {  // prevent duplicate rtcom insertions
+      qint64 epoch = dt.toMSecsSinceEpoch();
+      auto channel_str = channel->targetId();
+      if(channels.contains(channel_str) && epoch > channels[channel_str]->date_last_message) {
+        channels[channel_str]->date_last_message = epoch;
+        writeGroupchatChannels();
+      } else {
+        return;
+      }
+    }
 
     log_event(dt.toTime_t(), text, outgoing, channel, remote_uid, remote_alias);
 }
@@ -761,16 +771,22 @@ void TelepathyAccount::readGroupchatChannels() {
             if(obj_channel.contains("date_created"))
               date_created = obj_channel["date_created"].toString().toLongLong();
 
+            qint64 date_last_message = 0;
+            if(obj_channel.contains("date_last_message"))
+              date_last_message = obj_channel["date_last_message"].toString().toLongLong();
+
             if(!channels.contains(channel)) {
                 qDebug() << "readGroupchatChannels(), new channel:" << channel << "date_created" << date_created;
                 auto *ac = new AccountChannel();
                 ac->name = channel;
                 ac->date_created = date_created;
+                ac->date_last_message = date_last_message;
                 ac->auto_join = auto_join;
                 channels[channel] = ac;
             } else {
               channels[channel]->auto_join = auto_join;
               channels[channel]->date_created = date_created;
+              channels[channel]->date_last_message = date_last_message;
             }
         }
     }
@@ -787,6 +803,7 @@ void TelepathyAccount::writeGroupchatChannels() {
         obj_channel["auto_join"] = ac->auto_join;
         // @TODO: unfortunately we need to use QString to represent a qint64, Qt6 has QJsonValue::toInteger()
         obj_channel["date_created"] = QString::number(ac->date_created);
+        obj_channel["date_last_message"] = QString::number(ac->date_last_message);
         obj_channels << obj_channel;
     }
     obj_account["channels"] = obj_channels;

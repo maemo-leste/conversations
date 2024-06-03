@@ -82,6 +82,7 @@ public:
     QString name;
     bool auto_join = false;
     qint64 date_created;
+    qint64 date_last_message = 0;
     TelepathyChannel* tpChannel = nullptr;
 public:
     bool hasActiveChannel() { return tpChannel != nullptr; }
