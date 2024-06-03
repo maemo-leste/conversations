@@ -24,6 +24,9 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
 
+  m_filters = new QActionGroup(this);
+  m_filters->setExclusive(true);
+
   this->screenDpiPhysical = QGuiApplication::primaryScreen()->physicalDotsPerInch();
   this->screenRatio = this->screenDpiPhysical / this->screenDpiRef;
   qDebug() << QString("%1x%2 (%3 DPI)").arg(
@@ -196,27 +199,32 @@ void MainWindow::onHideApplication() {
 // populate the account filter menu
 void MainWindow::onSetupUIAccounts() {
   // the default; All
-  this->addProtocol("Show all", "*");
+  if (QAction *a = addProtocol(tr("All"), "*"))
+      a->setChecked(true);
 
   // accounts from rtcom & tp
   for(const QSharedPointer<ServiceAccount> &acc: m_ctx->serviceAccounts)
     this->addProtocol(acc->title, acc->protocol);
 }
 
-void MainWindow::addProtocol(const QString title, const QString service) {
+QAction *MainWindow::addProtocol(const QString title, const QString service) {
   if(m_filterProtocols.contains(service))
-    return;
+    return nullptr;
 
   auto *item = new FilterProtocolItem;
   item->title = title;
   item->filterKey = service;
-  item->action = new QAction(title);
+  item->action = new QAction(title, m_filters);
+  item->action ->setCheckable(true);
   m_filterProtocols[service] = item;
 
   connect(item->action, &QAction::triggered, [this, service]{
     this->onProtocolFilterClicked(service);
   });
-  ui->menuFilters->addAction(item->action);
+
+  ui->menu->addAction(item->action);
+
+  return item->action;
 }
 
 void MainWindow::onProtocolFilterClicked(const QString service) {

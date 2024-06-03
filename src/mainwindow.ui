@@ -221,11 +221,6 @@
     <property name="title">
      <string>menu</string>
     </property>
-    <widget class="QMenu" name="menuFilters">
-     <property name="title">
-      <string>Filter</string>
-     </property>
-    </widget>
     <addaction name="actionSendTo"/>
     <addaction name="actionCompose"/>
     <addaction name="actionJoinChatRoom"/>
@@ -236,7 +231,6 @@
     <addaction name="separator"/>
     <addaction name="actionSettings"/>
     <addaction name="actionAbout"/>
-    <addaction name="menuFilters"/>
    </widget>
    <addaction name="menu"/>
   </widget>
@@ -298,11 +292,6 @@
    </property>
    <property name="text">
     <string>New contact</string>
-   </property>
-  </action>
-  <action name="actionClearFilters">
-   <property name="text">
-    <string>Clear filters</string>
    </property>
   </action>
  </widget>

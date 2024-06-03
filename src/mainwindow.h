@@ -90,7 +90,7 @@ private:
     SearchWindow *m_searchWindow = nullptr;
     bool m_autoHideWindow = true;
     QMap<QString, FilterProtocolItem*> m_filterProtocols;
-
+    QActionGroup *m_filters;
     void onSetupUIAccounts();
-    void addProtocol(const QString title, const QString service);
+    QAction *addProtocol(const QString title, const QString service);
 };
