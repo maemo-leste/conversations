@@ -112,12 +112,17 @@ void MainWindow::onShowWelcomePage() {
   ui->label_welcomeIcon->setPixmap(p);
 
   QFont robotoBold(QFontDatabase::applicationFontFamilies(1).at(0));
-  robotoBold.setPointSize(24);
+  robotoBold.setPointSize(28);
   ui->label_welcomeTitle->setFont(robotoBold);
 
+  QFont robotoBoldSubTitle(QFontDatabase::applicationFontFamilies(1).at(0));
+  robotoBoldSubTitle.setPointSize(16);
+  robotoBoldSubTitle.setBold(true);
+  ui->label_subtitle->setFont(robotoBoldSubTitle);
+
   QFont robotoRegular(QFontDatabase::applicationFontFamilies(0).at(0));
-  robotoRegular.setPointSize(16);
-  ui->label_welcomeDescription->setFont(robotoRegular);
+  robotoRegular.setPointSize(14);
+  ui->label_description->setFont(robotoRegular);
 }
 
 void MainWindow::onOpenChatWindow(int idx) {
