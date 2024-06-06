@@ -74,7 +74,6 @@ public:
   int columnCount(const QModelIndex &parent = QModelIndex()) const override;
   QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 public:
-  uint32_t itemHeight = 80;
   QList<QSharedPointer<ChatMessage>> messages;
 
 public slots:

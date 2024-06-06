@@ -24,10 +24,11 @@ void OverviewWidget::setupUITable() {
   table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
   // row height
+
   const auto header = table->horizontalHeader();
   QHeaderView *verticalHeader = table->verticalHeader();
   verticalHeader->setSectionResizeMode(QHeaderView::Fixed);
-  verticalHeader->setDefaultSectionSize(m_ctx->overviewModel->itemHeight);
+  this->onSetTableHeight();
 
   table->setModel(m_ctx->overviewProxyModel);
   table->setColumnHidden(OverviewModel::ProtocolRole, true);
@@ -48,6 +49,24 @@ void OverviewWidget::setupUITable() {
     // the actual signal.
     m_ctx->overviewProxyModel->onOverviewRowClicked(idx.row());
   });
+}
+
+void OverviewWidget::onSetTableHeight() {
+  auto itemHeight = 66;
+  if(m_ctx->textScaling == 1.0) {
+    itemHeight = 66;
+  } else if (m_ctx->textScaling <= 1.25) {
+    itemHeight = 80;
+  } else if (m_ctx->textScaling <= 1.50) {
+    itemHeight = 92;
+  } else if (m_ctx->textScaling <= 1.75) {
+    itemHeight = 100;
+  } else {
+    itemHeight = 112;
+  }
+
+  QHeaderView *verticalHeader = ui->tableOverview->verticalHeader();
+  verticalHeader->setDefaultSectionSize(itemHeight);
 }
 
 void OverviewWidget::onSetColumnStyleDelegate() {

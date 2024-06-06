@@ -34,6 +34,7 @@ signals:
 
 public slots:
   void onSetColumnStyleDelegate();
+  void onSetTableHeight();
 
 private:
   void setupUITable();
