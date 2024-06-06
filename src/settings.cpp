@@ -90,10 +90,10 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
 
   // text scaling
   float textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
-  if(textScaling < 1) textScaling = 1;
-  auto scaling = 100*(textScaling-1);
+  if(textScaling < 1.0)
+    textScaling = 1.0;
   ui->label_textScalingValue->setText("x" + QString::number(textScaling));
-  ui->sliderTextScaling->setValue(scaling);
+  ui->sliderTextScaling->setValue(round(textScaling / 0.25 - 4.0));
   connect(ui->sliderTextScaling, &QSlider::valueChanged, this, &Settings::onTextScalingValueChanged);
   emit textScalingChanged();
 
@@ -101,12 +101,7 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
 }
 
 void Settings::onTextScalingValueChanged(int val) {
-  float scaling;
-  if(val == 0) scaling = 1.0;
-  else if(val <= 25) scaling = 1.25;
-  else if(val <= 50) scaling = 1.50;
-  else if(val <= 75) scaling = 1.75;
-  else if(val <= 100) scaling = 2.0;
+  float scaling = 1.0 + (val * 0.25);
   ui->label_textScalingValue->setText("x" + QString::number(scaling));
   config()->set(ConfigKeys::TextScaling, scaling);
   emit textScalingChanged();
