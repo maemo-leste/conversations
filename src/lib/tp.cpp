@@ -9,7 +9,6 @@
 /*
  * TODO:
  * Priority:
- * - We need a signal when a new TP account is added, so the UI can act
  * - On incoming messages, let's make sure we match them to an account using
  *   abook, see
  *   https://github.com/maemo-leste/osso-abook/blob/master/lib/osso-abook-aggregator.h#L140
@@ -126,6 +125,8 @@ void Telepathy::onNewAccount(const Tp::AccountPtr &account) {
     connect(myacc, &TelepathyAccount::channelJoined, this, &Telepathy::channelJoined);
     connect(myacc, &TelepathyAccount::channelLeft, this, &Telepathy::channelLeft);
     connect(myacc, &TelepathyAccount::removed, this, &Telepathy::onAccountRemoved);
+
+    emit accountAdded(myacc);
 }
 
 void Telepathy::onAccountRemoved(TelepathyAccount* account) {

@@ -4,6 +4,9 @@
         <file>assets/images/video_tab_icon.svg</file>
         <file alias="overviewRichDelegate.css">overview/overviewRichDelegate.css</file>
 
+        <file>assets/fonts/Roboto-Bold.ttf</file>
+        <file>assets/fonts/Roboto-Regular.ttf</file>
+
         <file>qml/Main.qml</file>
         <file>qml/Search.qml</file>
 

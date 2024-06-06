@@ -71,6 +71,10 @@ public slots:
 
 private slots:
     void onProtocolFilterClicked(const QString service);
+    void onShowWelcomePage();
+    void onShowOverviewPage();
+    void onDeterminePage();
+    void onShowEmptyDbPage();
 
 signals:
     void requestOverviewSearchWindow();

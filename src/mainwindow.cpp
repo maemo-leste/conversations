@@ -24,6 +24,9 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
 
+  QFontDatabase::addApplicationFont(":/assets/fonts/Roboto-Regular.ttf");
+  QFontDatabase::addApplicationFont(":/assets/fonts/Roboto-Bold.ttf");
+
   m_filters = new QActionGroup(this);
   m_filters->setExclusive(true);
 
@@ -60,9 +63,61 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx->telepathy, &Telepathy::accountManagerReady, this, &MainWindow::onTPAccountManagerReady);
   connect(m_ctx->telepathy, &Telepathy::openChannelWindow, this, QOverload<QString, QString, QString, QString, QString>::of(&MainWindow::onOpenChatWindow));
   connect(m_ctx->overviewModel, &OverviewModel::overviewRowClicked, this, [this](auto &ptr){ this->onOpenChatWindow(ptr); });
+
+  // determine if we show the welcome screen
+  connect(m_ctx->telepathy, &Telepathy::accountManagerReady, this, &MainWindow::onDeterminePage);
+  connect(m_ctx->telepathy, &Telepathy::accountAdded, [this](TelepathyAccount *acc) {
+    this->onDeterminePage();
+  });
+
+  this->onDeterminePage();
 }
 
 void MainWindow::onTPAccountManagerReady() {}
+
+void MainWindow::onDeterminePage() {
+  bool hasTpAccounts = m_ctx->telepathy->accounts.length() > 0;
+  bool hasDatabase = m_ctx->overviewModel->messages.length() > 0;
+  qDebug() << "tp accounts" << m_ctx->telepathy->accounts.length();
+  qDebug() << "overview model length" << m_ctx->overviewModel->messages.length();
+
+  if(hasTpAccounts && !hasDatabase) {
+    this->onShowEmptyDbPage();
+  } else if(hasTpAccounts || hasDatabase) {
+    this->onShowOverviewPage();
+  } else {
+    this->onShowWelcomePage();
+  }
+}
+
+void MainWindow::onShowOverviewPage() {
+  qDebug() << "onShowOverviewPage";
+  ui->overviewPages->setCurrentIndex(0);
+}
+
+void MainWindow::onShowEmptyDbPage() {
+  QFont robotoRegular(QFontDatabase::applicationFontFamilies(0).at(0));
+  robotoRegular.setPointSize(16);
+  ui->label_emptyDb->setFont(robotoRegular);
+  ui->overviewPages->setCurrentIndex(2);
+}
+
+void MainWindow::onShowWelcomePage() {
+  qDebug() << "onShowWelcomePage";
+  ui->overviewPages->setCurrentIndex(1);
+
+  QPixmap p("/usr/share/icons/hicolor/48x48/hildon/general_sms.png");
+  ui->label_welcomeIcon->setText("");
+  ui->label_welcomeIcon->setPixmap(p);
+
+  QFont robotoBold(QFontDatabase::applicationFontFamilies(1).at(0));
+  robotoBold.setPointSize(24);
+  ui->label_welcomeTitle->setFont(robotoBold);
+
+  QFont robotoRegular(QFontDatabase::applicationFontFamilies(0).at(0));
+  robotoRegular.setPointSize(16);
+  ui->label_welcomeDescription->setFont(robotoRegular);
+}
 
 void MainWindow::onOpenChatWindow(int idx) {
   auto msg = m_ctx->chatOverviewModel->chats.at(idx);

@@ -211,6 +211,7 @@ signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
     void openChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
     void accountManagerReady();
+    void accountAdded(TelepathyAccount* account);
     void channelJoined(QString backend_name, QString channel);
     void channelLeft(QString backend_name, QString channel);
 
