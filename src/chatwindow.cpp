@@ -50,8 +50,10 @@ ChatWindow::ChatWindow(
 
   if(groupchat) {
     auto *acc = m_ctx->telepathy->accountByName(local_uid);
-    acc->ensureChannel(channel);
-    this->detectActiveChannel();
+    if(acc != nullptr) {
+      acc->ensureChannel(channel);
+      this->detectActiveChannel();
+    }
   }
 
   // properties
