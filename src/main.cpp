@@ -32,10 +32,10 @@
 #include "lib/logger.h"
 
 int main(int argc, char *argv[]) {
-  // detect if we already running
+  // are we already running?
   int ipc_sock = Utils::IPCOpen("/tmp/conversations-user.sock");
   if(ipc_sock >= 0) {
-    while(*argv != NULL) {  // check if we are opening a remote-uid via args
+    while(*argv != NULL) {  // remote-uid via args?
       auto arg = QString::fromUtf8(*argv, strlen(*argv));
       if(arg.contains(globals::reRemoteUID)) {
         return Utils::IPCSend(ipc_sock, arg);
