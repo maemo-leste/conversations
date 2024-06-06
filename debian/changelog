@@ -1,3 +1,13 @@
+conversations (0.7.11) unstable; urgency=medium
+
+  * chatwindow: fixed segfault on opening a chatwindow without any associated TelepathyAccount* present
+  * main: check for a running Conversations instance *before* constructing a QApplication
+  * overview: force re-render overview on channel join/leave
+  * overview: welcome screen
+  * overview: tighten margins for the various text scaling modes
+
+ -- Sander <sander@sanderf.nl>  Thu, 06 Jun 2024 23:32:32 +0200
+
 conversations (0.7.10) unstable; urgency=medium
 
   * tp: prevent duplicate rtcom insertions from scrollback
