@@ -24,9 +24,17 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   overviewModel = new OverviewModel(telepathy, this);
   overviewModel->onLoad();
   connect(telepathy, &Telepathy::accountManagerReady, overviewModel, &OverviewModel::onLoad);
+  // Overview table updates
   // @TODO: do not refresh the whole overview table on new messages, edit specific entries 
   // instead. For now though, it is not that important as it is still performant enough.
   connect(telepathy, &Telepathy::databaseAddition, overviewModel, &OverviewModel::onLoad);
+  connect(telepathy, &Telepathy::channelJoined, [this](QString local_uid, QString channel) {
+    overviewModel->onLoad();
+  });
+  connect(telepathy, &Telepathy::channelLeft, [this](QString local_uid, QString channel) {
+    overviewModel->onLoad();
+  });
+
   overviewProxyModel = new OverviewProxyModel(this);
   overviewProxyModel->setSourceModel(overviewModel);
   overviewProxyModel->setSortRole(OverviewModel::TimeRole);
