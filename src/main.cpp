@@ -19,6 +19,7 @@
 #include "conv-intl.h"
 #include "config-conversations.h"
 #include "mainwindow.h"
+#include "lib/utils.h"
 
 #ifdef Q_WS_MAEMO_5
 #include <QDBusInterface>
@@ -31,6 +32,21 @@
 #include "lib/logger.h"
 
 int main(int argc, char *argv[]) {
+  // detect if we already running
+  int ipc_sock = Utils::IPCOpen("/tmp/conversations-user.sock");
+  if(ipc_sock >= 0) {
+    while(*argv != NULL) {  // check if we are opening a remote-uid via args
+      auto arg = QString::fromUtf8(*argv, strlen(*argv));
+      if(arg.contains(globals::reRemoteUID)) {
+        return Utils::IPCSend(ipc_sock, arg);
+      }
+      argv++;
+    }
+
+    qInfo() << "an instance of conversations is already active, sending `makeActive` and exiting the current process";
+    return Utils::IPCSend(ipc_sock, "makeActive");
+  }
+
   Q_INIT_RESOURCE(assets);
   Q_INIT_RESOURCE(whatsthat);
   Q_INIT_RESOURCE(chatty);
@@ -123,24 +139,8 @@ int main(int argc, char *argv[]) {
   bool debugMode = parser.isSet(debugModeOption);
   parser.process(app);
 
-  // check if conversations is already running
-  auto *ipc = new IPC();
-  QIODevice *ls = ipc->open();
-
-  if(ls->isOpen()) {
-    // pass argv[] to 1st instance and exit
-    for (const auto &arg: args) {
-      if (arg.isEmpty() || arg.length() >= 128) continue;
-      if (arg.contains(globals::reRemoteUID)) {
-        return IPC::send(ls, arg);
-      }
-    }
-    auto res = IPC::send(ls, "makeActive");
-    qInfo() << "an instance of conversations is already active, sending `makeActive` and exiting the current process";
-    return res;
-  }
-
   // Listen on IPC
+  auto *ipc = new IPC();
   QTimer::singleShot(0, ipc, [ipc]{ ipc->bind(); });
 
   // initialize application

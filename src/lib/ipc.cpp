@@ -56,7 +56,7 @@ void IPC::handleConnection(){
   clientConnection->waitForReadyRead(2);
   QByteArray cmdArray = clientConnection->readAll();
   QString cmdString = QTextCodec::codecForMib(106)->toUnicode(cmdArray);  // UTF-8
-  qDebug() << "received" << cmdString;
+  qDebug() << "IPC received" << cmdString;
 
   emit commandReceived(cmdString);
 

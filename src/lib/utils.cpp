@@ -140,6 +140,31 @@ QJsonObject Utils::getUserGroupChatChannels() {
     qWarning() << "invalid json encountered parsing Config::autoJoinChatChannels";
     return {};
   }
-
   return doc.object();
+}
+
+int Utils::IPCOpen(const std::string &path) {
+  int sock;
+  struct sockaddr_un server;
+  sock = socket(AF_UNIX, SOCK_STREAM, 0);
+  if(sock < 0)
+    return -1;
+
+  server.sun_family = AF_UNIX;
+  strcpy(server.sun_path, path.c_str());
+
+  if(connect(sock, (struct sockaddr *)&server, sizeof(struct sockaddr_un)) < 0) {
+    close(sock);
+    return -1;
+  }
+
+  return sock;
+}
+
+bool Utils::IPCSend(int sock, const QString &message) {
+  if(write(sock, message.toStdString().c_str(), message.length()) < 0) {
+    close(sock);
+    return true;
+  }
+  return false;
 }

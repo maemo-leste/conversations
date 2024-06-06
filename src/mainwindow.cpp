@@ -183,7 +183,9 @@ void MainWindow::onChatWindowClosed(const QString &group_uid) {
 }
 
 void MainWindow::onShowApplication() {
+  qDebug() << "raising mainwindow";
   this->show();
+  this->raise();
 
   m_ctx->isBackground = false;
 

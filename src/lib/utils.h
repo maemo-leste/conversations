@@ -1,4 +1,15 @@
 #pragma once
+
+#include <stdio.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <stdexcept>
+
 #include <QObject>
 #include <QSettings>
 #include <QRegExp>
@@ -6,6 +17,9 @@
 #include <QStandardItemModel>
 #include <QApplication>
 #include <QTextCharFormat>
+
+using namespace std;
+using std::runtime_error;
 
 class Utils
 {
@@ -28,6 +42,9 @@ public:
     static QMap<QString, QString> readSystemConfig(const QString &path);
     static bool protocolIsTelephone(const QString &protocol);
     static QJsonObject getUserGroupChatChannels();
+    static int IPCOpen(const std::string &path);
+    static bool IPCSend(int sock, const QString &message);
+
 };
 
 class Conversations;
