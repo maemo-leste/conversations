@@ -96,6 +96,13 @@ int main(int argc, char *argv[]) {
   QApplication::setApplicationVersion(CONVERSATIONS_VERSION);
 
   QApplication app(argc, argv);
+
+  // logging
+  QString logPath = "/tmp/conversations.log";
+  logFile = new QFile(logPath);
+  if(!logFile->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+    qWarning() << QString("could not open logfile: %1").arg(logPath);
+
   qInstallMessageHandler(conversationsMessageHandler);
   app.setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
   app.setAttribute(Qt::AA_CompressTabletEvents);

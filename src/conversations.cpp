@@ -176,6 +176,8 @@ void Conversations::createConfigDirectory(const QString &dir) {
   }
 }
 
+void Conversations::onApplicationLog(QString msg) {}
+
 Conversations::~Conversations() {
 
 }

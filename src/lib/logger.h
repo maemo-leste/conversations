@@ -17,5 +17,7 @@
 #include "conversations.h"
 
 extern Conversations *logger_ctx;
+extern QFile *logFile;
+extern QTextStream *logStream;
 
 void conversationsMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);

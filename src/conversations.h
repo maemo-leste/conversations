@@ -92,6 +92,9 @@ public slots:
     void onNotificationClicked(const QSharedPointer<ChatMessage> &msg);
     void onGetAvailableServiceAccounts();
 
+private slots:
+    void onApplicationLog(QString msg);
+
 private:
     QMap<QString, QString> ossoIconCache;
     QTimer m_hibernateTimer;

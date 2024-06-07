@@ -9,6 +9,8 @@
 #include "logger.h"
 
 Conversations *logger_ctx = nullptr;
+QFile *logFile = nullptr;
+QTextStream *logStream = nullptr;
 
 void conversationsMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
     QString logMessage;
@@ -31,20 +33,21 @@ void conversationsMessageHandler(QtMsgType type, const QMessageLogContext& conte
     }
 
     auto fn = QString(context.file);
-    int eeg =  1;
     auto fnspl = fn.split("/");
     logMessage += QString("[%1::%2] %3").arg(fnspl.last()).arg(context.line).arg(msg);
 
+    // to console
     QTextStream stream(type != QtInfoMsg ? stderr : stdout);
     stream << logMessage << "\n";
 
+    // to file
+    if(logFile != nullptr && logFile->isOpen()) {
+      if(logStream == nullptr)
+        logStream = new QTextStream(logFile);
+      *logStream << logMessage << endl;
+    }
+
+    // to app
     if(logger_ctx != nullptr)
       logger_ctx->applicationLog(logMessage);
-
-    // in case we want to write it somewhere
-    // QFile outFile("log.txt");
-    // if (outFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
-    //     QTextStream fileStream(&outFile);
-    //     fileStream << logMessage << endl;
-    // }
 }
