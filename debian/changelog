@@ -1,3 +1,10 @@
+conversations (0.7.12) unstable; urgency=medium
+
+  * main/logger: also write to a file (/tmp/conversations.log)
+  * window/mainwindow: rearrange the welcome screen a bit
+
+ -- Sander <sander@sanderf.nl>  Thu, 06 Jun 2024 03:56:32 +0200
+
 conversations (0.7.11) unstable; urgency=medium
 
   * chatwindow: fixed segfault on opening a chatwindow without any associated TelepathyAccount* present
