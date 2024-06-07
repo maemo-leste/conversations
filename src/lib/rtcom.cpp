@@ -23,6 +23,26 @@ RTComElQuery *qtrtcom::startQuery(const int limit, const int offset, const RTCom
   return query;
 }
 
+bool qtrtcom::deleteEvents(const char* group_uid) {
+  RTComElQuery *query = qtrtcom::startQuery(0, 0, RTCOM_EL_QUERY_GROUP_BY_GROUP);
+
+  if(!rtcom_el_query_prepare(
+    query,
+    "group-uid", group_uid, RTCOM_EL_OP_EQUAL,
+    NULL)) {
+    qCritical() << "Couldn't prepare query";
+    g_object_unref(query);
+    return false;
+  }
+
+  if(!rtcom_el_delete_events(el, query, NULL)) {
+    qCritical() << "Couldn't DELETE by group_uid";
+  }
+
+  g_object_unref(query);
+  return true;
+}
+
 void qtrtcom::registerChatJoin(time_t start_time, time_t end_time, const char* self_name, const char* backend_name, const char *remote_uid, const char *remote_name, const char* abook_uid, const char* text, const char* protocol, const char* channel, const char* group_uid) {
   qDebug() << __FUNCTION__;
 

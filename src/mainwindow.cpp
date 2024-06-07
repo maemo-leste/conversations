@@ -144,6 +144,7 @@ void MainWindow::onOpenChatWindow(QString local_uid, QString remote_uid, QString
 
   connect(window, &ChatWindow::sendMessage, this->m_ctx, &Conversations::onSendOutgoingMessage);
   connect(window, &ChatWindow::closed, this, &MainWindow::onChatWindowClosed);
+  connect(window, &ChatWindow::chatCleared, m_ctx->overviewModel, &OverviewModel::onLoad);
 }
 
 void MainWindow::onOpenChatWindow(const QSharedPointer<ChatMessage> &msg) {

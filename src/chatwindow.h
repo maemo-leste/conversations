@@ -42,6 +42,7 @@ public:
     void fillBufferUntil(const unsigned int event_id) const;
 
 public slots:
+  void onChatClear();
   void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
 
 private slots:
@@ -58,6 +59,7 @@ private slots:
     void onSetupGroupchat();
     void onAutoJoinToggled();
     void onSetWindowTitle();
+    void onChatRequestClear();
 
 signals:
     void closed(const QString &remote_uid);
@@ -66,6 +68,7 @@ signals:
     void scrollDown();
     void chatPostReady();
     void chatPreReady();
+    void chatCleared();
 
 private:
     Conversations *m_ctx;

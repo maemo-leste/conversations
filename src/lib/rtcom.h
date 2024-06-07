@@ -36,4 +36,5 @@ namespace qtrtcom {
                           const char *protocol, const char *channel, const char *group_uid);
 
     void setRead(const unsigned int event_id, const gboolean read);
+    bool deleteEvents(const char* group_uid);
 }

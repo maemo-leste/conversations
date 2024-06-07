@@ -117,6 +117,7 @@ ChatWindow::ChatWindow(
   this->onSetupGroupchat();
   connect(ui->actionAuto_join_groupchat, &QAction::triggered, this, &ChatWindow::onAutoJoinToggled);
   connect(ui->actionLeave_channel, &QAction::triggered, this, &ChatWindow::onGroupchatJoinLeaveRequested);
+  connect(ui->actionClear_chat, &QAction::triggered, this, &ChatWindow::onChatRequestClear);
   connect(m_ctx->telepathy, &Telepathy::channelJoined, this, &ChatWindow::onChannelJoinedOrLeft);
   connect(m_ctx->telepathy, &Telepathy::channelLeft, this, &ChatWindow::onChannelJoinedOrLeft);
 
@@ -129,6 +130,23 @@ ChatWindow::ChatWindow(
   // mark messages as read, user opened the chat
   chatModel->setMessagesRead();
   this->onSetWindowTitle();
+}
+
+void ChatWindow::onChatRequestClear() {
+  QMessageBox::StandardButton reply;
+  reply = QMessageBox::question(this, "Clear", "Clear chat history?", QMessageBox::Yes|QMessageBox::No);
+  if(reply == QMessageBox::Yes) {
+    this->onChatClear();
+  }
+}
+
+void ChatWindow::onChatClear() {
+  auto group_uid_str = group_uid.toStdString();
+  auto _group_uid = group_uid_str.c_str();
+  qtrtcom::deleteEvents(_group_uid);
+  this->chatModel->clear();
+  this->chatModel->getMessages(service_uid, group_uid);
+  emit chatCleared();
 }
 
 void ChatWindow::onAutoJoinToggled() {

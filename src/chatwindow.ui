@@ -118,6 +118,7 @@
     <addaction name="actionExportChatToCsv"/>
     <addaction name="actionLeave_channel"/>
     <addaction name="actionAuto_join_groupchat"/>
+    <addaction name="actionClear_chat"/>
    </widget>
    <addaction name="menuChatWindow"/>
   </widget>
@@ -155,6 +156,11 @@
   <action name="actionExportChatToCsv">
    <property name="text">
     <string>Export chat</string>
+   </property>
+  </action>
+  <action name="actionClear_chat">
+   <property name="text">
+    <string>Clear chat</string>
    </property>
   </action>
  </widget>
