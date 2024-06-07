@@ -42,8 +42,9 @@ public:
     void fillBufferUntil(const unsigned int event_id) const;
 
 public slots:
-  void onChatClear();
-  void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
+    void onChatClear();
+    void onChatDelete();
+    void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
 
 private slots:
     void onChatPreReady();
@@ -60,6 +61,7 @@ private slots:
     void onAutoJoinToggled();
     void onSetWindowTitle();
     void onChatRequestClear();
+    void onChatRequestDelete();
 
 signals:
     void closed(const QString &remote_uid);

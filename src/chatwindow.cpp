@@ -118,6 +118,7 @@ ChatWindow::ChatWindow(
   connect(ui->actionAuto_join_groupchat, &QAction::triggered, this, &ChatWindow::onAutoJoinToggled);
   connect(ui->actionLeave_channel, &QAction::triggered, this, &ChatWindow::onGroupchatJoinLeaveRequested);
   connect(ui->actionClear_chat, &QAction::triggered, this, &ChatWindow::onChatRequestClear);
+  connect(ui->actionDelete_chat, &QAction::triggered, this, &ChatWindow::onChatRequestDelete);
   connect(m_ctx->telepathy, &Telepathy::channelJoined, this, &ChatWindow::onChannelJoinedOrLeft);
   connect(m_ctx->telepathy, &Telepathy::channelLeft, this, &ChatWindow::onChannelJoinedOrLeft);
 
@@ -132,12 +133,32 @@ ChatWindow::ChatWindow(
   this->onSetWindowTitle();
 }
 
+void ChatWindow::onChatRequestDelete() {
+  QMessageBox::StandardButton reply;
+  reply = QMessageBox::question(this, "Delete", "Delete this chat?", QMessageBox::Yes|QMessageBox::No);
+  if(reply == QMessageBox::Yes) {
+    this->onChatDelete();
+  }
+}
+
 void ChatWindow::onChatRequestClear() {
   QMessageBox::StandardButton reply;
   reply = QMessageBox::question(this, "Clear", "Clear chat history?", QMessageBox::Yes|QMessageBox::No);
   if(reply == QMessageBox::Yes) {
     this->onChatClear();
   }
+}
+
+void ChatWindow::onChatDelete() {
+  auto group_uid_str = group_uid.toStdString();
+  auto _group_uid = group_uid_str.c_str();
+  qtrtcom::deleteEvents(_group_uid);
+  this->chatModel->clear();
+
+  if(groupchat)
+    m_ctx->telepathy->deleteChannel(local_uid, channel);
+
+  this->close();
 }
 
 void ChatWindow::onChatClear() {

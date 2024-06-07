@@ -68,6 +68,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   // determine if we show the welcome screen
   connect(m_ctx->telepathy, &Telepathy::channelJoined, [this](QString local_uid, QString channel) { this->onDeterminePage(); });
   connect(m_ctx->telepathy, &Telepathy::channelLeft, [this](QString local_uid, QString channel) { this->onDeterminePage(); });
+  connect(m_ctx->telepathy, &Telepathy::channelDeleted, [this](QString local_uid, QString channel) { this->onDeterminePage(); });
   connect(m_ctx->telepathy, &Telepathy::accountAdded, [this](TelepathyAccount *acc) { this->onDeterminePage(); });
   connect(m_ctx->telepathy, &Telepathy::accountManagerReady, this, &MainWindow::onDeterminePage);
 

@@ -34,6 +34,9 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   connect(telepathy, &Telepathy::channelLeft, [this](QString local_uid, QString channel) {
     overviewModel->onLoad();
   });
+  connect(telepathy, &Telepathy::channelDeleted, [this](QString local_uid, QString channel) {
+    overviewModel->onLoad();
+  });
 
   overviewProxyModel = new OverviewProxyModel(this);
   overviewProxyModel->setSourceModel(overviewModel);

@@ -115,7 +115,7 @@ void Telepathy::onOpenChannelWindow(const QString& local_uid, const QString &rem
 }
 
 void Telepathy::onNewAccount(const Tp::AccountPtr &account) {
-    auto myacc = new TelepathyAccount(account);
+    auto myacc = new TelepathyAccount(account, this);
     qDebug() << "onNewAccount" << myacc->getLocalUid();
     accounts << myacc;
 
@@ -164,6 +164,19 @@ void Telepathy::leaveChannel(const QString &backend_name, const QString &remote_
     if(account == nullptr)
         return;
     account->leaveChannel(remote_id);
+}
+
+void Telepathy::deleteChannel(const QString &backend_name, const QString &remote_id) {
+    auto account = rtcomLocalUidToAccount(backend_name);
+    if(account == nullptr)
+        return;
+    account->leaveChannel(remote_id);
+
+    delete account->channels[remote_id];  // @TODO: *maybe* leaking tpChannel
+    account->channels.remove(remote_id);
+
+    TelepathyAccount::configRemove(backend_name, remote_id);
+    emit channelDeleted(backend_name, remote_id);
 }
 
 bool Telepathy::participantOfChannel(const QString &backend_name, const QString &remote_id) {
@@ -297,14 +310,15 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
 /* TP account class, maintains list of channels and will pass signals along
  * might log the messages to rtcom from here, unless we decide to do that in the
  * channel class */
-TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc) : QObject(nullptr) {
+TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc, QObject *parent) : QObject(parent) {
     acc = macc;
     name = getLocalUid();  // backend_name, e.g: 'idle/irc/oftc_2dsander0'
     m_nickname = acc->nickname();
     m_protocol_name = acc->protocolName();
+    m_parent = static_cast<Telepathy*>(parent);
 
-    // read persistent channels saved in user config
-    this->readGroupchatChannels();
+    // read and set channel properties saved in user config
+    configRead();
 
     connect(acc.data(), &Tp::Account::removed, this, &TelepathyAccount::onRemoved);
     connect(acc.data(), &Tp::Account::onlinenessChanged, this, &TelepathyAccount::onOnline);
@@ -474,7 +488,7 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
       auto channel_str = channel->targetId();
       if(channels.contains(channel_str) && epoch > channels[channel_str]->date_last_message) {
         channels[channel_str]->date_last_message = epoch;
-        writeGroupchatChannels();
+        m_parent->configSave();
       } else {
         return;
       }
@@ -513,7 +527,7 @@ void TelepathyAccount::joinChannel(const QString &remote_id, bool persistent) {
         channels[remote_id]->auto_join = persistent;
     }
 
-    this->writeGroupchatChannels();
+    m_parent->configSave();
     this->_joinChannel(remote_id);
 }
 
@@ -684,17 +698,14 @@ void TelepathyAccount::leaveChannel(const QString &channel) {
             qWarning() << "leaveChannel" << channel << op->errorMessage();
         }
 
-        if(!channels.contains(channel)) {
-            this->writeGroupchatChannels();
-            return;
+        if(channels.contains(channel)) {
+            // we keep `channels[channel]` (AccountChannel*) around; we use it for other purposes too, and can be re-used.
+            channels[channel]->tpChannel = nullptr;
         }
-
-        // we keep `channels[channel]` (AccountChannel*) around; we use it for other purposes too, and can be re-used.
-        channels[channel]->tpChannel = nullptr;
 
         // @TODO: for now, we do not register chat join/leave events
         //this->onChannelLeft(channel);
-        this->writeGroupchatChannels();   // user-config registration
+        m_parent->configSave();   // user-config registration
         emit channelLeft(name, channel);
     });
 }
@@ -739,7 +750,7 @@ void TelepathyAccount::setAutoJoin(const QString &remote_id, bool autoJoin) {
 
   channels[remote_id]->auto_join = autoJoin;
   qDebug() << "setAutoJoin channel:" << remote_id << "set to" << autoJoin;
-  this->writeGroupchatChannels();
+  m_parent->configSave();
 }
 
 void TelepathyAccount::setChatState(const QString &remote_id, Tp::ChannelChatState state)
@@ -753,70 +764,6 @@ void TelepathyAccount::setChatState(const QString &remote_id, Tp::ChannelChatSta
 
 void TelepathyAccount::onRemoved() {
     emit removed(this);
-}
-
-void TelepathyAccount::readGroupchatChannels() {
-    auto obj = Utils::getUserGroupChatChannels();
-    if(obj.contains(name)) {
-        auto obj_account = obj[name].toObject();
-        if(!obj_account.contains("channels"))
-            return;
-
-        auto account_channels = obj_account["channels"].toArray();
-        for (const auto &chan: account_channels) {
-            auto obj_channel = chan.toObject();
-            auto channel = obj_channel["name"].toString();
-            auto auto_join = obj_channel["auto_join"].toBool();
-
-            qint64 date_created = 0;
-            if(obj_channel.contains("date_created"))
-              date_created = obj_channel["date_created"].toString().toLongLong();
-
-            qint64 date_last_message = 0;
-            if(obj_channel.contains("date_last_message"))
-              date_last_message = obj_channel["date_last_message"].toString().toLongLong();
-
-            if(!channels.contains(channel)) {
-                qDebug() << "readGroupchatChannels(), new channel:" << channel << "date_created" << date_created;
-                auto *ac = new AccountChannel();
-                ac->name = channel;
-                ac->date_created = date_created;
-                ac->date_last_message = date_last_message;
-                ac->auto_join = auto_join;
-                channels[channel] = ac;
-            } else {
-              channels[channel]->auto_join = auto_join;
-              channels[channel]->date_created = date_created;
-              channels[channel]->date_last_message = date_last_message;
-            }
-        }
-    }
-}
-
-void TelepathyAccount::writeGroupchatChannels() {
-    qDebug() << "writeGroupchatChannels()";
-    QJsonObject obj_account;
-    QJsonArray  obj_channels;
-    for(const auto &channel: channels.keys()) {
-        auto *ac = channels[channel];
-        QJsonObject obj_channel;
-        obj_channel["name"] = ac->name;
-        obj_channel["auto_join"] = ac->auto_join;
-        // @TODO: unfortunately we need to use QString to represent a qint64, Qt6 has QJsonValue::toInteger()
-        obj_channel["date_created"] = QString::number(ac->date_created);
-        obj_channel["date_last_message"] = QString::number(ac->date_last_message);
-        obj_channels << obj_channel;
-    }
-    obj_account["channels"] = obj_channels;
-
-    auto data = config()->get(ConfigKeys::GroupChatChannels).toByteArray();
-    auto doc = QJsonDocument::fromJson(data);
-    if(!doc.isNull() && doc.isObject()) {
-        auto obj = doc.object();
-        obj[name] = obj_account;
-        auto dumps = QJsonDocument(obj).toJson(QJsonDocument::Compact);
-        config()->set(ConfigKeys::GroupChatChannels, dumps);
-    }
 }
 
 void TelepathyAccount::joinSavedGroupChats() {
@@ -935,3 +882,115 @@ void TelepathyChannel::sendMessage(const QString &message) const {
 }
 
 TelepathyChannel::~TelepathyChannel() = default;
+
+
+void Telepathy::configSave() {
+    qDebug() << "configSave()";
+    auto obj = Utils::getUserGroupChatChannels();
+
+    for(const auto &account: accounts) {
+        QJsonObject obj_account;
+        QJsonArray  obj_channels;
+
+        for(const auto &channel: account->channels.keys()) {
+            auto *ac = account->channels[channel];
+            QJsonObject obj_channel;
+            obj_channel["name"] = ac->name;
+            obj_channel["auto_join"] = ac->auto_join;
+            // @TODO: unfortunately we need to use QString to represent a qint64, Qt6 has QJsonValue::toInteger()
+            obj_channel["date_created"] = QString::number(ac->date_created);
+            obj_channel["date_last_message"] = QString::number(ac->date_last_message);
+            obj_channels << obj_channel;
+        }
+
+        obj_account["channels"] = obj_channels;
+        obj[account->name] = obj_account;
+    }
+
+    auto dumps = QJsonDocument(obj).toJson(QJsonDocument::Compact);
+    config()->set(ConfigKeys::GroupChatChannels, dumps);
+}
+
+void TelepathyAccount::configRead() {
+    qDebug() << "configRead()";
+    auto obj = Utils::getUserGroupChatChannels();
+
+    for(const auto &_name: obj.keys()) {
+        if(_name != name)
+            continue;
+
+        auto obj_account = obj[_name].toObject();
+        if(!obj_account.contains("channels"))
+            return;
+
+        auto account_channels = obj_account["channels"].toArray();
+        for (const auto &chan: account_channels) {
+            auto obj_channel = chan.toObject();
+            auto channel = obj_channel["name"].toString();
+            auto auto_join = obj_channel["auto_join"].toBool();
+
+            qint64 date_created = 0;
+            if(obj_channel.contains("date_created"))
+                date_created = obj_channel["date_created"].toString().toLongLong();
+
+            qint64 date_last_message = 0;
+            if(obj_channel.contains("date_last_message"))
+                date_last_message = obj_channel["date_last_message"].toString().toLongLong();
+
+            if(!channels.contains(channel)) {
+                qDebug() << "readGroupchatChannels(), new channel:" << channel << "date_created" << date_created;
+                auto *ac = new AccountChannel();
+                ac->name = channel;
+                ac->date_created = date_created;
+                ac->date_last_message = date_last_message;
+                ac->auto_join = auto_join;
+                channels[channel] = ac;
+            } else {
+                channels[channel]->auto_join = auto_join;
+                channels[channel]->date_created = date_created;
+                channels[channel]->date_last_message = date_last_message;
+            }
+        }
+    }
+}
+
+void TelepathyAccount::configRemove(const QString &backend_name, const QString &remote_id) {
+    qDebug() << "configRemove()" << backend_name << remote_id;
+    bool found = false;
+    auto obj = Utils::getUserGroupChatChannels();
+    for(const auto &_name: obj.keys()) {
+        if(_name != backend_name)
+            continue;
+
+        auto obj_account = obj[_name].toObject();
+        if(!obj_account.contains("channels"))
+            return;
+
+        auto account_channels = obj_account["channels"].toArray();
+        for (int i = 0; i != account_channels.size(); i += 1) {
+            auto obj_channel = account_channels.at(i).toObject();
+            auto chan_name = obj_channel["name"].toString();
+            qDebug() << chan_name;
+            if(chan_name == remote_id) {
+                account_channels.removeAt(i);
+                found = true;
+                break;
+            }
+        }
+
+        if(found) {
+            obj_account["channels"] = account_channels;
+            obj[_name] = obj_account;
+            break;
+        }
+    }
+
+    if(!found) {
+        qDebug() << "failed to locate" << remote_id << "by" << backend_name;
+        return;
+    }
+
+    auto dumps = QJsonDocument(obj).toJson(QJsonDocument::Compact);
+    config()->set(ConfigKeys::GroupChatChannels, dumps);
+    qDebug() << "removed" << remote_id << "from config";
+}

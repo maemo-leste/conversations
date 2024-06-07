@@ -92,7 +92,7 @@ class TelepathyAccount : public QObject {
 Q_OBJECT
 
 public:
-    explicit TelepathyAccount(Tp::AccountPtr macc);
+    explicit TelepathyAccount(Tp::AccountPtr macc, QObject *parent = nullptr);
     ~TelepathyAccount() override;
 
     Tp::AccountPtr acc;
@@ -105,13 +105,14 @@ public:
 
     void setAutoJoin(const QString &remote_id, bool autoJoin);
     void ensureChannel(const QString &remote_id);
+    static void configRemove(const QString &backend_name, const QString &remote_id);
 
 signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
     void openChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
     void removed(TelepathyAccount* account);
-    void channelJoined(QString local_uid, QString channel);
-    void channelLeft(QString local_uid, QString channel);
+    void channelJoined(QString local_uid, QString remote_id);
+    void channelLeft(QString local_uid, QString remote_id);
 
 public slots:
     void sendMessage(const QString &remote_id, const QString &message);
@@ -155,9 +156,9 @@ private:
     Tp::TextChannel *hgbchan;
     Tp::AccountManagerPtr m_accountmanager;
 
-    void readGroupchatChannels();
-    void writeGroupchatChannels();
+    Telepathy* m_parent;
     void _joinChannel(const QString &channel);
+    void configRead();
 };
 
 class TelepathyChannel : public QObject {
@@ -204,8 +205,11 @@ public:
     AccountChannel* channelByName(const QString &backend_name, const QString &remote_id);
     void joinChannel(const QString &backend_name, const QString &remote_id, bool persistent);
     void leaveChannel(const QString &backend_name, const QString &remote_id);
+    void deleteChannel(const QString &backend_name, const QString &remote_id);
     bool participantOfChannel(const QString &backend_name, const QString &remote_id);
     TelepathyAccount* rtcomLocalUidToAccount(const QString &backend_name);
+
+    void configSave();
 
 signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
@@ -214,6 +218,7 @@ signals:
     void accountAdded(TelepathyAccount* account);
     void channelJoined(QString backend_name, QString channel);
     void channelLeft(QString backend_name, QString channel);
+    void channelDeleted(QString backend_name, QString channel);
 
 public slots:
     void sendMessage(const QString &backend_name, const QString &remote_id, const QString &message);

@@ -119,6 +119,7 @@
     <addaction name="actionLeave_channel"/>
     <addaction name="actionAuto_join_groupchat"/>
     <addaction name="actionClear_chat"/>
+    <addaction name="actionDelete_chat"/>
    </widget>
    <addaction name="menuChatWindow"/>
   </widget>
@@ -161,6 +162,11 @@
   <action name="actionClear_chat">
    <property name="text">
     <string>Clear chat</string>
+   </property>
+  </action>
+  <action name="actionDelete_chat">
+   <property name="text">
+    <string>Delete chat</string>
    </property>
   </action>
  </widget>
