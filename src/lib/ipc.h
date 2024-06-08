@@ -14,7 +14,6 @@ public:
 
 public slots:
   void bind();
-  void handleConnection();
 
 signals:
   void commandReceived(const QString &cmd);

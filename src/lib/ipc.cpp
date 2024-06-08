@@ -26,7 +26,22 @@ void IPC::bind() {
     qDebug() << QString("Unable to start IPC server in \"%1\": %2").arg(m_socketPath, m_server->errorString());
   }
 
-  connect(m_server, &QLocalServer::newConnection, this, &IPC::handleConnection);
+  connect(m_server, &QLocalServer::newConnection, [this]() {
+    QLocalSocket *clientConnection = m_server->nextPendingConnection();
+
+    if (clientConnection->waitForReadyRead(2000)) {
+      QByteArray cmdArray = clientConnection->readAll();
+      QString cmdString = QTextCodec::codecForName("UTF-8")->toUnicode(cmdArray);
+
+      qDebug() << "IPC received" << cmdString;
+
+      emit commandReceived(cmdString);
+    }
+
+    clientConnection->close();
+    delete clientConnection;
+  });
+
   qDebug() << "listening" << m_socketPath;
 }
 
@@ -47,19 +62,4 @@ int IPC::send(QIODevice* ls, const QString &cmdString) {
     return 0;
   }
   return 1;
-}
-
-void IPC::handleConnection(){
-  QLocalSocket *clientConnection = m_server->nextPendingConnection();
-  connect(clientConnection, &QLocalSocket::disconnected, clientConnection, &QLocalSocket::deleteLater);
-
-  clientConnection->waitForReadyRead(2);
-  QByteArray cmdArray = clientConnection->readAll();
-  QString cmdString = QTextCodec::codecForMib(106)->toUnicode(cmdArray);  // UTF-8
-  qDebug() << "IPC received" << cmdString;
-
-  emit commandReceived(cmdString);
-
-  clientConnection->close();
-  delete clientConnection;
 }
