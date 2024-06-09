@@ -714,9 +714,9 @@ void TelepathyAccount::leaveChannel(const QString &channel) {
 }
 
 // called by `TelepathyChannel::onInvalidated`
-void TelepathyAccount::_removeChannel(TelepathyChannel* chanptr) {
-    if (chanptr != nullptr)
-        chanptr->deleteLater();
+void TelepathyAccount::_removeChannel(TelepathyChannel *chanptr) {
+    channels.remove(chanptr->m_channel->targetId());
+    chanptr->deleteLater();
 }
 
 void TelepathyAccount::sendMessage(const QString &remote_id, const QString &message) {
