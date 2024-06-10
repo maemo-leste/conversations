@@ -492,6 +492,11 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
     channels[channel_str]->date_last_message = epoch;
     m_parent->configSave();
 
+    if (outgoing) {
+        remote_uid = channel->targetId();
+        remote_alias = nullptr;
+    }
+
     log_event(dt.toTime_t(), text, outgoing, channel, remote_uid, remote_alias);
 }
 
