@@ -461,13 +461,15 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
 /* Slot for when we have received a message */
 void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel) {
     QDateTime dt = message.sent().isValid() ? message.sent() : message.received();
+    bool isScrollback = message.isScrollback();
+    bool isDeliveryReport = message.isDeliveryReport();
 
     qDebug() << "onMessageReceived" << dt << message.senderNickname() << message.text();
-    qDebug() << "isDeliveryReport" << message.isDeliveryReport();
-    qDebug() << "isScrollback" << message.isScrollback();
+    qDebug() << "isDeliveryReport" << isDeliveryReport;
+    qDebug() << "isScrollback" << isScrollback;
     qDebug() << "isRescued" << message.isRescued();
 
-    if (message.isDeliveryReport()) {
+    if (isDeliveryReport) {
         // TODO: We do not want to reply to it not write anything for now
         // Later we want to update the rtcom db with the delivery report
         return;
@@ -477,21 +479,18 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
     auto remote_uid = message.sender()->id();
     auto remote_alias = message.sender()->alias();
     auto text = message.text().toLocal8Bit();
-    auto isScrollback = message.isScrollback();
     bool outgoing = isScrollback &&
                     (groupSelfContact->handle() == message.sender()->handle() ||
                      groupSelfContact->id() == remote_uid);
 
-    if(isScrollback) {  // prevent duplicate rtcom insertions
-      qint64 epoch = dt.toMSecsSinceEpoch();
-      auto channel_str = channel->targetId();
-      if(channels.contains(channel_str) && epoch > channels[channel_str]->date_last_message) {
-        channels[channel_str]->date_last_message = epoch;
-        m_parent->configSave();
-      } else {
+    qint64 epoch = dt.toMSecsSinceEpoch();
+    const QString &channel_str = channel->targetId();
+
+    if (channels.contains(channel_str) && epoch <= channels[channel_str]->date_last_message)
         return;
-      }
-    }
+
+    channels[channel_str]->date_last_message = epoch;
+    m_parent->configSave();
 
     log_event(dt.toTime_t(), text, outgoing, channel, remote_uid, remote_alias);
 }
