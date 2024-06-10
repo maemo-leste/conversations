@@ -423,11 +423,15 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
     auto backend_name_str = name.toStdString();
     auto backend_name = backend_name_str.c_str();
 
-    int event_id = qtrtcom::registerMessage(
+    unsigned int event_id = qtrtcom::registerMessage(
         epoch, epoch, self_name, backend_name,
         remote_uid.toLocal8Bit(), remote_name, abook_uid,
         text.toLocal8Bit(), outgoing, protocol,
         channel_str, group_uid);
+    if(event_id < 0) {
+      qWarning() << "log_event insertion error";
+      return FALSE;
+    }
 
     // @TODO: duplicate code like in onJoinChannel, refactor
     auto service = getServiceName();
@@ -505,7 +509,6 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
     QString remote_uid = getRemoteUid(channel);
     auto text = message.text().toLocal8Bit();
 
-    qDebug() << "log_event";
     log_event(epoch, text, true, channel, remote_uid, nullptr);
 }
 
