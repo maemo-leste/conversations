@@ -128,8 +128,6 @@ ChatWindow::ChatWindow(
           SIGNAL(chatPreReady()), this,
           SLOT(onChatPreReady()));
 
-  // mark messages as read, user opened the chat
-  chatModel->setMessagesRead();
   this->onSetWindowTitle();
 }
 
@@ -250,8 +248,14 @@ void ChatWindow::onChatPreReady() {
 }
 
 void ChatWindow::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
-  if(local_uid == msg->local_uid() && group_uid == msg->group_uid()) {
-    this->chatModel->appendMessage(msg);
+  if(local_uid != msg->local_uid() || group_uid != msg->group_uid())  // is this message for this chatwindow?
+    return;
+
+  this->chatModel->appendMessage(msg);
+
+  if(m_windowActive) {
+    if(this->chatModel->setMessagesRead())
+      m_ctx->overviewModel->onLoad();  // refresh overview
   }
 }
 
@@ -389,6 +393,20 @@ void ChatWindow::closeEvent(QCloseEvent *event) {
   emit closed(group_uid);
   QWidget::closeEvent(event);
 }
+
+void ChatWindow::changeEvent(QEvent *event) {
+  if(event->type() == QEvent::ActivationChange) {
+    // set message_read
+    auto changed = m_windowActive != this->isActiveWindow();
+    m_windowActive = this->isActiveWindow();
+
+    if(m_windowActive) {
+      if(this->chatModel->setMessagesRead())
+        m_ctx->overviewModel->onLoad();  // refresh overview
+    }
+  }
+}
+
 
 ChatWindow::~ChatWindow() {
   qDebug() << "destroying chatWindow";

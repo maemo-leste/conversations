@@ -82,6 +82,7 @@ private:
     bool m_enterKeySendsChat = false;
     unsigned int m_windowFocus = 0; // seconds
     bool m_active = false;  // do we have an active Tp connection?
+    bool m_windowActive = false;
 private:
     QString remoteId() const;
     void detectActiveChannel();
@@ -89,4 +90,5 @@ private:
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
+    void changeEvent(QEvent *event);
 };

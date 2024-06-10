@@ -291,16 +291,19 @@ int ChatModel::eventIdToIdx(int event_id) {
   return -1;
 }
 
-// chatModel.onLastMessageRead(event_id);
-void ChatModel::setMessagesRead() {
+bool ChatModel::setMessagesRead() {
   // set 'message_read' for messages in current buffer
+  bool rtn = false;
   for(auto const &msg: chats) {
     if(!msg->message_read()) {
       auto event_id = msg->event_id();
       msg->set_message_read();
       emit messageRead(event_id);
+      rtn = true;
     }
   }
+
+  return rtn;
 }
 
 unsigned int ChatModel::getPage(int custom_limit) {

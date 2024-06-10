@@ -423,7 +423,7 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
     auto backend_name_str = name.toStdString();
     auto backend_name = backend_name_str.c_str();
 
-    qtrtcom::registerMessage(
+    int event_id = qtrtcom::registerMessage(
         epoch, epoch, self_name, backend_name,
         remote_uid.toLocal8Bit(), remote_name, abook_uid,
         text.toLocal8Bit(), outgoing, protocol,
@@ -434,7 +434,7 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
     auto event_type = Utils::protocolIsTelephone(protocol) ? "RTCOM_EL_EVENTTYPE_SMS_MESSAGE" : "RTCOM_EL_EVENTTYPE_CHAT_MESSAGE";
 
     auto *chatMessage = new ChatMessage({
-        .event_id = 1,  /* TODO: event id is wrong here but should not matter? or does it? */
+        .event_id = event_id,  /* TODO: event id is wrong here but should not matter? or does it? */
         .service = service,
         .group_uid = group_uid,
         .local_uid = backend_name,

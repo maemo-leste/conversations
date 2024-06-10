@@ -85,7 +85,7 @@ void qtrtcom::registerChatLeave(time_t start_time, time_t end_time, const char* 
   rtcom_el_event_free(ev);
 }
 
-void qtrtcom::registerMessage(time_t start_time, time_t end_time, const char* self_name, const char* backend_name,
+unsigned int qtrtcom::registerMessage(time_t start_time, time_t end_time, const char* self_name, const char* backend_name,
                               const char *remote_uid, const char *remote_name, const char* abook_uid, const char* text, bool is_outgoing, const char* protocol, const char* channel, const char* group_uid) {
   qDebug() << __FUNCTION__;
 
@@ -101,14 +101,17 @@ void qtrtcom::registerMessage(time_t start_time, time_t end_time, const char* se
   RTCOM_EL_EVENT_SET_FIELD(ev, remote_ebook_uid, g_strdup(abook_uid));
   auto el = rtcom_el_new();
   GError *err = NULL;
-  if(rtcom_el_add_event(el, ev, &err) < 0) {
+  gint event_id = rtcom_el_add_event(el, ev, &err);
+  if(event_id < 0) {
     qWarning() << "Failed to add event to RTCom" << "registerMessage" << err->message;
-  } else {
-    qDebug() << "registerMessage SUCCESS";
+    rtcom_el_event_free_contents(ev);
+    rtcom_el_event_free(ev);
+    return -1;
   }
 
   rtcom_el_event_free_contents(ev);
   rtcom_el_event_free(ev);
+  return (unsigned int)event_id;
 }
 
 void qtrtcom::setRead(const unsigned int event_id, const gboolean read) {
