@@ -1,3 +1,14 @@
+conversations (0.7.13) unstable; urgency=medium
+
+  * lib/tp: clear chat functionality (DELETE rtcom events by group_uid)
+  * lib/tp: remove (delete) chat; DELETE rtcom events by group_uid + leave channel (if groupchat) + remove from channel config
+  * window/mainWindow: refresh page on chat join/leave
+  * lib/ipc: Wait 2000, not 2 ms for command message to arrive
+  * lib/rtcom: set message_read with the correct event_id
+  * qml/root: force scroll to bottom
+
+ -- Sander <sander@sanderf.nl>  Mon, 10 Jun 2024 21:25:32 +0200
+
 conversations (0.7.12) unstable; urgency=medium
 
   * main/logger: also write to a file (/tmp/conversations.log)
