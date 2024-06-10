@@ -1,3 +1,9 @@
+conversations (0.7.15) unstable; urgency=medium
+
+  * lib/tp: set proper remote_id for own scrollback messages
+
+ -- Sander <sander@sanderf.nl>  Tue, 11 Jun 2024 01:55:32 +0200
+
 conversations (0.7.14) unstable; urgency=medium
 
   * lib/tp: exit early on insertion error
