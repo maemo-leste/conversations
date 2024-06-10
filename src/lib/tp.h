@@ -78,7 +78,10 @@ class TelepathyHandler;
 class AccountChannel
 {
 public:
-    explicit AccountChannel();
+    explicit AccountChannel() :
+        date_created(QDateTime::currentSecsSinceEpoch())
+    {}
+
     QString name;
     bool auto_join = false;
     qint64 date_created;
@@ -88,6 +91,8 @@ public:
     bool hasActiveChannel() { return tpChannel != nullptr; }
 };
 
+typedef QSharedPointer<AccountChannel> AccountChannelPtr;
+
 class TelepathyAccount : public QObject {
 Q_OBJECT
 
@@ -96,7 +101,7 @@ public:
     ~TelepathyAccount() override;
 
     Tp::AccountPtr acc;
-    QMap<QString, AccountChannel*> channels;
+    QMap<QString, AccountChannelPtr> channels;
 
     QString nickname() const { return m_nickname; }
     QString protocolName() const { return m_protocol_name; }
@@ -126,7 +131,7 @@ public slots:
 
     void TpOpenChannelWindow(Tp::TextChannelPtr channel);
 
-    Tp::TextChannel* hasChannel(const QString& remote_id);
+    Tp::ChannelPtr hasChannel(const QString& remote_id);
     void _removeChannel(TelepathyChannel* chanptr);
 
     bool log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias);
@@ -176,7 +181,6 @@ public slots:
 private slots:
     void onGroupAddContacts(Tp::PendingOperation *op);
     void onChannelReady(Tp::PendingOperation *op);
-    void onInvalidated(Tp::DBusProxy* proxy, const QString& errorName, const QString& errorMessage);
 
     void onChanMessageReceived(const Tp::ReceivedMessage &message);
     void onChanPendingMessageRemoved(const Tp::ReceivedMessage &message);
@@ -202,7 +206,7 @@ public:
     QList<TelepathyAccount*> accounts;
 
     TelepathyAccount* accountByName(const QString &backend_name);
-    AccountChannel* channelByName(const QString &backend_name, const QString &remote_id);
+    AccountChannelPtr channelByName(const QString &backend_name, const QString &remote_id);
     void joinChannel(const QString &backend_name, const QString &remote_id, bool persistent);
     void leaveChannel(const QString &backend_name, const QString &remote_id);
     void deleteChannel(const QString &backend_name, const QString &remote_id);

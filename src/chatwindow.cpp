@@ -170,8 +170,9 @@ void ChatWindow::onChatClear() {
 
 void ChatWindow::onAutoJoinToggled() {
   auto *acc = m_ctx->telepathy->accountByName(local_uid);
-  auto *chan = m_ctx->telepathy->channelByName(local_uid, channel);
-  if(acc == nullptr || chan == nullptr)
+  auto chan = m_ctx->telepathy->channelByName(local_uid, channel);
+
+  if(acc == nullptr || !chan)
     return;
 
   acc->setAutoJoin(chan->name, !chan->auto_join);
@@ -299,8 +300,8 @@ void ChatWindow::onSetupGroupchat() {
   }
 
   // setup initial auto-join UI text
-  auto *chan = m_ctx->telepathy->channelByName(local_uid, channel);
-  if(chan != nullptr) {
+  auto chan = m_ctx->telepathy->channelByName(local_uid, channel);
+  if(chan) {
     QString auto_join_text = chan->auto_join ? "Disable auto-join" : "Enable auto-join";
     ui->actionAuto_join_groupchat->setText(auto_join_text);
   } else {
@@ -346,7 +347,7 @@ void ChatWindow::onSetWindowTitle() {
 }
 
 void ChatWindow::detectActiveChannel() {
-  auto *chan = m_ctx->telepathy->channelByName(local_uid, channel);
+  auto chan = m_ctx->telepathy->channelByName(local_uid, channel);
   m_active = chan->hasActiveChannel();
 }
 

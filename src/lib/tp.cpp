@@ -32,10 +32,6 @@
  * - https://telepathy.freedesktop.org/spec/Channel_Type_Contact_Search.html
  */
 
-AccountChannel::AccountChannel() :
-  date_created(QDateTime::currentSecsSinceEpoch())
-{}
-
 Telepathy::Telepathy(QObject *parent) : QObject(parent) {
     Tp::AccountFactoryPtr accountFactory = Tp::AccountFactory::create(
                 QDBusConnection::sessionBus(),
@@ -136,7 +132,7 @@ void Telepathy::onAccountRemoved(TelepathyAccount* account) {
     delete account;
 }
 
-AccountChannel* Telepathy::channelByName(const QString &backend_name, const QString &remote_id) {
+AccountChannelPtr Telepathy::channelByName(const QString &backend_name, const QString &remote_id) {
     auto account = rtcomLocalUidToAccount(backend_name);
     if(account == nullptr)
         return nullptr;
@@ -171,8 +167,6 @@ void Telepathy::deleteChannel(const QString &backend_name, const QString &remote
     if(account == nullptr)
         return;
     account->leaveChannel(remote_id);
-
-    delete account->channels[remote_id];  // @TODO: *maybe* leaking tpChannel
     account->channels.remove(remote_id);
 
     TelepathyAccount::configRemove(backend_name, remote_id);
@@ -181,6 +175,7 @@ void Telepathy::deleteChannel(const QString &backend_name, const QString &remote
 
 bool Telepathy::participantOfChannel(const QString &backend_name, const QString &remote_id) {
     auto account = rtcomLocalUidToAccount(backend_name);
+
     if(account == nullptr)
         return false;
     else if(!account->channels.contains(remote_id))
@@ -244,7 +239,7 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
          * making a nullptr shareptr and got frustrated, but in the end we cast it
          * back so it's stupid not just use the sharedptrs */
         Tp::ChannelRequest *matching_requestptr = nullptr;
-        Tp::TextChannel *matching_channel = nullptr;
+        Tp::ChannelPtr matching_channel;
         TelepathyAccount *matching_account = nullptr;
 
         /* We don't need to check the account, I think we get handlechannels
@@ -261,7 +256,7 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
             }
 
             if (target_uid == channelptr->targetId()) {
-                matching_requestptr = (Tp::ChannelRequest*)requestptr.data();
+                matching_requestptr = (Tp::ChannelRequest *)requestptr.data();
                 break;
             }
         }
@@ -271,17 +266,17 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
                 continue;
 
             matching_account = ma;
-            matching_channel = (Tp::TextChannel*)ma->hasChannel(channelptr->targetId());
+            matching_channel = ma->hasChannel(channelptr->targetId());
 
-            if (matching_channel == nullptr) {
-                matching_channel = (Tp::TextChannel*)channelptr.data();
+            if (matching_channel.isNull()) {
+                matching_channel = channelptr;
 
                 auto mychan = new TelepathyChannel(channelptr, ma);
-                auto channel_name = mychan->m_channel.data()->targetId();
+                auto channel_name = mychan->m_channel->targetId();
 
                 if(!ma->channels.contains(channel_name)) {
                     qDebug() << "handleChannels(), new channel:" << channel_name;
-                    ma->channels[channel_name] = new AccountChannel();
+                    ma->channels[channel_name] = AccountChannelPtr(new AccountChannel);
                 }
 
                 ma->channels[channel_name]->name = channel_name;
@@ -297,8 +292,8 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
         /* Update channel request ptr with channel */
         if (matching_channel) {
             if (matching_requestptr) {
-                matching_requestptr->succeeded((Tp::ChannelPtr)matching_channel);
-                matching_account->TpOpenChannelWindow(Tp::TextChannelPtr(matching_channel));
+                matching_requestptr->succeeded(matching_channel);
+                matching_account->TpOpenChannelWindow(Tp::TextChannelPtr::staticCast(matching_channel));
             }
         }
     }
@@ -523,7 +518,7 @@ void TelepathyAccount::onOnline(bool online) {
 void TelepathyAccount::joinChannel(const QString &remote_id, bool persistent) {
     if(!channels.contains(remote_id)) {
         qDebug() << "joinChannel(), new channel:" << remote_id;
-        channels[remote_id] = new AccountChannel();
+        channels[remote_id] = AccountChannelPtr(new AccountChannel);
         channels[remote_id]->name = remote_id;
         channels[remote_id]->auto_join = persistent;
     } else {
@@ -668,20 +663,21 @@ void TelepathyAccount::onAccReady(Tp::PendingOperation *op) {
   this->joinSavedGroupChats();
 }
 
-Tp::TextChannel* TelepathyAccount::hasChannel(const QString &remote_id) {
-    if(!channels.contains(remote_id))
-        return nullptr;
+Tp::ChannelPtr TelepathyAccount::hasChannel(const QString &remote_id) {
+    Tp::ChannelPtr channel;
 
-    auto _channel = channels[remote_id];
-    if(_channel->tpChannel == nullptr)
-        return nullptr;
+    if (channels.contains(remote_id)) {
+        auto _channel = channels[remote_id];
 
-    auto *a_channel = (Tp::TextChannel*) _channel->tpChannel->m_channel.data();
-    if (remote_id == a_channel->targetId()) {
-        return a_channel;
+        if (_channel->tpChannel) {
+            auto a_channel = _channel->tpChannel->m_channel;
+
+            if (remote_id == a_channel->targetId())
+                channel = a_channel;
+        }
     }
 
-    return nullptr;
+    return channel;
 }
 
 void TelepathyAccount::leaveChannel(const QString &channel) {
@@ -694,7 +690,7 @@ void TelepathyAccount::leaveChannel(const QString &channel) {
         return;
 
     // request groupchat leave
-    auto pending = ((Tp::TextChannel*)tpChannel->m_channel.data())->requestLeave(leave_message);
+    auto pending = ((Tp::TextChannel *)tpChannel->m_channel.data())->requestLeave(leave_message);
     connect(pending, &Tp::PendingOperation::finished, [this, channel](Tp::PendingOperation *op) {
         if(op->isError()) {
             // @TODO: do something useful
@@ -702,7 +698,7 @@ void TelepathyAccount::leaveChannel(const QString &channel) {
         }
 
         if(channels.contains(channel)) {
-            // we keep `channels[channel]` (AccountChannel*) around; we use it for other purposes too, and can be re-used.
+            // we keep `channels[channel]` (AccountChannelPtr) around; we use it for other purposes too, and can be re-used.
             channels[channel]->tpChannel = nullptr;
         }
 
@@ -721,8 +717,8 @@ void TelepathyAccount::_removeChannel(TelepathyChannel *chanptr) {
 
 void TelepathyAccount::sendMessage(const QString &remote_id, const QString &message) {
     qDebug() << "sendMessage: remote_id:" << remote_id;
-    Tp::TextChannel* channel = hasChannel(remote_id);
-    if (channel) {
+    Tp::TextChannelPtr channel = Tp::TextChannelPtr::staticCast(hasChannel(remote_id));
+    if (!channel.isNull()) {
         channel->send(message);
         return;
     }
@@ -730,20 +726,20 @@ void TelepathyAccount::sendMessage(const QString &remote_id, const QString &mess
     auto *pending = acc->ensureTextChat(remote_id);
 
     connect(pending, &Tp::PendingChannelRequest::finished, [message](Tp::PendingOperation *op){
-            auto *_pending = (Tp::PendingChannelRequest*)op;
+            auto *_pending = (Tp::PendingChannelRequest *)op;
             auto chanrequest = _pending->channelRequest();
             auto channel = chanrequest->channel();
-            auto text_channel = (Tp::TextChannel*)channel.data();
+            auto text_channel = (Tp::TextChannel *)channel.data();
             text_channel->send(message);
     });
 }
 
-// Ensure AccountChannel* exists, even though it may not be associated with any 
+// Ensure AccountChannelPtr* exists, even though it may not be associated with any
 // TelepathyChannel* instance. We need it to represent e.g channels from the config.
 void TelepathyAccount::ensureChannel(const QString &remote_id) {
   if(channels.contains(remote_id)) 
     return;
-  channels[remote_id] = new AccountChannel();
+  channels[remote_id] = AccountChannelPtr(new AccountChannel);
   channels[remote_id]->name = remote_id;
 }
 
@@ -759,9 +755,9 @@ void TelepathyAccount::setAutoJoin(const QString &remote_id, bool autoJoin) {
 void TelepathyAccount::setChatState(const QString &remote_id, Tp::ChannelChatState state)
 {
   qDebug() << "setChatState: remote_id:" << remote_id;
-  Tp::TextChannel *channel = hasChannel(remote_id);
+  Tp::TextChannelPtr channel = Tp::TextChannelPtr::staticCast(hasChannel(remote_id));
 
-  if (channel && channel->hasChatStateInterface())
+  if (!channel.isNull() && channel->hasChatStateInterface())
     channel->requestChatState(state);
 }
 
@@ -783,10 +779,6 @@ QString TelepathyAccount::getServiceName() {
 }
 
 TelepathyAccount::~TelepathyAccount() {
-    /* Let's assume telepathy will clean up it's own channels so we don't
-     * work on the m_channel variable in this class */
-    qDeleteAll(channels);
-    channels.clear();
 }
 
 TelepathyChannel::TelepathyChannel(const Tp::ChannelPtr &mchannel, TelepathyAccount* macc) : QObject(nullptr) {
@@ -797,13 +789,9 @@ TelepathyChannel::TelepathyChannel(const Tp::ChannelPtr &mchannel, TelepathyAcco
         SIGNAL(finished(Tp::PendingOperation*)),
         SLOT(onChannelReady(Tp::PendingOperation*)));
 
-    connect(m_channel.data(),
-            &Tp::DBusProxy::invalidated, this,
-            &TelepathyChannel::onInvalidated);
-}
-
-void TelepathyChannel::onInvalidated(Tp::DBusProxy * proxy, const QString &errorName, const QString &errorMessage) {
-    m_account->_removeChannel(this);
+    connect(m_channel.data(), &Tp::DBusProxy::invalidated, [this]() {
+        m_account->_removeChannel(this);
+    });
 }
 
 void TelepathyChannel::onChannelReady(Tp::PendingOperation *op) {
@@ -814,7 +802,7 @@ void TelepathyChannel::onChannelReady(Tp::PendingOperation *op) {
         qDebug() << "onChannelReady, errorMessage:" << op->errorMessage();
     }
 
-    Tp::TextChannel *channel = (Tp::TextChannel*)m_channel.data();
+    Tp::TextChannel *channel = (Tp::TextChannel *)m_channel.data();
 
     if (channel->targetHandleType() == Tp::HandleTypeContact) {
         connect(channel, &Tp::TextChannel::messageReceived, this, &TelepathyChannel::onChanMessageReceived);
@@ -840,7 +828,7 @@ void TelepathyChannel::onGroupAddContacts(Tp::PendingOperation *op) {
         qDebug() << "onGroupAddContacts, errorMessage:" << op->errorMessage();
     }
 
-    auto *channel = (Tp::TextChannel*) m_channel.data();
+    auto *channel = Tp::TextChannelPtr::staticCast(m_channel).data();
 
     connect(channel, &Tp::TextChannel::messageReceived, this, &TelepathyChannel::onChanMessageReceived);
     connect(channel, &Tp::TextChannel::pendingMessageRemoved, this, &TelepathyChannel::onChanPendingMessageRemoved);
@@ -857,12 +845,12 @@ void TelepathyChannel::onGroupAddContacts(Tp::PendingOperation *op) {
 void TelepathyChannel::onChanMessageReceived(const Tp::ReceivedMessage &message) {
     qDebug() << "onChanMessageReceived" << message.received(); // << message.sender()->id() << message.text();
     qDebug() << "channel targetID:" << m_channel->targetId();
-    auto *channel = (Tp::TextChannel*) m_channel.data();
+    auto channel = Tp::TextChannelPtr::staticCast(m_channel);
 
     auto messages = QList<Tp::ReceivedMessage>() << message;
     channel->acknowledge(messages);
 
-    m_account->onMessageReceived(message, (Tp::TextChannelPtr)channel);
+    m_account->onMessageReceived(message, channel);
 }
 
 /* This fires when a message is removed from the messageQueue, but that would
@@ -874,14 +862,13 @@ void TelepathyChannel::onChanPendingMessageRemoved(const Tp::ReceivedMessage &me
 void TelepathyChannel::onChanMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken) const {
     qDebug() << "onChanMessageSent";
 
-    auto *channel = (Tp::TextChannel*) m_channel.data();
-    m_account->onMessageSent(message, flags, sentMessageToken, (Tp::TextChannelPtr)channel);
+    m_account->onMessageSent(message, flags, sentMessageToken,
+                             Tp::TextChannelPtr::staticCast(m_channel));
 }
 
 /* If we already have a channel, send is easy */
 void TelepathyChannel::sendMessage(const QString &message) const {
-    auto *channel = (Tp::TextChannel*) m_channel.data();
-    channel->send(message);
+    Tp::TextChannelPtr::staticCast(m_channel)->send(message);
 }
 
 TelepathyChannel::~TelepathyChannel() = default;
@@ -896,7 +883,7 @@ void Telepathy::configSave() {
         QJsonArray  obj_channels;
 
         for(const auto &channel: account->channels.keys()) {
-            auto *ac = account->channels[channel];
+            auto ac = account->channels[channel];
             QJsonObject obj_channel;
             obj_channel["name"] = ac->name;
             obj_channel["auto_join"] = ac->auto_join;
@@ -942,14 +929,14 @@ void TelepathyAccount::configRead() {
 
             if(!channels.contains(channel)) {
                 qDebug() << "readGroupchatChannels(), new channel:" << channel << "date_created" << date_created;
-                auto *ac = new AccountChannel();
+                auto ac = AccountChannelPtr(new AccountChannel());
                 ac->name = channel;
                 ac->date_created = date_created;
                 ac->date_last_message = date_last_message;
                 ac->auto_join = auto_join;
                 channels[channel] = ac;
             } else {
-                channels[channel]->auto_join = auto_join;
+                (channels[channel])->auto_join = auto_join;
                 channels[channel]->date_created = date_created;
                 channels[channel]->date_last_message = date_last_message;
             }
