@@ -1,3 +1,13 @@
+conversations (0.7.14) unstable; urgency=medium
+
+  * lib/tp: exit early on insertion error
+  * lib/tp: do not leave dangling TelepathyChannel *
+  * tp/lib: introduce AccountChannelPtr
+  * lib/tp: use operator bool() for shared pointers instead of isNull()
+  * lib/tp: prevent duplicated messages no matter scrollback or not
+
+ -- Sander <sander@sanderf.nl>  Tue, 11 Jun 2024 01:07:32 +0200
+
 conversations (0.7.13) unstable; urgency=medium
 
   * lib/tp: clear chat functionality (DELETE rtcom events by group_uid)
