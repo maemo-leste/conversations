@@ -268,7 +268,7 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
             matching_account = ma;
             matching_channel = ma->hasChannel(channelptr->targetId());
 
-            if (matching_channel.isNull()) {
+            if (!matching_channel) {
                 matching_channel = channelptr;
 
                 auto mychan = new TelepathyChannel(channelptr, ma);
@@ -718,7 +718,7 @@ void TelepathyAccount::_removeChannel(TelepathyChannel *chanptr) {
 void TelepathyAccount::sendMessage(const QString &remote_id, const QString &message) {
     qDebug() << "sendMessage: remote_id:" << remote_id;
     Tp::TextChannelPtr channel = Tp::TextChannelPtr::staticCast(hasChannel(remote_id));
-    if (!channel.isNull()) {
+    if (channel) {
         channel->send(message);
         return;
     }
@@ -757,7 +757,7 @@ void TelepathyAccount::setChatState(const QString &remote_id, Tp::ChannelChatSta
   qDebug() << "setChatState: remote_id:" << remote_id;
   Tp::TextChannelPtr channel = Tp::TextChannelPtr::staticCast(hasChannel(remote_id));
 
-  if (!channel.isNull() && channel->hasChatStateInterface())
+  if (channel && channel->hasChatStateInterface())
     channel->requestChatState(state);
 }
 
