@@ -174,7 +174,8 @@ Rectangle {
         running: false
         onTriggered: {
             console.log('scrollBottomTimer() fired');
-            chatList.positionViewAtEnd();
+            while(!chatList.atBottom)
+              chatList.positionViewAtEnd();
         }
     }
 
