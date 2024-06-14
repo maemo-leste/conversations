@@ -94,8 +94,9 @@ void OverviewProxyModel::onOverviewRowClicked(uint32_t idx) {
   emit mdl->overviewRowClicked(msg);
 }
 
-OverviewModel::OverviewModel(Telepathy *tp, QObject *parent) :
+OverviewModel::OverviewModel(Telepathy *tp, ConfigState *state, QObject *parent) :
     m_tp(tp),
+    m_state(state),
     QAbstractListModel(parent) {
   this->preloadPixmaps();
 }
@@ -189,14 +190,28 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
 }
 
 void OverviewModel::onLoad() {
-  // First we query rtcom for the overview messages and then
-  // we check TP because we could be connected to a groupchat
-  // that has no rtcom-registered messages yet
+  // The overview screen has 3 sources:
+  // 1. rtcom-db
+  // - all messages are registered in rtcom, we group by
+  //   group_uid and order by timestamp.
+  // 2. Telepathy
+  // - in the case you just joined a groupchat but there
+  //   no messages registered yet in rtcom-db, Tp can give us
+  //   more channels than the first option, so that we can
+  //   render them on the overview regardless.
+  // 3. ConfigState
+  // - In the event Telepathy is offline, or otherwise not able
+  //   to provide us channels, they are cached in "ConfigState"
+  //   see ~/.config/conversations/state.json
   this->onClear();
 
+  QList<ChatMessage*> results;
   QStringList group_uids;
+  ConfigStateItemPtr configItem;
 
+  // =====
   // rtcom
+  // =====
   const uint32_t limit = 50000;
   const uint32_t offset = 0;
   RTComElQuery *query = qtrtcom::startQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_GROUP);
@@ -207,46 +222,95 @@ void OverviewModel::onLoad() {
 
   if(!query_prepared) {
     qCritical() << "Couldn't prepare query";
-    g_object_unref(query);
-    return;
+  } else {
+    results = iterateRtComEvents(query);
+    for(const auto *msg: results) {
+      group_uids << msg->group_uid();
+    }
   }
-
-  auto results = iterateRtComEvents(query);
-  for(const auto *msg: results)
-    group_uids << msg->group_uid();
 
   g_object_unref(query);
 
+  // ==
   // tp
+  // ==
   for(const auto &account: m_tp->accounts) {
-    for(const auto &channel_key: account->channels.keys()) {
-      const auto &channel = account->channels[channel_key];
-      auto group_uid = QString("%1-%2").arg(account->name, channel->name);
+    for(const auto &remote_uid: account->channels.keys()) {
+      auto channel = account->channels[remote_uid];
+      auto group_uid = QString("%1-%2").arg(account->local_uid, remote_uid);
 
-      if(!group_uids.contains(group_uid)) {
-        results << new ChatMessage({
-          .event_id = -1,
-          .service = account->getServiceName(),
-          .group_uid = group_uid,
-          .local_uid = account->getLocalUid(),
-          .remote_uid = "",
-          .remote_name = "",
-          .remote_ebook_uid = "",
-          .text = "",
-          .icon_name = "",
-          .timestamp = channel->date_created,
-          .count = 0,
-          .group_title = "",
-          .channel = channel->name,
-          .event_type = "-1",
-          .outgoing = false,
-          .is_read = true,
-          .flags = 0
-        });
+      if(group_uids.contains(group_uid))
+        continue;
 
-        group_uids << group_uid;
-      }
+      // fetching extra info from ConfigState
+      qint64 date_created = 0;
+      configItem = m_state->getItem(account->local_uid, remote_uid);
+      if(configItem)
+        date_created = configItem->date_created / 1000;
+
+      results << new ChatMessage({
+        .event_id = -1,
+        .service = account->getServiceName(),
+        .group_uid = group_uid,
+        .local_uid = account->local_uid,
+        .remote_uid = "",
+        .remote_name = "",
+        .remote_ebook_uid = "",
+        .text = "",
+        .icon_name = "",
+        .timestamp = date_created,
+        .count = 0,
+        .group_title = "",
+        .channel = remote_uid,
+        .event_type = "-1",
+        .outgoing = false,
+        .is_read = true,
+        .flags = 0
+      });
+
+      group_uids << group_uid;
     }
+  }
+
+  // ===========
+  // ConfigState
+  // ===========
+  for(const auto &configItem: m_state->items) {
+    QString channel_str;
+    QString remote_uid;
+    if(configItem->type == ConfigStateItemType::ConfigStateRoom)
+      channel_str = configItem->remote_uid;
+    else if(configItem->type == ConfigStateItemType::ConfigStateContact)
+      remote_uid = configItem->remote_uid;
+    else {
+      qWarning() << "ConfigStateItemType" << configItem->type << "not implemented";
+      continue;
+    }
+
+    if(group_uids.contains(configItem->group_uid()))
+      continue;
+
+    results << new ChatMessage({
+      .event_id = -1,
+      .service = "RTCOM_EL_SERVICE_CHAT",
+      .group_uid = configItem->group_uid(),
+      .local_uid = configItem->local_uid,
+      .remote_uid = remote_uid,
+      .remote_name = "",
+      .remote_ebook_uid = "",
+      .text = "",
+      .icon_name = "",
+      .timestamp = configItem->date_created / 1000,
+      .count = 0,
+      .group_title = "",
+      .channel = channel_str,
+      .event_type = "-1",
+      .outgoing = false,
+      .is_read = true,
+      .flags = 0
+    });
+
+    group_uids << configItem->group_uid();
   }
 
   beginInsertRows(QModelIndex(), 0, results.size());

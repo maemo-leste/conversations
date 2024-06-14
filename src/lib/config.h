@@ -1,5 +1,4 @@
-#ifndef CONV_SETTINGS_H
-#define CONV_SETTINGS_H
+#pragma once
 
 #include <QObject>
 #include <QSettings>
@@ -7,8 +6,7 @@
 #include <QQmlEngine>
 #include <QDir>
 
-namespace ConfigKeys
-{
+namespace ConfigKeys {
     Q_NAMESPACE
     enum ConfigKey {
         MaemoTest,
@@ -24,9 +22,8 @@ namespace ConfigKeys
     Q_ENUM_NS(ConfigKey)
 }
 
-class Config : public QObject
-{
-    Q_OBJECT
+class Config : public QObject {
+Q_OBJECT
 
 public:
     Q_DISABLE_COPY(Config)
@@ -55,9 +52,6 @@ private:
     QHash<QString, QVariant> m_defaults;
 };
 
-inline Config* config()
-{
+inline Config* config() {
     return Config::instance();
 }
-
-#endif

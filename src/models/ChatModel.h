@@ -48,6 +48,7 @@ public:
     explicit ChatModel(QObject *parent = nullptr);
     ~ChatModel() override {
       this->clear();
+      qDebug() << "destroying ChatModel";
     }
 
     // rtcom

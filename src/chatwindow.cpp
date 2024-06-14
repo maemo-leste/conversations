@@ -48,14 +48,6 @@ ChatWindow::ChatWindow(
   qDebug() << "service:" << service_uid;
   qDebug() << "groupchat:" << groupchat;
 
-  if(groupchat) {
-    auto *acc = m_ctx->telepathy->accountByName(local_uid);
-    if(acc != nullptr) {
-      acc->ensureChannel(channel);
-      this->detectActiveChannel();
-    }
-  }
-
   // properties
   setProperty("X-Maemo-Orientation", 2);
   setProperty("X-Maemo-StackedWindow", 0);
@@ -74,6 +66,7 @@ ChatWindow::ChatWindow(
   this->chatModel = new ChatModel(this);
   this->chatModel->getMessages(service_uid, group_uid);
 
+  // QML
   auto *qctx = ui->quick->rootContext();
   qctx->setContextProperty("chatWindow", this);
   qctx->setContextProperty("chatModel", this->chatModel);
@@ -81,9 +74,9 @@ ChatWindow::ChatWindow(
   qctx->setContextProperty("theme", m_ctx->theme);
   const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
   qctx->setContextProperty("fixedFont", fixedFont);
-
   ui->quick->setAttribute(Qt::WA_AlwaysStackOnTop);
 
+  // theme
   auto theme = config()->get(ConfigKeys::ChatTheme).toString();
   if(theme == "chatty")
     ui->quick->setSource(QUrl("qrc:/chatty/chatty.qml"));
@@ -114,7 +107,13 @@ ChatWindow::ChatWindow(
   connect(m_ctx->telepathy, &Telepathy::databaseAddition, this, &ChatWindow::onDatabaseAddition);
 
   // groupchat
-  this->onSetupGroupchat();
+  if(groupchat) {
+    this->onSetupGroupchat();
+  } else {
+    ui->actionLeave_channel->setVisible(false);
+    ui->actionAuto_join_groupchat->setVisible(false);
+  }
+
   connect(ui->actionAuto_join_groupchat, &QAction::triggered, this, &ChatWindow::onAutoJoinToggled);
   connect(ui->actionLeave_channel, &QAction::triggered, this, &ChatWindow::onGroupchatJoinLeaveRequested);
   connect(ui->actionClear_chat, &QAction::triggered, this, &ChatWindow::onChatRequestClear);
@@ -128,6 +127,7 @@ ChatWindow::ChatWindow(
           SIGNAL(chatPreReady()), this,
           SLOT(onChatPreReady()));
 
+  this->detectActiveChannel();
   this->onSetWindowTitle();
 }
 
@@ -153,8 +153,7 @@ void ChatWindow::onChatDelete() {
   qtrtcom::deleteEvents(_group_uid);
   this->chatModel->clear();
 
-  if(groupchat)
-    m_ctx->telepathy->deleteChannel(local_uid, channel);
+  m_ctx->telepathy->deleteChannel(local_uid, channel);
 
   this->close();
 }
@@ -169,20 +168,18 @@ void ChatWindow::onChatClear() {
 }
 
 void ChatWindow::onAutoJoinToggled() {
-  auto *acc = m_ctx->telepathy->accountByName(local_uid);
-  auto chan = m_ctx->telepathy->channelByName(local_uid, channel);
-
-  if(acc == nullptr || !chan)
+  m_auto_join = !m_auto_join;
+  auto result = m_ctx->state->setAutoJoin(local_uid, channel, m_auto_join);
+  if(!result)
     return;
 
-  acc->setAutoJoin(chan->name, !chan->auto_join);
-
   // join while we are at it
-  if(chan->auto_join && !chan->hasActiveChannel())
-    m_ctx->telepathy->joinChannel(local_uid, channel, true);
+  auto chan = m_ctx->telepathy->channelByName(local_uid, channel);
+  if(m_auto_join && chan.isNull())
+    m_ctx->telepathy->joinChannel(local_uid, channel);
 
   // ui text
-  if(chan->auto_join) {
+  if(m_auto_join) {
     ui->actionAuto_join_groupchat->setText("Disable auto-join");
   } else {
     ui->actionAuto_join_groupchat->setText("Enable auto-join");
@@ -252,6 +249,9 @@ void ChatWindow::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
   if(local_uid != msg->local_uid() || group_uid != msg->group_uid())  // is this message for this chatwindow?
     return;
 
+  if(!this->chatModel)
+    return;
+
   this->chatModel->appendMessage(msg);
 
   if(m_windowActive) {
@@ -277,36 +277,30 @@ void ChatWindow::onGatherMessage() {
 }
 
 void ChatWindow::onGroupchatJoinLeaveRequested() {
-  if(m_ctx->telepathy->participantOfChannel(local_uid, channel)) {
+  auto chan = m_ctx->telepathy->channelByName(local_uid, channel);
+  if(!chan.isNull()) {
     m_ctx->telepathy->leaveChannel(local_uid, channel);
   } else {
-    m_ctx->telepathy->joinChannel(local_uid, channel, false);
+    m_ctx->telepathy->joinChannel(local_uid, channel);
   }
 }
 
-void ChatWindow::onSetupGroupchat() {
-  // do some UI stuff in case this is a groupchat
-  if(!groupchat) {
-    ui->actionLeave_channel->setVisible(false);
-    ui->actionLeave_channel->setVisible(false);
+void ChatWindow::onSetupGroupchat() {  // do some UI stuff in case this is a groupchat
+  if(!groupchat)
     return;
-  }
 
-  // setup initial join/leave UI text
-  if(!m_ctx->telepathy->participantOfChannel(local_uid, channel)) {
-    ui->actionLeave_channel->setText("Join groupchat");
-  } else {
+  // join/leave groupchat
+  auto participantOfChannel = m_ctx->telepathy->channelByName(local_uid, channel);
+  if(!participantOfChannel.isNull()) {
     ui->actionLeave_channel->setText("Leave groupchat");
+  } else {
+    ui->actionLeave_channel->setText("Join groupchat");
   }
 
-  // setup initial auto-join UI text
-  auto chan = m_ctx->telepathy->channelByName(local_uid, channel);
-  if(chan) {
-    QString auto_join_text = chan->auto_join ? "Disable auto-join" : "Enable auto-join";
-    ui->actionAuto_join_groupchat->setText(auto_join_text);
-  } else {
-    ui->actionAuto_join_groupchat->setText("Enable auto-join");
-  }
+  // auto_join text
+  m_auto_join = m_ctx->state->getAutoJoin(local_uid, channel);
+  QString auto_join_text = m_auto_join ? "Disable auto-join" : "Enable auto-join";
+  ui->actionAuto_join_groupchat->setText(auto_join_text);
 }
 
 void ChatWindow::onChannelJoinedOrLeft(const QString &_local_uid, const QString &_channel) {
@@ -341,25 +335,22 @@ void ChatWindow::onSetWindowTitle() {
   }
 
   if(!m_active && groupchat)
-    windowTitle += " (left or inactive)";
+    windowTitle += " (not joined)";
 
   this->setWindowTitle(windowTitle);
 }
 
 void ChatWindow::detectActiveChannel() {
-  auto chan = m_ctx->telepathy->channelByName(local_uid, channel);
-  m_active = chan->hasActiveChannel();
+  m_active = !m_ctx->telepathy->channelByName(local_uid, channel).isNull();
 }
 
 Conversations *ChatWindow::getContext() {
   return pChatWindow->m_ctx;
 }
 
-void ChatWindow::setChatState(Tp::ChannelChatState state) const
-{
+void ChatWindow::setChatState(Tp::ChannelChatState state) const {
   if(local_uid.isEmpty() || remote_uid.isEmpty())
     return;
-
   m_ctx->telepathy->setChatState(local_uid, remoteId(), state);
 }
 
@@ -373,7 +364,7 @@ bool ChatWindow::eventFilter(QObject *watched, QEvent *event) {
          (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter)) {
           this->onGatherMessage();
           return true;
-        }
+      }
 
       break;
     }
@@ -407,7 +398,6 @@ void ChatWindow::changeEvent(QEvent *event) {
     }
   }
 }
-
 
 ChatWindow::~ChatWindow() {
   qDebug() << "destroying chatWindow";

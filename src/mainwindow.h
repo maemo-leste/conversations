@@ -12,6 +12,7 @@
 #include <QFileInfo>
 #include <QPalette>
 
+#include <malloc.h>
 #include <iostream>
 
 #include "conversations.h"

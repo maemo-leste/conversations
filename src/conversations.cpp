@@ -14,27 +14,42 @@
 Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   Notification::init(QApplication::applicationName());
 
-  this->telepathy =new Telepathy(this);
+  // Paths
+  pathGenericData = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+  configRoot = QDir::homePath();
+  accountName = qgetenv("USER");
+  homeDir = QDir::homePath();
+  configDirectory = QString("%1/.config/%2/").arg(configRoot, QCoreApplication::applicationName());
+  createConfigDirectory(configDirectory);
+
+  this->telepathy = new Telepathy(this);
+  this->state = new ConfigState(QString("%1state.json").arg(configDirectory));
+  configState = this->state;
+  connect(this->state, &ConfigState::autoJoinChanged, this->telepathy, &Telepathy::onSetAutoJoin);
+
   this->cmdargs = cmdargs;
 
   this->ipc = ipc;
   connect(ipc, &IPC::commandReceived, this, &Conversations::onIPCReceived);
 
   // chat overview models
-  overviewModel = new OverviewModel(telepathy, this);
+  overviewModel = new OverviewModel(this->telepathy, this->state, this);
   overviewModel->onLoad();
-  connect(telepathy, &Telepathy::accountManagerReady, overviewModel, &OverviewModel::onLoad);
+  connect(this->telepathy, &Telepathy::accountManagerReady, this->overviewModel, &OverviewModel::onLoad);
+  connect(this->telepathy, &Telepathy::channelDeleted, this->state, &ConfigState::deleteItem);
+  connect(this->state, &ConfigState::updated, this->overviewModel, &OverviewModel::onLoad);
+
   // Overview table updates
   // @TODO: do not refresh the whole overview table on new messages, edit specific entries 
   // instead. For now though, it is not that important as it is still performant enough.
   connect(telepathy, &Telepathy::databaseAddition, overviewModel, &OverviewModel::onLoad);
-  connect(telepathy, &Telepathy::channelJoined, [this](QString local_uid, QString channel) {
+  connect(telepathy, &Telepathy::channelJoined, [this](QString local_uid, QString remote_uid) {
     overviewModel->onLoad();
   });
-  connect(telepathy, &Telepathy::channelLeft, [this](QString local_uid, QString channel) {
+  connect(telepathy, &Telepathy::channelLeft, [this](QString local_uid, QString remote_uid) {
     overviewModel->onLoad();
   });
-  connect(telepathy, &Telepathy::channelDeleted, [this](QString local_uid, QString channel) {
+  connect(telepathy, &Telepathy::channelDeleted, [this](QString local_uid, QString remote_uid) {
     overviewModel->onLoad();
   });
 
@@ -43,14 +58,6 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   overviewProxyModel->setSortRole(OverviewModel::TimeRole);
   overviewProxyModel->sort(OverviewModel::TimeRole, Qt::DescendingOrder);
   overviewProxyModel->setDynamicSortFilter(true);
-
-  // Paths
-  pathGenericData = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-  configRoot = QDir::homePath();
-  accountName = qgetenv("USER");
-  homeDir = QDir::homePath();
-  configDirectory = QString("%1/.config/%2/").arg(configRoot, QCoreApplication::applicationName());
-  createConfigDirectory(configDirectory);
 
   textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
 

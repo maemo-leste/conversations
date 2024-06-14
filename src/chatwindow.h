@@ -14,6 +14,7 @@
 
 #include "conversations.h"
 #include "lib/config.h"
+#include "lib/state.h"
 #include "searchwindow.h"
 #include "models/ChatModel.h"
 #include "models/ChatMessage.h"
@@ -77,6 +78,8 @@ private:
     ChatModel *chatModel;
     static ChatWindow *pChatWindow;
     SearchWindow *m_searchWindow = nullptr;
+    bool m_auto_join = false;
+
 private:
     QTimer *m_windowFocusTimer;
     bool m_enterKeySendsChat = false;

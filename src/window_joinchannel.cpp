@@ -29,7 +29,7 @@ JoinChannel::JoinChannel(Conversations *ctx, QWidget *parent) :
 
   // @TODO: deal with additions/removals of accounts at runtime
   for(auto acc: m_ctx->telepathy->accounts) {
-    ui->comboAccount->addItem(acc->name);
+    ui->comboAccount->addItem(acc->local_uid);
   }
 
   if(!m_ctx->telepathy->accounts.empty()) {
@@ -41,7 +41,7 @@ JoinChannel::JoinChannel(Conversations *ctx, QWidget *parent) :
   }
 
   connect(this->ui->btnJoinChannel, &QPushButton::clicked, [this] {
-    QString channel = ui->lineEdit_channel->text();
+    QString channel = ui->lineEdit_channel->text().trimmed();
     QString account = ui->comboAccount->currentText();
     bool persistent = ui->checkbox_autoJoin->isChecked();
 
@@ -53,7 +53,8 @@ JoinChannel::JoinChannel(Conversations *ctx, QWidget *parent) :
       return;
     }
 
-    emit joinChannel(account, channel, persistent);
+    m_ctx->state->setAutoJoin(account, channel, persistent);
+    emit joinChannel(account, channel);
   });
 }
 

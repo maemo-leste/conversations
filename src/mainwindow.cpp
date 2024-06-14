@@ -69,7 +69,8 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx->telepathy, &Telepathy::channelJoined, [this](QString local_uid, QString channel) { this->onDeterminePage(); });
   connect(m_ctx->telepathy, &Telepathy::channelLeft, [this](QString local_uid, QString channel) { this->onDeterminePage(); });
   connect(m_ctx->telepathy, &Telepathy::channelDeleted, [this](QString local_uid, QString channel) { this->onDeterminePage(); });
-  connect(m_ctx->telepathy, &Telepathy::accountAdded, [this](TelepathyAccount *acc) { this->onDeterminePage(); });
+  connect(m_ctx->telepathy, &Telepathy::accountAdded, [this](TelepathyAccountPtr ta) { this->onDeterminePage(); });
+  connect(m_ctx->telepathy, &Telepathy::accountRemoved, [this] { this->onDeterminePage(); });
   connect(m_ctx->telepathy, &Telepathy::accountManagerReady, this, &MainWindow::onDeterminePage);
 
   this->onDeterminePage();
@@ -185,8 +186,8 @@ void MainWindow::onOpenJoinChatWindow() {
   m_joinchannel = new JoinChannel(m_ctx, this);
   m_joinchannel->show();
 
-  connect(m_joinchannel, &JoinChannel::joinChannel, [this](QString account, QString channel, bool persistent) {
-    m_ctx->telepathy->joinChannel(account, channel, persistent);
+  connect(m_joinchannel, &JoinChannel::joinChannel, [this](QString account, QString channel) {
+    m_ctx->telepathy->joinChannel(account, channel);
 
     // hack: if we close this window immediately, then the QML overview model will not get
     // updated properly with new changes. The data is updated but the screen wont
@@ -238,11 +239,22 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 }
 
 void MainWindow::onChatWindowClosed(const QString &group_uid) {
-  if(!m_chatWindows.contains(group_uid)) return;
+  if(!m_chatWindows.contains(group_uid))
+    return;
+
   auto *window = m_chatWindows[group_uid];
   if(window != nullptr)
     window->deleteLater();
   m_chatWindows.remove(group_uid);
+
+  // after closing a chatwindow, we'll attempt to
+  // malloc_trim as usually *some* memory can be forced 
+  // freed, maybe it helps.
+  QTimer::singleShot(500, [] {
+    if (malloc_trim(0) == 0){  // returns 1 if memory was actually released
+      qWarning() << "malloc_trim(0); no memory can be returned";
+    }
+  });
 }
 
 void MainWindow::onShowApplication() {

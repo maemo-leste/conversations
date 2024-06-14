@@ -10,6 +10,7 @@
 #include "lib/config.h"
 #include "lib/ipc.h"
 #include "lib/tp.h"
+#include "lib/state.h"
 #include "lib/libnotify-qt/Notification.h"
 #include "models/ChatModel.h"
 #include "models/ChatMessage.h"
@@ -37,6 +38,7 @@ public:
 
     QCommandLineParser *cmdargs;
     IPC *ipc;
+    ConfigState *state;
 
     QString configDirectory;
     QString configRoot;
@@ -63,6 +65,8 @@ public:
 
     void setWindowTitle(const QString &title);
     Q_INVOKABLE QString ossoIconLookup(const QString &filename); // /usr/share/icons/hicolor/48x48/hildon/
+
+    static void configRemove(const QString &backend_name, const QString &remote_id);
 
 signals:
     void applicationLog(QString msg);
@@ -97,7 +101,6 @@ private slots:
 
 private:
     QMap<QString, QString> ossoIconCache;
-    QTimer m_hibernateTimer;
     std::chrono::seconds m_hibernateDetectInterval{300};
     std::chrono::time_point<std::chrono::steady_clock> m_hibernatePreviousTime;
 };

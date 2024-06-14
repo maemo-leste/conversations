@@ -1,5 +1,4 @@
-#ifndef IPC_H
-#define IPC_H
+#pragma once
 
 #include <QtCore>
 #include <QLocalServer>
@@ -24,5 +23,3 @@ private:
   QFileInfo m_socketFile;
   QString m_socketPath;
 };
-
-#endif // IPC_H

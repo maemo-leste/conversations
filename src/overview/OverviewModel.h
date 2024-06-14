@@ -13,6 +13,7 @@
 #include "lib/utils.h"
 #include "lib/rtcom.h"
 #include "lib/tp.h"
+#include "lib/state.h"
 #include "lib/QRichItemDelegate.h"
 #include "models/ChatMessage.h"
 
@@ -65,7 +66,7 @@ public:
     COUNT
   };
 
-  explicit OverviewModel(Telepathy *tp, QObject *parent = nullptr);
+  explicit OverviewModel(Telepathy *tp, ConfigState* state, QObject *parent = nullptr);
   ~OverviewModel() override {
     this->onClear();
   }
@@ -90,5 +91,6 @@ private:
   void preloadPixmaps();
 private:
   Telepathy *m_tp = nullptr;
+  ConfigState *m_state = nullptr;
   QMap<QString, QPixmap> m_pixmaps;
 };
