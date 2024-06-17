@@ -297,10 +297,10 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
 /* TP account class, maintains list of channels and will pass signals along
  * might log the messages to rtcom from here, unless we decide to do that in the
  * channel class */
-TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc, QObject *parent) : QObject(parent) {
-    acc = macc;
-
-    local_uid = getLocalUid();  // backend_name, e.g: 'idle/irc/oftc_2dsander0'
+TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc, QObject *parent) :
+        acc(macc),
+        local_uid(getLocalUid()),  // e.g: 'idle/irc/oftc_2dsander0'
+        QObject(parent) {
     m_nickname = acc->nickname();
     m_protocol_name = acc->protocolName();
     m_parent = static_cast<Telepathy*>(parent);

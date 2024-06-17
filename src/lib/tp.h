@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QtCore>
+#include <QUrl>
 #include <QLocalServer>
 #include <QtDBus/QtDBus>
 
@@ -86,10 +87,16 @@ public:
     explicit TelepathyAccount(Tp::AccountPtr macc, QObject *parent = nullptr);
     ~TelepathyAccount() override;
 
-    Tp::AccountPtr acc;
+    const Tp::AccountPtr acc;
     QMap<QString, TelepathyChannelPtr> channels;
 
-    QString local_uid;
+    const QString local_uid;
+    QString name() const {  // human-readable from local_uid
+      auto decoded = QUrl::fromPercentEncoding(QString(local_uid).replace("_", "%").toUtf8());
+      if(decoded.endsWith("0"))
+        decoded.chop(1);
+      return decoded;
+    }
 
     QString nickname() const { return m_nickname; }
     QString protocolName() const { return m_protocol_name; }

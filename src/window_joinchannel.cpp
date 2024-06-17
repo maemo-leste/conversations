@@ -29,7 +29,7 @@ JoinChannel::JoinChannel(Conversations *ctx, QWidget *parent) :
 
   // @TODO: deal with additions/removals of accounts at runtime
   for(auto acc: m_ctx->telepathy->accounts) {
-    ui->comboAccount->addItem(acc->local_uid);
+    ui->comboAccount->addItem(acc->name(), QList<QVariant>() << acc->local_uid);
   }
 
   if(!m_ctx->telepathy->accounts.empty()) {
@@ -41,20 +41,26 @@ JoinChannel::JoinChannel(Conversations *ctx, QWidget *parent) :
   }
 
   connect(this->ui->btnJoinChannel, &QPushButton::clicked, [this] {
+    // account combobox
+    auto account_combo_data = ui->comboAccount->currentData().value<QList<QVariant>>();
+    auto account_local_uid = account_combo_data.first().toString();
+
+    // channel
     QString channel = ui->lineEdit_channel->text().trimmed();
-    QString account = ui->comboAccount->currentText();
+
+    // channel auto-join
     bool persistent = ui->checkbox_autoJoin->isChecked();
 
     if(channel.isEmpty()) {
       this->messageBox("channel cannot be empty");
       return;
-    } else if (account.isEmpty()) {
+    } else if (account_local_uid.isEmpty()) {
       this->messageBox("account cannot be empty");
       return;
     }
 
-    m_ctx->state->setAutoJoin(account, channel, persistent);
-    emit joinChannel(account, channel);
+    m_ctx->state->setAutoJoin(account_local_uid, channel, persistent);
+    emit joinChannel(account_local_uid, channel);
   });
 }
 
