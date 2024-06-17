@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.13)
-project(conversations)
+project(conversations
+  VERSION "0.7.16"
+  DESCRIPTION "conversations"
+)
 message(STATUS "Initiating compile using CMake ${CMAKE_VERSION}")
-
-set(VERSION_MAJOR "0")
-set(VERSION_MINOR "5")
-set(VERSION_REVISION "7")
-set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION}")
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING

@@ -108,22 +108,8 @@ int main(int argc, char *argv[]) {
   app.setAttribute(Qt::AA_CompressTabletEvents);
   app.setAttribute(Qt::AA_CompressHighFrequencyEvents);
 
-  QMap<QString, QString> info;
-  info["Qt"] = QT_VERSION_STR;
-  info["Conversations"] = CONVERSATIONS_VERSION;
-#ifndef QT_NO_SSL
-  info["SSL"] = QSslSocket::sslLibraryVersionString();
-  info["SSL build"] = QSslSocket::sslLibraryBuildVersionString();
-#endif
-
-  for (const auto &k: info.keys())
-    qWarning().nospace().noquote() << QString("%1: %2").arg(k, info[k]);
-
-  hildon_init();
-
   QCommandLineParser parser;
   parser.addHelpOption();
-  parser.addVersionOption();
   parser.setApplicationDescription("Communications");
 
   QCommandLineOption backgroundModeOption(QStringList() << "background", "Start without spawning the GUI.");
@@ -131,6 +117,9 @@ int main(int argc, char *argv[]) {
 
   QCommandLineOption debugModeOption(QStringList() << "debug", "Start in debug mode.");
   parser.addOption(debugModeOption);
+
+  QCommandLineOption versionOption(QStringList() << "version", "Print version.");
+  parser.addOption(versionOption);
 
   QStringList argv_;
   for(int i = 0; i != argc; i++)
@@ -143,12 +132,30 @@ int main(int argc, char *argv[]) {
   }
 
   const QStringList args = parser.positionalArguments();
+  if(parser.isSet(versionOption)) {
+    printf("%s\n", qPrintable(QString("conversations %1").arg(CONVERSATIONS_VERSION)));
+    exit(0);
+  }
+
+  QMap<QString, QString> info;
+  info["Qt"] = QT_VERSION_STR;
+  info["Conversations"] = CONVERSATIONS_VERSION;
+#ifndef QT_NO_SSL
+  info["SSL"] = QSslSocket::sslLibraryVersionString();
+  info["SSL build"] = QSslSocket::sslLibraryBuildVersionString();
+#endif
+
+  for (const auto &k: info.keys())
+    qWarning().nospace().noquote() << QString("%1: %2").arg(k, info[k]);
+
   bool debugMode = parser.isSet(debugModeOption);
   parser.process(app);
 
   // Listen on IPC
   auto *ipc = new IPC();
   QTimer::singleShot(0, ipc, [ipc]{ ipc->bind(); });
+
+  hildon_init();  // @TODO: is this needed?
 
   // initialize application
   auto *ctx = new Conversations(&parser, ipc);
