@@ -250,6 +250,8 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
                                       const QList<Tp::ChannelRequestPtr> &requestsSatisfied,
                                       const QDateTime &userActionTime,
                                       const Tp::AbstractClientHandler::HandlerInfo &handlerInfo) {
+    bool isAutoJoin = !userActionTime.isValid();
+
     foreach (Tp::ChannelPtr channelPtr, channels) {
         QVariantMap props = channelPtr->immutableProperties();
         QString remote_uid = props.value(QString("%1.TargetID").arg(TP_QT_IFACE_CHANNEL)).toString();
@@ -289,6 +291,9 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
             // announce we joined a channel (valid for both room, and 1:1 contact)
             emit accountPtr->channelJoined(accountPtr->local_uid, remote_uid);
         }
+
+        if(!isAutoJoin)  // channel joined from 'external' Tp client (e.g addresbook), request chatWindow
+          accountPtr->TpOpenChannelWindow(Tp::TextChannelPtr::staticCast(channelPtr));
     }
 
     context->setFinished();
@@ -311,8 +316,8 @@ TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc, QObject *parent) :
 }
 
 void TelepathyAccount::TpOpenChannelWindow(Tp::TextChannelPtr channel) {
-    auto remote_uid = getRemoteUid(Tp::TextChannelPtr(channel));
-    auto group_uid = getGroupUid(Tp::TextChannelPtr(channel));
+    auto remote_uid = getRemoteUid(channel);
+    auto group_uid = getGroupUid(channel);
     auto service = getServiceName();
     QString channelstr;
 
@@ -511,9 +516,12 @@ void TelepathyAccount::joinChannel(const QString &remote_uid) {
     this->_joinChannel(remote_uid);
 }
 
-void TelepathyAccount::_joinChannel(const QString &remote_uid) {
+void TelepathyAccount::_joinChannel(const QString &remote_uid, bool auto_join) {
     qDebug() << "_joinChannel" << remote_uid;
-    auto *pending = acc->ensureTextChatroom(remote_uid);
+
+    // set a 'null' datetime on auto_join
+    QDateTime dt = auto_join ? QDateTime() : QDateTime::currentDateTime();
+    auto *pending = acc->ensureTextChatroom(remote_uid, dt);
 
     connect(pending, &Tp::PendingChannelRequest::channelRequestCreated, this, [this, remote_uid](const Tp::ChannelRequestPtr &channelRequest) {
       if(channelRequest->isValid()) {
@@ -734,7 +742,7 @@ void TelepathyAccount::joinSavedGroupChats() {
                 continue;
 
             qDebug() << "account:" << local_uid << "auto-joining:" << configItem->remote_uid;
-            this->_joinChannel(configItem->remote_uid);
+            this->_joinChannel(configItem->remote_uid, true);
         }
     }
 }

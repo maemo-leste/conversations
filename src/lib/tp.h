@@ -154,7 +154,7 @@ private:
     Tp::AccountManagerPtr m_accountmanager;
 
     Telepathy* m_parent;
-    void _joinChannel(const QString &channel);
+    void _joinChannel(const QString &channel, bool auto_join = false);
     void joinSavedGroupChats();
     void configRead();
 };
