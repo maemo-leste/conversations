@@ -1,3 +1,9 @@
+conversations (0.7.19) unstable; urgency=medium
+
+  * Fix logging of Telegram messages
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Fri, 21 Jun 2024 14:56:11 +0200
+
 conversations (0.7.18) unstable; urgency=medium
 
   * Fix opening chats from Contacts
