@@ -1,3 +1,9 @@
+conversations (0.7.18) unstable; urgency=medium
+
+  * Fix opening chats from Contacts
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Fri, 21 Jun 2024 13:56:23 +0200
+
 conversations (0.7.17) unstable; urgency=medium
 
   * window/joinchannel: make account names in the combobox human readable (urldecode)\
