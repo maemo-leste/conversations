@@ -103,7 +103,7 @@ double Utils::roundUp(double value, int decimal_places) {
 }
 
 bool Utils::protocolIsTelephone(const QString &protocol) {
-  return protocol.contains("sms") || protocol.contains("tel") || protocol.contains("ofono");
+  return (protocol == "sms") || (protocol == "tel") || (protocol == "ofono");
 }
 
 QString Utils::protocolToRTCOMServiceID(const QString &protocol) {
