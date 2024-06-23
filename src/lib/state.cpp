@@ -43,6 +43,7 @@ void ConfigState::load() {
     auto blob = obj.toObject();
     item->remote_uid = blob["remote_uid"].toString();
     item->local_uid = blob["local_uid"].toString();
+    item->group_uid = blob["group_uid"].toString();
     item->auto_join = blob["auto_join"].toBool();
     item->type = (ConfigStateItemType) blob["type"].toInt();
 
@@ -81,14 +82,23 @@ ConfigStateItemPtr ConfigState::getItem(const QString &local_uid, const QString 
   return *it;
 }
 
-ConfigStateItemPtr ConfigState::addItem(const QString &local_uid, const QString &remote_id, ConfigStateItemType type) {
-  qDebug() << "ConfigState::addItem()" << local_uid << remote_id;
-  if(getItem(local_uid, remote_id))
+ConfigStateItemPtr ConfigState::addItem(const QString &local_uid, const QString &remote_id, const QString &group_uid, ConfigStateItemType type) {
+  qDebug() << "ConfigState::addItem()" << local_uid << remote_id << group_uid;
+  auto item = getItem(local_uid, remote_id);
+  if(item) {
+    // handle edge-case when a configStateItem was added via setAutoJoin()
+    if(item->group_uid.isEmpty() && !group_uid.isEmpty()) {
+      item->group_uid = group_uid;
+      m_dirty = true;
+      save();
+    }
     return {};
+  }
 
-  auto item  = ConfigStateItemPtr(new ConfigStateItem());
+  item = ConfigStateItemPtr(new ConfigStateItem());
   item->local_uid = local_uid;
   item->remote_uid = remote_id;
+  item->group_uid = group_uid;
   item->type = type;
   item->date_created = QDateTime::currentMSecsSinceEpoch();
   items << item;
@@ -110,7 +120,7 @@ void ConfigState::deleteItem(const QString &local_uid, const QString &remote_id)
 bool ConfigState::setAutoJoin(const QString &local_uid, const QString &remote_id, bool auto_join) {
   auto item = getItem(local_uid, remote_id);
   if(!item)
-    item = addItem(local_uid, remote_id, ConfigStateItemType::ConfigStateRoom);
+    item = addItem(local_uid, remote_id, "", ConfigStateItemType::ConfigStateRoom);
 
   if(item->type != ConfigStateItemType::ConfigStateRoom) {
     qWarning() << "setAutoJoin on" << remote_id << "failed: item is not type room";
@@ -160,6 +170,7 @@ void ConfigState::save() {
     QJsonObject obj;
     obj["remote_uid"] = item->remote_uid;
     obj["local_uid"] = item->local_uid;
+    obj["group_uid"] = item->group_uid;
     obj["auto_join"] = item->auto_join;
     obj["type"] = double(item->type);
 

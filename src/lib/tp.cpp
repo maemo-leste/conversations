@@ -328,6 +328,11 @@ void TelepathyAccount::TpOpenChannelWindow(Tp::TextChannelPtr channel) {
     emit openChannelWindow(local_uid, remote_uid, group_uid, service, channelstr);
 }
 
+QString TelepathyAccount::getGroupUid(TelepathyChannelPtr channel) {
+    auto text_channel = Tp::TextChannelPtr::staticCast(channel->m_channel);
+    return getGroupUid(text_channel);
+}
+
 QString TelepathyAccount::getGroupUid(Tp::TextChannelPtr channel) {
     if (acc->cmName() == "ring") {
         /* Fremantle uses just the last 7 digits as a group ID and does not
@@ -760,8 +765,9 @@ TelepathyChannel::TelepathyChannel(const QString &remote_uid, TelepathyAccountPt
         handleType(handleType),
         isRoom(handleType == Tp::HandleTypeRoom),
         QObject(nullptr) {
-    configState->addItem(accountPtr->local_uid, remote_uid, isRoom ? ConfigStateItemType::ConfigStateRoom :
-                                                                     ConfigStateItemType::ConfigStateContact);
+    auto group_uid = accountPtr->getGroupUid(Tp::TextChannelPtr::staticCast(m_channel));
+    configState->addItem(accountPtr->local_uid, remote_uid, group_uid, isRoom ? ConfigStateItemType::ConfigStateRoom :
+                                                                                ConfigStateItemType::ConfigStateContact);
 
     connect(m_channel->becomeReady(),
         SIGNAL(finished(Tp::PendingOperation*)),

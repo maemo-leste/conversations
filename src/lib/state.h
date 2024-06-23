@@ -19,14 +19,11 @@ public:
 
   QString remote_uid;
   QString local_uid;
+  QString group_uid;
   ConfigStateItemType type;
   bool auto_join = false;
   qint64 date_created;           // in msecs since epoch
   qint64 date_last_message = 0;  // in msecs since epoch
-
-  QString group_uid() const {
-    return QString("%1-%2").arg(local_uid, remote_uid);
-  }
 };
 
 class ConfigState : public QObject {
@@ -45,7 +42,7 @@ public:
   qint64 getLastMessageTimestamp(const QString &local_uid, const QString &remote_id);
 
 public slots:
-  ConfigStateItemPtr addItem(const QString &local_uid, const QString &remote_id, ConfigStateItemType type);
+  ConfigStateItemPtr addItem(const QString &local_uid, const QString &remote_id, const QString &group_uid, ConfigStateItemType type);
   ConfigStateItemPtr getItem(const QString &local_uid, const QString &remote_id, ConfigStateItemType type = ConfigStateItemType::ConfigStateAny);
   void deleteItem(const QString &local_uid, const QString &remote_id);
 

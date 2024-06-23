@@ -130,6 +130,7 @@ public slots:
     bool log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias);
 
     static QString getRemoteUid(Tp::TextChannelPtr channel);
+    QString getGroupUid(TelepathyChannelPtr channel);
     QString getGroupUid(Tp::TextChannelPtr channel);
     QString getLocalUid();
 

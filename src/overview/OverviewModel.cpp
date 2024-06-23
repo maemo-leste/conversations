@@ -237,7 +237,7 @@ void OverviewModel::onLoad() {
   for(const auto &account: m_tp->accounts) {
     for(const auto &remote_uid: account->channels.keys()) {
       auto channel = account->channels[remote_uid];
-      auto group_uid = QString("%1-%2").arg(account->local_uid, remote_uid);
+      auto group_uid = account->getGroupUid(channel);
 
       if(group_uids.contains(group_uid))
         continue;
@@ -287,13 +287,16 @@ void OverviewModel::onLoad() {
       continue;
     }
 
-    if(group_uids.contains(configItem->group_uid()))
+    if(group_uids.contains(configItem->group_uid))
+      continue;
+
+    if(configItem->group_uid.isEmpty())
       continue;
 
     results << new ChatMessage({
       .event_id = -1,
       .service = "RTCOM_EL_SERVICE_CHAT",
-      .group_uid = configItem->group_uid(),
+      .group_uid = configItem->group_uid,
       .local_uid = configItem->local_uid,
       .remote_uid = remote_uid,
       .remote_name = "",
@@ -310,7 +313,7 @@ void OverviewModel::onLoad() {
       .flags = 0
     });
 
-    group_uids << configItem->group_uid();
+    group_uids << configItem->group_uid;
   }
 
   beginInsertRows(QModelIndex(), 0, results.size());
