@@ -1,3 +1,9 @@
+conversations (0.7.20) unstable; urgency=medium
+
+  * lib/state: save group_uid, and always use TelepathyAccount::getGroupUid()
+
+ -- Sander <sander@sanderf.nl>  Fri, 23 Jun 2024 21:14:10 +0200
+
 conversations (0.7.19) unstable; urgency=medium
 
   * Fix logging of Telegram messages
