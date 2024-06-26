@@ -343,7 +343,7 @@ QString TelepathyAccount::getGroupUid(Tp::TextChannelPtr channel) {
          * guarantee compatibility with existing Fremantle rtcom databases */
         return channel->targetId().right(7);
     } else {
-        return acc->objectPath().replace("/org/freedesktop/Telepathy/Account/", "") + "-" + channel->targetId();
+        return QString(acc->objectPath()).replace("/org/freedesktop/Telepathy/Account/", "") + "-" + channel->targetId();
     }
 }
 
@@ -356,7 +356,7 @@ QString TelepathyAccount::getRemoteUid(Tp::TextChannelPtr channel) {
 }
 
 QString TelepathyAccount::getLocalUid() {
-    return acc->objectPath().replace("/org/freedesktop/Telepathy/Account/", "");
+    return QString(acc->objectPath()).replace("/org/freedesktop/Telepathy/Account/", "");
 }
 
 bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias) {
