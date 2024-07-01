@@ -42,6 +42,7 @@ public:
         LeaveEventRole,
         MessageReadRole,
         displayTimestampRole,
+        weblinksRole,
         shouldHardWordWrapRole
     };
 

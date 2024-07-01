@@ -80,6 +80,8 @@ public:
     bool displayTimestamp() const;
     bool shouldHardWordWrap() const;
 
+    QStringList weblinks();
+
     QSharedPointer<ChatMessage> previous = nullptr;
     QSharedPointer<ChatMessage> next = nullptr;
 

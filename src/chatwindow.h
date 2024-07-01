@@ -5,6 +5,7 @@
 #include <QScreen>
 #include <QtWidgets/QMenu>
 #include <QMainWindow>
+#include <QDesktopServices>
 #include <QObject>
 #include <QtCore>
 #include <QtGui>
@@ -41,6 +42,7 @@ public:
 public:
     void setHighlight(const unsigned int event_id);
     void fillBufferUntil(const unsigned int event_id) const;
+    Q_INVOKABLE void showMessageContextMenu(unsigned int event_id, QPoint point);
 
 public slots:
     void onChatClear();
@@ -63,6 +65,7 @@ private slots:
     void onSetWindowTitle();
     void onChatRequestClear();
     void onChatRequestDelete();
+    void onShowMessageContextMenu(int event_id, QVariant test);
 
 signals:
     void closed(const QString &remote_uid);

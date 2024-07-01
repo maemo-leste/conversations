@@ -168,3 +168,17 @@ bool Utils::IPCSend(int sock, const QString &message) {
   }
   return false;
 }
+
+QStringList Utils::extractWebLinks(const QString &content) {
+  QStringList rtn;
+
+  QRegularExpression rx("((?:https?|ftp)://\\S+)");
+  QRegularExpressionMatchIterator i = rx.globalMatch(content);
+
+  while (i.hasNext()) {
+    QRegularExpressionMatch match = i.next();
+    rtn << match.captured(0);
+  }
+
+  return rtn;
+}

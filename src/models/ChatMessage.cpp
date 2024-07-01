@@ -161,3 +161,9 @@ QList<ChatMessage*> iterateRtComEvents(RTComElQuery *query) {
 
   return results;
 }
+
+QStringList ChatMessage::weblinks() {
+  if(!m_params.text.contains("http")) 
+    return {};
+  return Utils::extractWebLinks(m_params.text);
+}

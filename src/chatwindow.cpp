@@ -126,9 +126,16 @@ ChatWindow::ChatWindow(
   connect((QObject*)ui->quick->rootObject(),
           SIGNAL(chatPreReady()), this,
           SLOT(onChatPreReady()));
+  connect((QObject*)ui->quick->rootObject(),
+          SIGNAL(showMessageContextMenu(int, QVariant)), this,
+          SLOT(onShowMessageContextMenu(int, QVariant)));
 
   this->detectActiveChannel();
   this->onSetWindowTitle();
+}
+
+void ChatWindow::onShowMessageContextMenu(int event_id, QVariant point) {
+  this->showMessageContextMenu(event_id, point.toPoint());
 }
 
 void ChatWindow::onChatRequestDelete() {
@@ -385,6 +392,89 @@ void ChatWindow::closeEvent(QCloseEvent *event) {
   emit closed(group_uid);
   QWidget::closeEvent(event);
 }
+
+void ChatWindow::showMessageContextMenu(unsigned int event_id, QPoint point) {
+  QMenu contextMenu("Context menu", this);
+
+  QSharedPointer<ChatMessage> msg;
+  for(const auto &_msg: chatModel->chats) {
+    if(_msg->event_id() == event_id) {
+      msg = _msg;
+    }
+  }
+
+  if(!msg) {
+    qWarning() << "message not found";
+    return;
+  }
+
+  QAction actionNew("Reply", this);
+  connect(&actionNew, &QAction::triggered, [this, msg]{
+    this->ui->chatBox->setText(
+      QString("> %1\n").arg(msg->text())
+    );
+
+    QTextCursor cursor = this->ui->chatBox->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    this->ui->chatBox->setTextCursor(cursor);
+
+    this->ui->chatBox->setFocus();
+  });
+  contextMenu.addAction(&actionNew);
+
+  QAction actionOpen("Copy Text", this);
+  connect(&actionOpen, &QAction::triggered, [msg]{
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(msg->text());
+
+    QMessageBox msgBox;
+    msgBox.setText(QString("Text copied."));
+    msgBox.exec();
+  });
+  contextMenu.addAction(&actionOpen);
+
+  // submenu; copy weblinks
+  if(!msg->weblinks().isEmpty()) {
+    auto copyLinkMenu = new QMenu("Copy Link", &contextMenu);
+
+    for(unsigned int i = 0; i != msg->weblinks().size(); i++) {
+      auto weblink = msg->weblinks().at(i);
+
+      auto actionCopyLink = new QAction(QString("Link #%1").arg(QString::number(i)), &contextMenu);
+      connect(actionCopyLink, &QAction::triggered, [this, weblink] {
+        QClipboard *clipboard = QGuiApplication::clipboard();
+        clipboard->setText(weblink);
+
+        QMessageBox msgBox;
+        msgBox.setText(QString("Link copied."));
+        msgBox.exec();
+      });
+
+      copyLinkMenu->addAction(actionCopyLink);
+    }
+    contextMenu.addMenu(copyLinkMenu);
+  }
+
+  // submenu; open weblinks
+  if(!msg->weblinks().isEmpty()) {
+    auto openLinkMenu = new QMenu("Open Link", &contextMenu);
+
+    for(unsigned int i = 0; i != msg->weblinks().size(); i++) {
+      auto weblink = msg->weblinks().at(i);
+
+      auto actionOpenLink = new QAction(QString("Link #%1").arg(QString::number(i)), &contextMenu);
+      connect(actionOpenLink, &QAction::triggered, [this, weblink] {
+        QDesktopServices::openUrl(QUrl(weblink, QUrl::TolerantMode));
+      });
+
+      openLinkMenu->addAction(actionOpenLink);
+    }
+    contextMenu.addMenu(openLinkMenu);
+  }
+
+  contextMenu.exec(mapToGlobal({point.x(), point.y()}));
+}
+
 
 void ChatWindow::changeEvent(QEvent *event) {
   if(event->type() == QEvent::ActivationChange) {

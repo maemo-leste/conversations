@@ -138,6 +138,13 @@ Rectangle {
 
             Components.PlainText {
                 color: "lime"
+                text: "scrollPressed: " + chatList.chatScroll.pressed
+                font.pointSize: parent.pointSize
+                font.bold: true
+            }
+
+            Components.PlainText {
+                color: "lime"
                 text: "scrollable: " + chatList.scrollable
                 font.pointSize: parent.pointSize
                 font.bold: true

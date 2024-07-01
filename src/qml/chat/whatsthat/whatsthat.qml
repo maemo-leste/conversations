@@ -28,6 +28,8 @@ Components.ChatRoot {
     historyPopupBackgroundColor: "#262d31"
     historyPopupTextColor: "white"
 
+    signal showMessageContextMenu(int event_id, var point)
+
     Image {
         // background
         visible: !ctx.inheritSystemTheme
@@ -48,6 +50,7 @@ Components.ChatRoot {
 
         delegate: MessageDelegate {
             highlight: root.highlightEventId == event_id
+            onShowMessageContextMenu: root.showMessageContextMenu(event_id, point);
         }
     }
 }

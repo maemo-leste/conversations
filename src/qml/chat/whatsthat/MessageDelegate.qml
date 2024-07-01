@@ -1,4 +1,4 @@
-import QtQuick 2.0
+import QtQuick 2.15
 import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.0
 
@@ -6,7 +6,19 @@ import "../components" as Components
 
 RowLayout {
     id: item
-    property int itemHeightSpacing: ctx.scaleFactor == 1 ? 12 : 18
+
+    signal showMessageContextMenu(int event_id, var point);
+
+    Connections {
+        target: chatListView
+
+        // on flickable movement end, reset chat msg container state
+        function onMovementEnded() { 
+            textContainer.state = "off";
+        }
+    }
+
+    property int itemHeightSpacing: ctx.scaleFactor == 1 ? 18 : 24
     property int itemHeight: {
       if(!chat_event) return 18;  // join/leave
       return textColumn.implicitHeight + item.itemHeightSpacing;  // normal msg
@@ -79,8 +91,8 @@ RowLayout {
     }
 
     Rectangle {
+        id: textContainer
         visible: chat_event
-        color: highlight ? colorHighlight : "transparent"
         Layout.preferredHeight: itemHeight
         Layout.preferredWidth: {
             var max_width = item.width / 6 * 4;
@@ -94,13 +106,41 @@ RowLayout {
             return max_width;
         }
 
+        state: "off"
+        states: [
+            State {
+                name: "on"
+                PropertyChanges {
+                    color: colorHighlight
+                    target: textContainer
+                }
+            },
+            State {
+                name: "off"
+                PropertyChanges {
+                    color: item.highlight ? colorHighlight : "transparent"
+                    target: textContainer
+                }
+            }
+        ]
+
+        transitions: Transition {
+            ColorAnimation {
+              id: highlightAnimation 
+              duration: 600
+              properties: "color"
+              easing.type: Easing.OutCubic
+            }
+        }
+
         Rectangle {
             id: textRectangle
             radius: highlight ? 0 : 4
             clip: true
-            color: outgoing ? root.chatBackgroundSelf : root.chatBackgroundThem
+            property string bgColor: outgoing ? root.chatBackgroundSelf : root.chatBackgroundThem
+            color: bgColor
             anchors.fill: parent
-            anchors.margins: highlight ? 2 * ctx.scaleFactor : 0
+            anchors.margins: 2
 
             ColumnLayout {
                 id: textColumn
@@ -146,6 +186,38 @@ RowLayout {
                     width: parent.width
                     font.pointSize: 14 * ctx.scaleFactor
                     Layout.preferredWidth: parent.width
+                }
+            }
+
+        }
+
+        MouseArea {
+            id: longTapArea
+            anchors.fill: parent
+            property double pressPosStart: -1.0
+
+            onPressed: {
+                longTapArea.pressPosStart = chatList.chatScroll.position.toFixed(4);
+                textContainer.state = "on";
+                holdTimer.restart();
+            }
+
+            onReleased: {
+                textContainer.state = "off";
+                holdTimer.stop()
+            }
+
+            Timer {
+                id: holdTimer
+                interval: 500
+                running: false 
+                repeat: false
+                onTriggered: {
+                    var pressPosEnd = chatList.chatScroll.position.toFixed(4);
+                    if(pressPosEnd == longTapArea.pressPosStart) {
+                        chatWindow.showMessageContextMenu(event_id, Qt.point(longTapArea.mouseX, longTapArea.mouseY));
+                        textContainer.state = "off";
+                    }
                 }
             }
         }

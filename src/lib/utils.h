@@ -15,6 +15,8 @@
 #include <QRegExp>
 #include <QQmlContext>
 #include <QStandardItemModel>
+#include <QRegularExpression>
+#include <QRegularExpressionMatchIterator>
 #include <QApplication>
 #include <QTextCharFormat>
 
@@ -44,7 +46,7 @@ public:
     static QJsonObject getUserGroupChatChannels();
     static int IPCOpen(const std::string &path);
     static bool IPCSend(int sock, const QString &message);
-
+    static QStringList extractWebLinks(const QString &content);
 };
 
 class Conversations;
