@@ -467,6 +467,7 @@ void ChatWindow::showMessageContextMenu(unsigned int event_id, QPoint point) {
         auto webLinkStr = weblink.toStdString();
         GError *error = NULL;
         HildonURIAction *action = hildon_uri_get_default_action_by_uri(webLinkStr.c_str(), &error);
+        // action->type = HILDON_URI_ACTION_XDG;
 
         if(error != NULL) {
          qWarning() << QString("Could not get default action by uri, error: %1->'%s'").arg(
@@ -478,6 +479,7 @@ void ChatWindow::showMessageContextMenu(unsigned int event_id, QPoint point) {
             qWarning() << weblink << "-" << QString::fromLocal8Bit(error->message);
         }
 
+        hildon_uri_action_unref(action);
         g_error_free(error);
       });
 
