@@ -466,20 +466,17 @@ void ChatWindow::showMessageContextMenu(unsigned int event_id, QPoint point) {
       connect(actionOpenLink, &QAction::triggered, [this, weblink] {
         auto webLinkStr = weblink.toStdString();
         GError *error = NULL;
-        HildonURIAction *action = hildon_uri_get_default_action_by_uri(webLinkStr.c_str(), &error);
-        // action->type = HILDON_URI_ACTION_XDG;
 
         if(error != NULL) {
          qWarning() << QString("Could not get default action by uri, error: %1->'%s'").arg(
             QString::number(error->code),
             QString::fromLocal8Bit(error->message));
         } else {
-          hildon_uri_open(webLinkStr.c_str(), action, &error);
+          hildon_uri_open(webLinkStr.c_str(), NULL, &error);
           if(error != NULL)
             qWarning() << weblink << "-" << QString::fromLocal8Bit(error->message);
         }
 
-        hildon_uri_action_unref(action);
         g_error_free(error);
       });
 
