@@ -12,6 +12,7 @@
 #include <QFileInfo>
 
 #include <iostream>
+#include <hildon-uri.h>
 
 #include "conversations.h"
 #include "lib/config.h"
