@@ -225,7 +225,6 @@ void MainWindow::onOpenSettingsWindow() {
 }
 
 void MainWindow::onNotificationClicked(const QSharedPointer<ChatMessage> &msg) {
-  this->onShowApplication();
   this->onOpenChatWindow(msg);
 }
 
