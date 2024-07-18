@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <rtcom-eventlogger/eventlogger.h>
+#include <rtcom-eventlogger-plugins/chat.h>
 #include <glib.h>
 #include <glib/gstdio.h>
 
@@ -26,6 +27,8 @@ namespace qtrtcom {
     unsigned int registerMessage(time_t start_time, time_t end_time, const char *self_name, const char *backend_name,
                           const char *remote_uid, const char *remote_name, const char *abook_uid, const char *text,
                           bool is_outgoing, const char *protocol, const char *channel, const char *group_uid);
+
+    void setRoomName(const char *group_uid, const char *title);
 
     void registerChatJoin(time_t start_time, time_t end_time, const char *self_name, const char *backend_name,
                           const char *remote_uid, const char *remote_name, const char *abook_uid, const char *text,

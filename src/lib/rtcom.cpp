@@ -43,6 +43,11 @@ bool qtrtcom::deleteEvents(const char* group_uid) {
   return true;
 }
 
+void qtrtcom::setRoomName(const char* group_uid, const char* title) {
+  auto el = qtrtcom::rtcomel();
+  rtcom_el_plugin_chat_set_group_title(el, g_strdup(group_uid), g_strdup(title));
+}
+
 void qtrtcom::registerChatJoin(time_t start_time, time_t end_time, const char* self_name, const char* backend_name, const char *remote_uid, const char *remote_name, const char* abook_uid, const char* text, const char* protocol, const char* channel, const char* group_uid) {
   qDebug() << __FUNCTION__;
 
