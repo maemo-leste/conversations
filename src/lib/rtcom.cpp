@@ -9,6 +9,18 @@ RTComEl * qtrtcom::rtcomel() {
   return el;
 }
 
+QString qtrtcom::getRoomName(const char* group_uid) {
+  // @TODO: repeatedly called, needs caching
+  auto el = qtrtcom::rtcomel();
+  return QString::fromUtf8(rtcom_el_plugin_chat_get_group_title(el, g_strdup(group_uid)));
+}
+
+void qtrtcom::setRoomName(const char* group_uid, const char* title) {
+  qDebug() << "setRoomName()" << QString::fromUtf8(group_uid) << QString::fromUtf8(title);
+  auto el = qtrtcom::rtcomel();
+  rtcom_el_plugin_chat_set_group_title(el, g_strdup(group_uid), g_strdup(title));
+}
+
 RTComElQuery *qtrtcom::startQuery(const int limit, const int offset, const RTComElQueryGroupBy group_by) {
   RTComElQuery *query = rtcom_el_query_new(qtrtcom::rtcomel());
 

@@ -29,10 +29,9 @@ include(CheckFunctionExists)
 find_package(Threads REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(GLIB REQUIRED)
-pkg_check_modules(RTCOM-EVENTLOGGER REQUIRED rtcom-eventlogger)
-if(DEFINED RTCOM-EVENTLOGGER_LIBRARY_DIRS)
-    set(RTCOM ON)
-endif()
+
+pkg_check_modules(RTCOM-EVENTLOGGER REQUIRED IMPORTED_TARGET rtcom-eventlogger)
+pkg_check_modules(RTCOM-EVENTLOGGER-PLUGINS REQUIRED IMPORTED_TARGET rtcom-eventlogger-plugins)
 
 pkg_check_modules(LIBHILDON hildon-1)
 if(DEFINED LIBHILDON_LIBRARIES)

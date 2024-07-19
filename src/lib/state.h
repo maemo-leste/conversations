@@ -20,6 +20,7 @@ public:
   QString remote_uid;
   QString local_uid;
   QString group_uid;
+  QString room_name;
   ConfigStateItemType type;
   bool auto_join = false;
   qint64 date_created;           // in msecs since epoch
@@ -35,6 +36,7 @@ public:
   void save();
 
 public:
+  bool setRoomName(const QString &local_uid, const QString &remote_id, const QString &room_name);
   bool setAutoJoin(const QString &local_uid, const QString &remote_id, bool auto_join);
   bool getAutoJoin(const QString &local_uid, const QString &remote_id);
 

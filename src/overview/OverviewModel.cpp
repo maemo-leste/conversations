@@ -238,6 +238,7 @@ void OverviewModel::onLoad() {
     for(const auto &remote_uid: account->channels.keys()) {
       auto channel = account->channels[remote_uid];
       auto group_uid = account->getGroupUid(channel);
+      auto room_name = account->getRoomName(channel);
 
       if(group_uids.contains(group_uid))
         continue;

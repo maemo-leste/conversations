@@ -131,6 +131,7 @@ public slots:
 
     static QString getRemoteUid(Tp::TextChannelPtr channel);
     QString getGroupUid(TelepathyChannelPtr channel);
+    QString getRoomName(TelepathyChannelPtr channel);
     QString getGroupUid(Tp::TextChannelPtr channel);
     QString getLocalUid();
 
@@ -168,6 +169,7 @@ public:
     ~TelepathyChannel() override;
 
     QString remote_uid;
+    QString room_name;
     Tp::HandleType handleType;
     bool isRoom;
 

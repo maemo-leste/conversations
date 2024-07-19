@@ -117,6 +117,23 @@ void ConfigState::deleteItem(const QString &local_uid, const QString &remote_id)
   items.removeOne(item);
 }
 
+bool ConfigState::setRoomName(const QString &local_uid, const QString &remote_id, const QString &room_name) {
+  auto item = getItem(local_uid, remote_id);
+  if(!item)
+    item = addItem(local_uid, remote_id, "", ConfigStateItemType::ConfigStateRoom);
+
+  if(item->type != ConfigStateItemType::ConfigStateRoom) {
+    qWarning() << "setAutoJoin on" << remote_id << "failed: item is not type room";
+    return false;
+  }
+
+  item->room_name = room_name;
+
+  save();
+  m_dirty = true;
+  return true;
+}
+
 bool ConfigState::setAutoJoin(const QString &local_uid, const QString &remote_id, bool auto_join) {
   auto item = getItem(local_uid, remote_id);
   if(!item)
