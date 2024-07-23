@@ -253,14 +253,23 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
     bool isAutoJoin = !userActionTime.isValid();
 
     foreach (Tp::ChannelPtr channelPtr, channels) {
-        QVariantMap props = channelPtr->immutableProperties();
+        // find associated TelepathyAccountPtr
+        TelepathyAccountPtr accountPtr = m_tp->accountByPtr(account);
+        if(!accountPtr)
+            throw std::runtime_error("no matching TelepathyAccountPtr debug me");
 
+        QVariantMap props = channelPtr->immutableProperties();
         QString remote_uid = props.value(QString("%1.TargetID").arg(TP_QT_IFACE_CHANNEL)).toString();
         if(remote_uid.isEmpty()) {
             qWarning() << "handleChannels cannot get TargetID (remote_uid) for channel";
             continue;
         }
 
+        // https://telepathy.freedesktop.org/doc/telepathy-qt/a00879.html
+        Tp::HandleType handleType = (Tp::HandleType) props.value(QString("%1.TargetHandleType").arg(TP_QT_IFACE_CHANNEL)).toInt();
+        bool isRoom = handleType == Tp::HandleTypeRoom;
+
+        QString initiator_id = props.value(QString("%1.InitiatorID").arg(TP_QT_IFACE_CHANNEL)).toString();
         QString room_name = props.value(QString("%1.Interface.Room2.RoomName").arg(TP_QT_IFACE_CHANNEL)).toString();
 
         // https://telepathy.freedesktop.org/spec/index.html#Channel-Types
@@ -270,21 +279,26 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
             continue;
         }
 
-        // https://telepathy.freedesktop.org/doc/telepathy-qt/a00879.html
-        Tp::HandleType handleType = (Tp::HandleType) props.value(QString("%1.TargetHandleType").arg(TP_QT_IFACE_CHANNEL)).toInt();
-        bool isRoom = handleType == Tp::HandleTypeRoom;
+        // Matrix always needs a room name
+        if(accountPtr->protocolName() == "matrix") {
+            if(room_name.isEmpty()) {
+                qWarning() << "matrix channel offered without room alias, skipping";
+                continue;
+            }
 
-        // find associated TelepathyAccountPtr
-        TelepathyAccountPtr accountPtr = m_tp->accountByPtr(account);
-        if(!accountPtr)
-            throw std::runtime_error("no matching TelepathyAccountPtr debug me");
+            if(!room_name.startsWith("#") && !room_name.startsWith("@")) {
+                qWarning() << "matrix channel offered a faulty room alias, skipping, room_name was" << room_name;
+                continue;
+            }
+        }
 
         // create a TelepathyChannelPtr
         if(!accountPtr->hasChannel(remote_uid)) {
+            qDebug() << "creating TelepathyChannelPtr()";
             auto tcPtr = TelepathyChannelPtr(new TelepathyChannel(remote_uid, accountPtr, channelPtr, handleType));
 
             tcPtr->isRoom = isRoom;
-            if(!room_name.isEmpty()) {  // register room name
+            if(!room_name.isEmpty()) {  // register room name in rtcom
                 auto remote_uid_str = remote_uid.toStdString();
                 auto _remote_uid = remote_uid_str.c_str();
 
@@ -304,9 +318,16 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
 
             // announce we joined a channel (valid for both room, and 1:1 contact)
             emit accountPtr->channelJoined(accountPtr->local_uid, remote_uid);
+        } else { //
+            qDebug() << "setting secondary ChannelPtr, replacing the first";
+            auto tcPtr = accountPtr->hasChannel(remote_uid);
+            tcPtr->setChannelPtr(channelPtr);
+
+            emit accountPtr->channelJoined(accountPtr->local_uid, remote_uid);
         }
 
-        if(!isAutoJoin)  // channel joined from 'external' Tp client (e.g addresbook), request chatWindow
+        // channel joined from 'external' Tp client (e.g addresbook), request chatWindow
+        if(!isAutoJoin)
           accountPtr->TpOpenChannelWindow(Tp::TextChannelPtr::staticCast(channelPtr));
     }
 
@@ -544,8 +565,8 @@ void TelepathyAccount::joinChannel(const QString &remote_uid) {
     this->_joinChannel(remote_uid);
 }
 
-void TelepathyAccount::_joinChannel(const QString &remote_uid, bool auto_join) {
-    qDebug() << "_joinChannel" << remote_uid;
+void TelepathyAccount::_joinChannel(QString remote_uid, bool auto_join) {
+    qDebug() << "_joinChannel" << remote_uid << "protocol" << protocolName();
 
     // set a 'null' datetime on auto_join
     QDateTime dt = auto_join ? QDateTime() : QDateTime::currentDateTime();
@@ -724,7 +745,7 @@ void TelepathyAccount::removeChannel(const QString &remote_uid) {
   emit channelLeft(local_uid, remote_uid);
 }
 
-void TelepathyAccount::sendMessage(const QString &remote_uid, const QString &message) {
+void TelepathyAccount::sendMessage(QString remote_uid, const QString &message) {
     qDebug() << "sendMessage: remote_uid:" << remote_uid;
     auto chan = hasChannel(remote_uid);
 
@@ -734,13 +755,24 @@ void TelepathyAccount::sendMessage(const QString &remote_uid, const QString &mes
         return;
     }
 
+    // cannot create Matrix TextChannel for *group* rooms on-the-fly, need to specifically call joinChannel() first
+    if(protocolName() == "matrix" && remote_uid.startsWith("#"))
+        return;
+
+    qDebug() << "did not have TextChannelPtr, calling acc->ensureTextChat()";
     auto *pending = acc->ensureTextChat(remote_uid);
-    connect(pending, &Tp::PendingChannelRequest::finished, [message](Tp::PendingOperation *op){
-            auto *_pending = (Tp::PendingChannelRequest *)op;
-            auto chanrequest = _pending->channelRequest();
-            auto channel = chanrequest->channel();
-            auto text_channel = (Tp::TextChannel *)channel.data();
-            text_channel->send(message);
+
+    connect(pending, &Tp::PendingChannelRequest::finished, [message, this](Tp::PendingOperation *op){
+        if(op->isError()) {
+            auto err_msg = QString("ensureTextChat failed: %1").arg(op->errorMessage());
+            qWarning() << err_msg;
+            emit errorMessage(err_msg);
+            return;
+        }
+
+        auto channel = reinterpret_cast<Tp::PendingChannelRequest *>(op)->channelRequest()->channel();
+        auto text_channel = (Tp::TextChannel *)channel.data();
+        text_channel->send(message);
     });
 }
 
@@ -789,6 +821,8 @@ TelepathyChannel::TelepathyChannel(const QString &remote_uid, TelepathyAccountPt
         handleType(handleType),
         isRoom(handleType == Tp::HandleTypeRoom),
         QObject(nullptr) {
+
+    qDebug() << "TelepathyChannel::TelepathyChannel constructor";
     auto group_uid = accountPtr->getGroupUid(Tp::TextChannelPtr::staticCast(m_channel));
     configState->addItem(accountPtr->local_uid, remote_uid, group_uid, isRoom ? ConfigStateItemType::ConfigStateRoom :
                                                                                 ConfigStateItemType::ConfigStateContact);
@@ -867,6 +901,15 @@ void TelepathyChannel::onChanMessageSent(const Tp::Message &message, Tp::Message
 
     m_account->onMessageSent(message, flags, sentMessageToken,
                              Tp::TextChannelPtr::staticCast(m_channel));
+}
+
+void TelepathyChannel::setChannelPtr(const Tp::ChannelPtr channelPtr) {
+    qDebug() << "TelepathyChannel::setChannelPtr, replacing";
+    m_channel->deleteLater();
+    m_channel = channelPtr;
+    connect(m_channel->becomeReady(),
+        SIGNAL(finished(Tp::PendingOperation*)),
+        SLOT(onChannelReady(Tp::PendingOperation*)));
 }
 
 /* If we already have a channel, send is easy */

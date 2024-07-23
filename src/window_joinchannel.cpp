@@ -40,6 +40,17 @@ JoinChannel::JoinChannel(Conversations *ctx, QWidget *parent) :
     ui->lblAccountWarning->show();
   }
 
+  ui->lbl_matrix_howto->hide();
+  connect(this->ui->comboAccount, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int idx) {
+    auto account_combo_data = ui->comboAccount->currentData().value<QList<QVariant>>();
+    auto account_local_uid = account_combo_data.first().toString();
+
+    if(account_local_uid.contains("/matrix/"))
+      ui->lbl_matrix_howto->show();
+    else
+      ui->lbl_matrix_howto->hide();
+  });
+
   connect(this->ui->btnJoinChannel, &QPushButton::clicked, [this] {
     // account combobox
     auto account_combo_data = ui->comboAccount->currentData().value<QList<QVariant>>();
@@ -48,18 +59,25 @@ JoinChannel::JoinChannel(Conversations *ctx, QWidget *parent) :
     // channel
     QString channel = ui->lineEdit_channel->text().trimmed();
 
+    if(account_local_uid.contains("/matrix/")) {
+      QString matrix_err = "Joining Matrix channels should be in the following format: #channel:server.tld";
+
+      // @TODO: better matching
+      if(!account_local_uid.startsWith("#") || !account_local_uid.contains(":") || !account_local_uid.contains(".")) {
+        return messageBox(matrix_err);
+      }
+    }
+
     // channel auto-join
     bool persistent = ui->checkbox_autoJoin->isChecked();
 
     if(channel.isEmpty()) {
-      this->messageBox("channel cannot be empty");
-      return;
+      return this->messageBox("channel cannot be empty");
     } else if (account_local_uid.isEmpty()) {
-      this->messageBox("account cannot be empty");
-      return;
+      return this->messageBox("account cannot be empty");
     }
 
-    m_ctx->state->setAutoJoin(account_local_uid, channel, persistent);
+    // m_ctx->state->setAutoJoin(account_local_uid, channel, persistent);
     emit joinChannel(account_local_uid, channel);
   });
 }

@@ -175,3 +175,4 @@ QStringList ChatMessage::weblinks() {
     return {};
   return Utils::extractWebLinks(m_params.text);
 }
+

@@ -10,6 +10,7 @@
 #include <QtCore>
 #include <QtGui>
 #include <QFileInfo>
+#include <QComboBox>
 
 #include <iostream>
 

@@ -44,6 +44,7 @@
 #include <TelepathyQt/ContactMessenger>
 #include <TelepathyQt/ContactManager>
 #include <TelepathyQt/PendingSendMessage>
+#include <TelepathyQt/ChannelRequestHints>
 #include <TelepathyQt/SimpleTextObserver>
 #include <TelepathyQt/PendingStringList>
 #include <TelepathyQt/PendingHandles>
@@ -111,9 +112,10 @@ signals:
     void channelJoined(QString local_uid, QString remote_uid);
     void channelLeft(QString local_uid, QString remote_uid);
     void accountReady(TelepathyAccount* account);
+    void errorMessage(const QString &errorMsg);
 
 public slots:
-    void sendMessage(const QString &remote_uid, const QString &message);
+    void sendMessage(QString remote_uid, const QString &message);
     void joinChannel(const QString &remote_uid);
     void leaveChannel(const QString &remote_uid);
     void removeChannel(const QString &remote_uid);
@@ -156,7 +158,7 @@ private:
     Tp::AccountManagerPtr m_accountmanager;
 
     Telepathy* m_parent;
-    void _joinChannel(const QString &channel, bool auto_join = false);
+    void _joinChannel(QString channel, bool auto_join = false);
     void joinSavedGroupChats();
     void configRead();
 };
@@ -172,6 +174,8 @@ public:
     QString room_name;
     Tp::HandleType handleType;
     bool isRoom;
+
+    void setChannelPtr(Tp::ChannelPtr channel);
 
 public slots:
     void sendMessage(const QString &message) const;
