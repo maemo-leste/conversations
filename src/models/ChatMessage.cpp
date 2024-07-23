@@ -38,7 +38,15 @@ QString ChatMessage::name() const {
   return m_params.remote_uid;
 }
 QString ChatMessage::overview_name() const {
-  if(!m_params.channel.isEmpty()) return m_params.channel;
+  if(!m_params.channel.isEmpty()) {
+    auto channel_str = m_params.channel.toStdString();
+    auto _channel_str = channel_str.c_str();
+    auto room_name = qtrtcom::getRoomName(_channel_str);
+    if(!room_name.isEmpty())
+      return room_name;
+
+    return m_params.channel;
+  }
   if(!m_params.remote_name.isEmpty()) return m_params.remote_name;
   return m_params.remote_uid;
 }

@@ -333,7 +333,13 @@ void ChatWindow::onSetWindowTitle() {
     windowTitle += protocol.toUpper();
 
   if(groupchat) {
-      windowTitle +=  " - " + channel;
+      auto channel_str = channel.toStdString();
+      auto _channel_str = channel_str.c_str();
+      auto room_name = qtrtcom::getRoomName(_channel_str);
+      if(room_name.isEmpty())
+        windowTitle +=  " - " + channel;
+      else
+        windowTitle +=  " - " + room_name;
   } else {
     if(!remote_name.isEmpty())
       windowTitle += " - " + remote_name;

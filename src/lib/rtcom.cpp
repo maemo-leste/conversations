@@ -1,12 +1,38 @@
 #include "lib/rtcom.h"
 
 RTComEl *qtrtcom::el = NULL;
+QMap<QString, QString> roomNameLookup;
 
 RTComEl * qtrtcom::rtcomel() {
   if (!el)
     el = rtcom_el_new();
-
   return el;
+}
+
+QString qtrtcom::getRoomName(const char* group_uid) {
+  auto group_uid_str = QString::fromUtf8(group_uid);
+  qDebug() << "getRoomName()" << group_uid_str;
+  if(roomNameLookup.contains(group_uid_str))
+    return roomNameLookup[group_uid_str];
+
+  auto el = qtrtcom::rtcomel();
+  auto title_str =  QString::fromUtf8(rtcom_el_plugin_chat_get_group_title(el, g_strdup(group_uid)));
+
+  // cache
+  if(!title_str.isEmpty())
+    roomNameLookup[group_uid_str] = title_str;
+
+  return title_str;
+}
+
+void qtrtcom::setRoomName(const char* group_uid, const char* title) {
+  auto group_uid_str = QString::fromUtf8(group_uid);
+  auto title_str = QString::fromUtf8(title);
+  qDebug() << "setRoomName()" << group_uid_str << title_str;
+  roomNameLookup[group_uid_str] = title_str;
+
+  auto el = qtrtcom::rtcomel();
+  rtcom_el_plugin_chat_set_group_title(el, g_strdup(group_uid), g_strdup(title));
 }
 
 RTComElQuery *qtrtcom::startQuery(const int limit, const int offset, const RTComElQueryGroupBy group_by) {

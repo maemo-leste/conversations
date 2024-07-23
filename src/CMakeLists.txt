@@ -57,9 +57,8 @@ if(MAEMO)
     target_compile_definitions(conversations PRIVATE MAEMO=1)
 endif()
 
-if(RTCOM)
-    target_compile_definitions(conversations PRIVATE RTCOM=1)
-endif()
+# @TODO: removeme
+target_compile_definitions(conversations PRIVATE RTCOM=1)
 
 if(DISABLE_QML_DISK_CACHE)
   message(STATUS "QML disk cache: off")
@@ -140,11 +139,11 @@ target_link_libraries(conversations PUBLIC
         Threads::Threads
         ${TELEPATHY_QT5_LIBRARIES}
         ${GLIB_LIBRARIES}
-        ${RTCOM-EVENTLOGGER_LIBRARIES}
         ${OSSO_ABOOK_LIBRARIES}
         ${LIBHILDON_LIBRARIES}
         ${GTK_LIBRARIES}
-        -lrtcom-el-plugin-chat
+        PkgConfig::RTCOM-EVENTLOGGER
+        PkgConfig::RTCOM-EVENTLOGGER-PLUGINS
 )
 
 if(MAEMO)
@@ -167,11 +166,8 @@ else()
 endif()
 message(STATUS "GLib: ${GLIB_VERSION}")
 message(STATUS "tp-qt: ${TELEPATHY_QT5_VERSION}")
-if(RTCOM)
-    message(STATUS "rtcom-eventlogger: ${RTCOM-EVENTLOGGER_VERSION}")
-else()
-    message(STATUS "rtcom-eventlogger: off")
-endif()
+message(STATUS "rtcom-eventlogger: ${RTCOM-EVENTLOGGER_VERSION}")
+message(STATUS "rtcom-eventlogger-plugins: ${RTCOM-EVENTLOGGER-PLUGINS_VERSION}")
 if(OSSO_ABOOK)
     message(STATUS "osso-abook: ${OSSO_ABOOK_VERSION}")
 else()
