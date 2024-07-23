@@ -400,6 +400,11 @@ void ChatWindow::closeEvent(QCloseEvent *event) {
 }
 
 void ChatWindow::showMessageContextMenu(unsigned int event_id, QPoint point) {
+  // @TODO: when opening this menu, and then dismissing it by clicking outside of it,
+  // control is not giving back to the application. This only happens on touchscreen
+  // devices, e.g droid4.
+  // this menu is disabled for now.
+  return;
   QMenu contextMenu("Context menu", this);
 
   QSharedPointer<ChatMessage> msg;
