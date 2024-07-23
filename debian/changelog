@@ -1,3 +1,13 @@
+conversations (0.7.21) unstable; urgency=medium
+
+  * rtcom: Handle Interface.Room2.RoomName, save in rtcom
+  * chatWindow: initial support for message context menu
+  * mainWindow: do not raise mainwindow on notification click
+  * chatWindow: use hildon_uri_open to open links
+  * lib/tp: ensure replace does not modify internal string
+
+ -- Sander <sander@sanderf.nl>  Fri, 23 Jul 2024 16:45:10 +0200
+
 conversations (0.7.20) unstable; urgency=medium
 
   * lib/state: save group_uid, and always use TelepathyAccount::getGroupUid()
