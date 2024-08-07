@@ -121,6 +121,7 @@ void Telepathy::onNewAccount(const Tp::AccountPtr &account) {
     connect(telepathyAccount, &TelepathyAccount::openChannelWindow, this, &Telepathy::onOpenChannelWindow);
     connect(telepathyAccount, &TelepathyAccount::channelJoined, this, &Telepathy::channelJoined);
     connect(telepathyAccount, &TelepathyAccount::channelLeft, this, &Telepathy::channelLeft);
+    connect(telepathyAccount, &TelepathyAccount::errorMessage, this, &Telepathy::errorMessage);
     connect(telepathyAccount, &TelepathyAccount::removed, [this](TelepathyAccount *ptr) {
       this->onAccountRemoved(ptr->local_uid);
     });

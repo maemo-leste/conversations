@@ -222,6 +222,7 @@ signals:
     void channelJoined(QString local_uid, QString channel);
     void channelLeft(QString local_uid, QString channel);
     void channelDeleted(QString local_uid, QString channel);
+    void errorMessage(const QString &errorMsg);
 
 public slots:
     void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);

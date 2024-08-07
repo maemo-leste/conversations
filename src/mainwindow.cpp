@@ -40,6 +40,13 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx, &Conversations::textScalingChanged, m_widgetOverview, &OverviewWidget::onSetColumnStyleDelegate);
   connect(m_ctx, &Conversations::textScalingChanged, m_widgetOverview, &OverviewWidget::onSetTableHeight);
 
+  // error messages from Telepathy
+  connect(m_ctx->telepathy, &Telepathy::errorMessage, [this](QString msg){
+    QMessageBox msgBox;
+    msgBox.setText(msg);
+    msgBox.exec();
+  });
+
   // Setup filter protocol menu items
   this->onSetupUIAccounts();
 

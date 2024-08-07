@@ -63,7 +63,7 @@ JoinChannel::JoinChannel(Conversations *ctx, QWidget *parent) :
       QString matrix_err = "Joining Matrix channels should be in the following format: #channel:server.tld";
 
       // @TODO: better matching
-      if(!account_local_uid.startsWith("#") || !account_local_uid.contains(":") || !account_local_uid.contains(".")) {
+      if(!channel.startsWith("#") || !channel.contains(":") || !channel.contains(".")) {
         return messageBox(matrix_err);
       }
     }
