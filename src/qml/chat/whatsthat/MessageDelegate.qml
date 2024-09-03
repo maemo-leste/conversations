@@ -192,33 +192,23 @@ RowLayout {
         }
 
         MouseArea {
-            id: longTapArea
             anchors.fill: parent
-            property double pressPosStart: -1.0
-
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
             onPressed: {
-                longTapArea.pressPosStart = chatList.chatScroll.position.toFixed(4);
                 textContainer.state = "on";
-                holdTimer.restart();
             }
-
             onReleased: {
                 textContainer.state = "off";
-                holdTimer.stop()
             }
-
-            Timer {
-                id: holdTimer
-                interval: 500
-                running: false 
-                repeat: false
-                onTriggered: {
-                    var pressPosEnd = chatList.chatScroll.position.toFixed(4);
-                    if(pressPosEnd == longTapArea.pressPosStart) {
-                        chatWindow.showMessageContextMenu(event_id, Qt.point(longTapArea.mouseX, longTapArea.mouseY));
-                        textContainer.state = "off";
-                    }
-                }
+            onClicked: function (mouse) {
+                if (mouse.button === Qt.RightButton)
+                    chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
+            }
+            onPressAndHold: function (mouse) {
+                 if (mouse.button === Qt.LeftButton /*&&
+                     mouse.source === Qt.MouseEventNotSynthesized*/) {
+                    chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
+                 }
             }
         }
     }
