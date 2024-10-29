@@ -13,121 +13,14 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-
-        Rectangle {
-            Layout.preferredHeight: 84 * ctx.scaleFactor
-            Layout.preferredWidth: parent.width
-            color: "black"
-            z: parent.z + 1
-
-            Rectangle {
-                radius: 8
-
-                clip: true
-                height: 64 * ctx.scaleFactor
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.leftMargin: 20
-                anchors.rightMargin: 20
-                anchors.bottom: parent.bottom
-                color: "#313133"
-                z: parent.z + 1
-
-                RowLayout {
-                    id: box
-                    spacing: 0
-                    anchors.fill: parent
-
-                    property string placeholder: "Search"
-                    property bool hasInput: searchBox.text !== ""
-
-                    TextInput {
-                        id: placeholderText
-                        Layout.preferredWidth: parent.width * 0.6
-                        Layout.fillHeight: true
-                        text: box.hasInput ? "" : "Search"
-
-                        color: "grey"
-                        font.pixelSize: 22 * ctx.scaleFactor
-
-                        verticalAlignment: TextInput.AlignVCenter
-                        leftPadding: 20 * ctx.scaleFactor
-                        readOnly: true
-
-                        TextInput {
-                            id: searchBox
-                            text: ""
-                            anchors.fill: parent
-
-                            color: "white"
-                            font.pixelSize: 32 * ctx.scaleFactor
-
-                            verticalAlignment: TextInput.AlignVCenter
-                            leftPadding: 20 * ctx.scaleFactor
-
-                            onActiveFocusChanged: {
-                                if (activeFocus){
-                                    if (box.enteredText === "") {
-                                        searchBox.text = "";
-                                    }
-                                }
-                            }
-
-                            onTextEdited: {
-                                if(searchBox.text.length >= 3) {
-                                    var term = searchBox.text.replace("%", "");
-                                    chatSearchModel.searchMessages("%%" + term + "%%", searchWindow.remote_uid);
-                                } else {
-                                    chatSearchModel.clear();
-                                }
-                            }
-
-                            onEditingFinished: {
-
-                            }
-                        }
-                    }
-
-                    Item {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                    }
-
-                    Item {
-                        Layout.preferredWidth: 72 * ctx.scaleFactor
-                        Layout.fillHeight: true
-                        Layout.rightMargin: 8 * ctx.scaleFactor
-
-                        Image {
-                            source: box.hasInput ? "qrc:///close.png" : "qrc:///glass.png"
-                            anchors.centerIn: parent
-                            width: 26 * ctx.scaleFactor
-                            height: 26 * ctx.scaleFactor
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                if(box.hasInput) {
-                                    searchBox.text = "";
-                                }
-
-                                chatSearchModel.clear();
-                            }
-                        }
-                    }
-                }
-
-                Layout.bottomMargin: 32 * ctx.scaleFactor
-            }
-        }
+        spacing: 0
 
         ListView {
             id: searchListView
             spacing: 20
-            Layout.topMargin: 10
-            Layout.leftMargin: 20
-            Layout.rightMargin: 20
+            Layout.topMargin: 0
+            Layout.leftMargin: 0
+            Layout.rightMargin: 0
             Layout.fillHeight: true
             Layout.fillWidth: true
             model: chatSearchModel
@@ -147,7 +40,7 @@ Rectangle {
 
                 Components.PlainText {
                     id: metaBox
-                    text: remote_name + " - " + datestr + " " + hourstr
+                    text: name + " - " + datestr + " " + hourstr
                     color: "white"
                     font.pointSize: 18 * ctx.scaleFactor
 
@@ -168,7 +61,7 @@ Rectangle {
                         anchors.fill: parent
                         anchors.margins: 14 * ctx.scaleFactor
                         wrapMode: Text.WordWrap
-                        text: highlight(message, searchBox.text);
+                        text: highlight(message, searchWindow.search_term);
                         color: "white"
                         font.pointSize: 18 * ctx.scaleFactor
                         textFormat: Text.RichText
@@ -197,8 +90,8 @@ Rectangle {
             textFormat: Text.RichText
             visible: chatSearchModel.count === 0
             Layout.topMargin: 20
-            Layout.leftMargin: 20
-            Layout.rightMargin: 20
+            Layout.leftMargin: 0
+            Layout.rightMargin: 0
         }
 
         Item {
@@ -211,7 +104,6 @@ Rectangle {
     function onPageCompleted() {
         // not called, left-over from inclusion in `StackViewFancy`
         chatSearchModel.clear();
-        searchBox.forceActiveFocus();
     }
 
     function highlight(message, term) {
@@ -232,6 +124,5 @@ Rectangle {
 
     Component.onCompleted: {
         chatSearchModel.clear();
-        searchBox.forceActiveFocus();
     }
 }

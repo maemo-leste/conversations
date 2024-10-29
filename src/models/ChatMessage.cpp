@@ -18,9 +18,9 @@ ChatMessage::ChatMessage(ChatMessageParams params, QObject *parent) :
 
 QString ChatMessage::text() const {
   if(join_event()) {
-    return QString("%1 joined the groupchat").arg(remote_uid());
+    return QString(tr("%1 joined the groupchat")).arg(remote_uid());
   } else if(leave_event()) {
-    return QString("%1 has left the groupchat").arg(remote_uid());
+    return QString(tr("%1 has left the groupchat")).arg(remote_uid());
   }
   return m_params.text;
 }

@@ -37,6 +37,7 @@ Q_OBJECT
 public:
   explicit OverviewProxyModel(QObject *parent = nullptr);
   void setProtocolFilter(QString protocol);
+  void setNameFilter(QString name);
   void removeProtocolFilter();
 
 public slots:
@@ -47,6 +48,7 @@ protected:
   int rowCount(const QModelIndex &parent) const override;
 
 private:
+  QString m_nameFilter = "";
   QString m_protocolFilter = "";
 };
 

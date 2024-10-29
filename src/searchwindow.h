@@ -19,6 +19,7 @@
 #include "lib/config.h"
 #include "models/ChatModel.h"
 #include "models/ChatMessage.h"
+#include "overview/overviewwidget.h"
 
 namespace Ui {
     class SearchWindow;
@@ -26,6 +27,7 @@ namespace Ui {
 
 class SearchWindow : public QMainWindow {
     Q_OBJECT
+    Q_PROPERTY(QString search_term MEMBER search_term NOTIFY search_termChanged);
 
 public:
     Ui::SearchWindow *ui;
@@ -40,13 +42,29 @@ signals:
   void searchResultClicked(QSharedPointer<ChatMessage> msg);
   void closed();
 
+  void search_termChanged();
+
 private slots:
   void onItemClicked(int idx);
 
+protected:
+  void closeEvent(QCloseEvent *event) override;
+
 private:
+    void drawContactsSearch();
+    void drawContentSearch();
+    void resetSearch();
+    void setupQML();
+
+    bool m_qml = false;
     Conversations *m_ctx;
     static SearchWindow *pSearchWindow;
     QString m_group_uid = "";
+
+    QString search_term;
+
+    OverviewWidget* m_overviewWidget = nullptr;
+    OverviewProxyModel* m_overviewProxyModel = nullptr;
 };
 
 #endif

@@ -48,7 +48,20 @@ void ServiceAccount::setName(const QString &protocol) {
 }
 
 OverviewProxyModel::OverviewProxyModel(QObject *parent) : QSortFilterProxyModel(parent) {}
+
+void OverviewProxyModel::setNameFilter(QString name) {
+  if(name.toLower() == m_nameFilter) return;
+  qDebug() << "name filter" << name;
+
+  this->m_nameFilter = name.toLower();
+  if (this->sourceModel() != nullptr) {
+    auto mdl = dynamic_cast<OverviewModel*>(this->sourceModel());
+    this->invalidate();
+  }
+}
+
 void OverviewProxyModel::setProtocolFilter(QString protocol) {
+  if(protocol.toLower() == m_protocolFilter) return;
   qDebug() << "proxy filter" << protocol;
   if(protocol == "*")
     protocol = "";
@@ -60,7 +73,9 @@ void OverviewProxyModel::setProtocolFilter(QString protocol) {
   }
 }
 
-// optionally filter on protocol (SMS, Telegram, etc.)
+// optionally filter on:
+// 1. protocol (SMS, Telegram, ..)
+// 2. remote name
 bool OverviewProxyModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const {
   if(this->sourceModel() == nullptr)
     return false;
@@ -71,15 +86,23 @@ bool OverviewProxyModel::filterAcceptsRow(int source_row, const QModelIndex& sou
   if(!index.isValid())
     return false;
 
-  if(m_protocolFilter.isEmpty())
-    return true;
-
   // filtering
-  QSharedPointer<ChatMessage> msg = mdl->messages[index.row()];
-  if(msg->protocol.contains(m_protocolFilter))
-    return true;
+  if(m_protocolFilter.isEmpty() && m_nameFilter.isEmpty()) return true;
+  bool show = false;
 
-  return false;
+  if(!m_protocolFilter.isEmpty()) {
+    QSharedPointer<ChatMessage> msg = mdl->messages[index.row()];
+    if(msg->protocol.contains(m_protocolFilter))
+      show = true;
+  }
+
+  if(!m_nameFilter.isEmpty()) {
+    QSharedPointer<ChatMessage> msg = mdl->messages[index.row()];
+    if(msg->name().contains(m_nameFilter))
+      show = true;
+  }
+
+  return show;
 }
 
 int OverviewProxyModel::rowCount(const QModelIndex &parent) const {

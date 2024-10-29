@@ -75,7 +75,7 @@ void OverviewWidget::onSetColumnStyleDelegate() {
 
   m_richItemDelegate = new RichItemDelegate(this);
   auto css_tmpl = QString(Utils::fileOpen(":/overviewRichDelegate.css"));
-  
+
   //auto systemFontSize = QApplication::font().pointSize();  // @TODO: returns 18?!
   auto systemFontSize = 14;
   unsigned int systemFontSizeScaled = systemFontSize * m_ctx->textScaling;
