@@ -12,7 +12,7 @@
 
 #include "lib/utils.h"
 #include "lib/rtcom.h"
-#include "lib/tp.h"
+#include "lib/tp/tp.h"
 #include "lib/state.h"
 #include "lib/QRichItemDelegate.h"
 #include "models/ChatMessage.h"
@@ -63,6 +63,9 @@ public:
     ContentRole,
     OverviewNameRole,
     ProtocolRole,
+    AvatarIcon,
+    AvatarPadding,
+    PresenceIcon,
     ChatTypeIcon,
     TimeRole,
     COUNT

@@ -6,6 +6,8 @@
 #include <rtcom-eventlogger/eventlogger.h>
 #endif
 
+#include "lib/abook_roster.h"
+
 #include "overview/OverviewModel.h"
 
 ServiceAccount::ServiceAccount() {}
@@ -174,6 +176,31 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
           return m_pixmaps[icon_default];
         }
       }
+      case OverviewModel::PresenceIcon: {
+        auto uid = message->local_remote_uid();
+        if(abook_roster_cache.contains(uid)) {
+          QSharedPointer<ContactItem> contact = abook_roster_cache[uid];
+          QString presence = contact->presence();
+          // @TODO: use get icon instead @ abook
+          if(presence == "available") {
+            return m_pixmaps["presence_online"];
+          } else if(presence == "unset") {
+            return m_pixmaps["presence_unset"];
+          } else if(presence == "offline") {
+            return m_pixmaps["presence_offline"];
+          } else {
+            return m_pixmaps["presence_away"];
+          }
+        } else {
+          return QVariant();
+        }
+      }
+      case OverviewModel::AvatarIcon: {
+        if(message->hasAvatar())
+          return message->avatarImage().scaled(
+              58, 54, Qt::KeepAspectRatio, Qt::SmoothTransformation);;
+        return QVariant();
+      }
       case OverviewModel::ChatTypeIcon: {
         const auto icon_default = "general_default_avatar";
         const auto icon_conference = "general_conference_avatar";
@@ -192,10 +219,24 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
         return QVariant();
       }
     }
-  } else if(role == Qt::SizeHintRole) {
+  }
+  else if(role == Qt::SizeHintRole) {
     switch (index.column()) {
       case OverviewModel::MsgStatusIcon: {
         return QSize(58, 54);
+      }
+      case OverviewModel::AvatarIcon: {
+        return QSize(58, 54);
+        // if(message->hasAvatar())
+        //   return QSize(58, 54);
+        // else
+        //   return QSize(0, 54);
+      }
+      case OverviewModel::AvatarPadding: {
+        return QSize(4, 54);
+      }
+      case OverviewModel::PresenceIcon: {
+        return QSize(18, 54);
       }
       case OverviewModel::ChatTypeIcon: {
         return QSize(58, 54);
@@ -352,6 +393,7 @@ QHash<int, QByteArray> OverviewModel::roleNames() const {
   roles[ProtocolRole] = "protocol";
   roles[MsgStatusIcon] = "msg_status_icon";
   roles[ChatTypeIcon] = "chat_type_icon";
+  roles[AvatarIcon] = "avatar_icon";
   return roles;
 }
 
@@ -369,14 +411,24 @@ void OverviewModel::preloadPixmaps() {
     "general_default_avatar",
     "chat_unread_sms",
     "general_chat",
-    "general_sms"
+    "general_sms",
+    "presence_online",
+    "presence_offline",
+    "presence_away",
+    "presence_empty",
+    "presence_unset"
   };
 
   for(const auto &icon: icons) {
     const auto fn = QString("%1/%2.png").arg(basepath, icon);
-    if(!Utils::fileExists(fn))
-      continue;
-    m_pixmaps[icon] = QPixmap(fn);
+    const auto fn_qrc = QString(":/%1.png").arg(icon);
+
+    if(Utils::fileExists(fn_qrc)) {
+      m_pixmaps[icon] = QPixmap(fn_qrc);
+    } else if(Utils::fileExists(fn)) {
+      m_pixmaps[icon] = QPixmap(fn);
+    } else {
+    }
   }
 }
 

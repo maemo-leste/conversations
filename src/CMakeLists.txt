@@ -11,10 +11,14 @@ file(GLOB SOURCE_FILES
         "*.cpp"
         "lib/*.h"
         "lib/*.cpp"
+        "lib/tp/*.h"
+        "lib/tp/*.cpp"
         "models/*.h"
         "models/*.cpp"
         "overview/*.cpp"
         "overview/*.h"
+        "requests/*.cpp"
+        "requests/*.h"
         "lib/libnotify-qt/*.h"
         "lib/libnotify-qt/*.cpp"
         "lib/qtcsv/*.h"
@@ -52,6 +56,8 @@ set_property(TARGET conversations PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BIN
 target_include_directories(conversations PUBLIC ${Qt5Gui_PRIVATE_INCLUDE_DIRS})
 #target_include_directories(PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}  ${CMAKE_CURRENT_BINARY_DIR})
 
+target_compile_definitions(conversations PRIVATE OSSO_ABOOK_DEBUG=1)
+
 if(MAEMO)
     # @TODO: should not be necessary, but definition `Q_WS_MAEMO` is *not* available via CMake
     target_compile_definitions(conversations PRIVATE MAEMO=1)
@@ -87,6 +93,7 @@ target_include_directories(conversations PUBLIC
         ${LIBHILDON_INCLUDE_DIRS}
         ${OSSO_ABOOK_INCLUDE_DIRS}
         ${GTK_INCLUDE_DIRS}
+        ${LIBEBOOK_INCLUDE_DIRS}
         )
 
 add_definitions(${QT_DEFINITIONS})
@@ -144,6 +151,8 @@ target_link_libraries(conversations PUBLIC
         ${GTK_LIBRARIES}
         PkgConfig::RTCOM-EVENTLOGGER
         PkgConfig::RTCOM-EVENTLOGGER-PLUGINS
+        PkgConfig::LIBEBOOK
+        PkgConfig::TELEPATHY-GLIB
 )
 
 if(MAEMO)

@@ -111,11 +111,21 @@
     <property name="title">
      <string>menu</string>
     </property>
+    <widget class="QMenu" name="menuAuthorize">
+     <property name="title">
+      <string>Authorize</string>
+     </property>
+     <addaction name="actionAddFriend"/>
+     <addaction name="actionRemoveFriend"/>
+     <addaction name="actionAcceptFriendRequest"/>
+     <addaction name="actionRejectFriendRequest"/>
+    </widget>
     <addaction name="actionInvite"/>
     <addaction name="actionParticipants"/>
     <addaction name="separator"/>
     <addaction name="actionSearchChat"/>
     <addaction name="actionExportChatToCsv"/>
+    <addaction name="menuAuthorize"/>
     <addaction name="actionLeave_channel"/>
     <addaction name="actionAuto_join_groupchat"/>
     <addaction name="actionClear_chat"/>
@@ -167,6 +177,26 @@
   <action name="actionDelete_chat">
    <property name="text">
     <string>Delete chat</string>
+   </property>
+  </action>
+  <action name="actionAddFriend">
+   <property name="text">
+    <string>Send friend request</string>
+   </property>
+  </action>
+  <action name="actionRemoveFriend">
+   <property name="text">
+    <string>Remove friend</string>
+   </property>
+  </action>
+  <action name="actionAcceptFriendRequest">
+   <property name="text">
+    <string>Accept friend request</string>
+   </property>
+  </action>
+  <action name="actionRejectFriendRequest">
+   <property name="text">
+    <string>Reject friend request</string>
    </property>
   </action>
  </widget>

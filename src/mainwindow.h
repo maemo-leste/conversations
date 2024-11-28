@@ -22,6 +22,7 @@
 #include "composewindow.h"
 #include "window_joinchannel.h"
 #include "overview/overviewwidget.h"
+#include "requests/requestwidget.h"
 #include "lib/config.h"
 #include "lib/libnotify-qt/Notification.h"
 
@@ -69,6 +70,7 @@ public slots:
     void onChatWindowClosed(const QString &remote_uid);
     void onTPAccountManagerReady();
     void onNotificationClicked(const QSharedPointer<ChatMessage> &msg);
+    void onFriendRequest(QSharedPointer<ContactItem> item);
 
 private slots:
     void onProtocolFilterClicked(const QString service);
@@ -76,6 +78,7 @@ private slots:
     void onShowOverviewPage();
     void onDeterminePage();
     void onShowEmptyDbPage();
+    void onRenderRequestsWidget();
 
 signals:
     void requestOverviewSearchWindow();
@@ -86,6 +89,7 @@ protected:
 
 private:
     OverviewWidget *m_widgetOverview = nullptr;
+    RequestWidget *m_widgetRequest = nullptr;
     Conversations *m_ctx;
     static MainWindow *pMainWindow;
     QMap<QString, ChatWindow*> m_chatWindows;

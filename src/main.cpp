@@ -55,7 +55,14 @@ int main(int argc, char *argv[]) {
 #ifdef DEBUG
   Tp::enableDebug(true);
   Tp::enableWarnings(true);
+  qputenv("G_MESSAGES_DEBUG", "all");
+  qputenv("OSSO_ABOOK_DEBUG", "all");
+#else
+  Tp::enableDebug(false);
+  Tp::enableWarnings(false);
+#endif
 
+#ifdef DEBUG
   // For remote debugging (QEMU) with CLion, the environment variables need
   // to be correctly set such that e.g. dbus will work. We can execute
   // this hack to dump the environ to a file, then reads it below.
@@ -178,6 +185,10 @@ int main(int argc, char *argv[]) {
       break;
     }
   }
+
+  // load Telepathy last, ensures the app is
+  // setup so we can act on all signals
+  ctx->telepathy->init();
 
   return QApplication::exec();
 }

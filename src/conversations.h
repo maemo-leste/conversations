@@ -9,10 +9,11 @@
 #include "lib/http.h"
 #include "lib/config.h"
 #include "lib/ipc.h"
-#include "lib/tp.h"
+#include "lib/tp/tp.h"
 #include "lib/state.h"
 #include "lib/libnotify-qt/Notification.h"
 #include "models/ChatModel.h"
+#include "models/ContactItem.h"
 #include "models/ChatMessage.h"
 #include "overview/OverviewModel.h"
 
@@ -28,6 +29,7 @@ class Conversations : public QObject {
     Q_PROPERTY(float scaleFactor MEMBER textScaling NOTIFY textScalingChanged);
     Q_PROPERTY(bool inheritSystemTheme MEMBER inheritSystemTheme NOTIFY inheritSystemThemeChanged);
     Q_PROPERTY(bool displayGroupchatJoinLeave MEMBER displayGroupchatJoinLeave NOTIFY displayGroupchatJoinLeaveChanged);
+    Q_PROPERTY(bool displayAvatars MEMBER displayAvatars NOTIFY displayAvatarsChanged);
 
 public:
     explicit Conversations(QCommandLineParser *cmdargs, IPC *ipc);
@@ -51,11 +53,13 @@ public:
     bool inheritSystemTheme;
     float textScaling = 1.0;
     bool displayGroupchatJoinLeave;
+    bool displayAvatars;
 
     static void createConfigDirectory(const QString &dir) ;
 
     ChatModel *chatOverviewModel;
     OverviewModel *overviewModel;
+    RequestModel *requestModel;
     OverviewProxyModel *overviewProxyModel;
     Telepathy *telepathy;
     QList<QSharedPointer<ServiceAccount>> serviceAccounts;
@@ -85,6 +89,7 @@ signals:
     void autoCloseChatWindowsChanged(bool enabled);
     void inheritSystemThemeChanged(bool enabled);
     void displayGroupchatJoinLeaveChanged(bool enabled);
+    void displayAvatarsChanged(bool enabled);
     void enterKeySendsChatToggled(bool enabled);
     void hildonThemeChanged();
 

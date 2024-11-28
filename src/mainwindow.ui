@@ -206,7 +206,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="overviewPages">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="overviewPage">
        <layout class="QGridLayout" name="gridLayout">
@@ -223,7 +223,7 @@
          <number>0</number>
         </property>
         <item row="0" column="0">
-         <layout class="QGridLayout" name="mainLayout"/>
+         <layout class="QVBoxLayout" name="mainLayout"/>
         </item>
        </layout>
       </widget>

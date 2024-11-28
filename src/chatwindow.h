@@ -10,6 +10,7 @@
 #include <QtCore>
 #include <QtGui>
 #include <QFileInfo>
+#include <QQuickImageProvider>
 
 #include <iostream>
 #include <hildon-uri.h>
@@ -27,6 +28,9 @@ namespace Ui {
 
 class ChatWindow : public QMainWindow {
 Q_OBJECT
+Q_PROPERTY(QString local_uid MEMBER local_uid);
+Q_PROPERTY(QString remote_uid MEMBER remote_uid);
+Q_PROPERTY(bool groupchat MEMBER groupchat NOTIFY groupchatChanged);
 
 public:
     Ui::ChatWindow *ui;
@@ -34,12 +38,12 @@ public:
     static Conversations *getContext();
     ~ChatWindow() override;
 public:
-    const QString local_uid;
-    const QString group_uid;
-    const QString remote_uid;
-    const QString channel;
-    const QString service_uid;
-    const bool groupchat;
+    QString local_uid;
+    QString group_uid;
+    QString remote_uid;
+    QString channel;
+    QString service_uid;
+    bool groupchat;
 public:
     void setHighlight(const unsigned int event_id);
     void fillBufferUntil(const unsigned int event_id) const;
@@ -67,6 +71,11 @@ private slots:
     void onChatRequestClear();
     void onChatRequestDelete();
     void onShowMessageContextMenu(int event_id, QVariant test);
+    void onSetupAuthorizeActions();
+    void onAddFriend();
+    void onRemoveFriend();
+    void onAcceptFriend();
+    void onRejectFriend();
 
 signals:
     void closed(const QString &remote_uid);
@@ -76,6 +85,8 @@ signals:
     void chatPostReady();
     void chatPreReady();
     void chatCleared();
+    void avatarChanged();
+    void groupchatChanged();
 
 private:
     Conversations *m_ctx;
@@ -83,6 +94,7 @@ private:
     static ChatWindow *pChatWindow;
     SearchWindow *m_searchWindow = nullptr;
     bool m_auto_join = false;
+    QSharedPointer<ContactItem> m_abook_contact;
 
 private:
     QTimer *m_windowFocusTimer;
@@ -98,4 +110,18 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
     void changeEvent(QEvent *event);
+};
+
+class AvatarImageProvider : public QQuickImageProvider {
+public:
+    AvatarImageProvider() : QQuickImageProvider(QQuickImageProvider::Image) {}
+    QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override {
+        int last_slash = id.lastIndexOf("?token=");
+        QString hex_str = id.mid(last_slash + 7);
+        QString _uid = id.left(last_slash);
+
+        if(abook_roster_cache.contains(_uid))
+            return abook_roster_cache[_uid]->avatar();
+        return {};
+    }
 };

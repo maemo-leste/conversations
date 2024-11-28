@@ -5,6 +5,7 @@
 #include <QDateTime>
 
 #include "lib/rtcom.h"
+#include "lib/abook_roster.h"
 
 struct ChatMessageParams {
     int event_id = -1;
@@ -41,6 +42,7 @@ public:
     QString channel() const { return m_params.channel; }
     QString local_uid() const { return m_params.local_uid; }
     QString remote_uid() const { return m_params.remote_uid; }
+    QString local_remote_uid() const { return m_params.local_uid + "-" + m_params.remote_uid; }
     QString remote_name() const { return m_params.remote_name; }
     QString remote_ebook_uid() const { return m_params.remote_ebook_uid; }
     QString icon_name() const { return m_params.icon_name; }
@@ -75,6 +77,9 @@ public:
     bool join_event() const { return this->event_type() == "RTCOM_EL_EVENTTYPE_CHAT_JOIN"; }  // groupchat join
     bool leave_event() const { return this->event_type() == "RTCOM_EL_EVENTTYPE_CHAT_LEAVE"; }  // groupchat leave
 
+    bool hasAvatar();
+    QString avatar();
+    QImage &avatarImage();
     bool isHead() const;
     bool isLast() const;
     bool displayTimestamp() const;
@@ -87,6 +92,7 @@ public:
 
 private:
     ChatMessageParams m_params;
+    QString m_persistent_uid;
     QDateTime m_date;
     QString m_cid;
 };

@@ -92,6 +92,15 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
     return message->text();
   else if (role == isHeadRole)
     return message->isHead();
+  else if (role == AvatarRole)
+    return message->avatar();
+  else if (role == AvatarImageRole) {
+    auto img = message->avatarImage();
+    if(!img.isNull()) return img;
+    else return QVariant();
+  }
+  else if (role == hasAvatarRole)
+    return message->hasAvatar();
   else if (role == isLastRole)
     return message->isLast();
   else if (role == OutgoingRole)
@@ -162,6 +171,9 @@ QHash<int, QByteArray> ChatModel::roleNames() const {
   roles[MessageRole] = "message";
   roles[isHeadRole] = "isHead";
   roles[isLastRole] = "isLast";
+  roles[hasAvatarRole] = "hasAvatar";
+  roles[AvatarRole] = "avatar";
+  roles[AvatarImageRole] = "avatar_image";
   roles[OutgoingRole] = "outgoing";
   roles[IconNameRole] = "icon_name";
   roles[EventIDRole] = "event_id";

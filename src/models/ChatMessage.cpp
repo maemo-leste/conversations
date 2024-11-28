@@ -14,6 +14,8 @@ ChatMessage::ChatMessage(ChatMessageParams params, QObject *parent) :
   if(m_params.local_uid.count("/") == 2) {
     protocol = m_params.local_uid.split("/").at(1);
   }
+
+  m_persistent_uid = local_remote_uid();
 }
 
 QString ChatMessage::text() const {
@@ -26,7 +28,7 @@ QString ChatMessage::text() const {
 }
 
 QString ChatMessage::textSnippet() const {
-  auto max_length = 64;
+  auto max_length = 36;
   if(m_params.text.length() >= max_length) {
     QString snippet = m_params.text.mid(0, max_length) + "...";
     return snippet;
@@ -62,6 +64,29 @@ bool ChatMessage::isLast() const {
     return true;
   }
   return false;
+}
+
+bool ChatMessage::hasAvatar() {
+  if(abook_roster_cache.contains(m_persistent_uid))
+    return abook_roster_cache[m_persistent_uid]->hasAvatar();
+  return false;
+}
+
+QImage& ChatMessage::avatarImage() {
+  if(abook_roster_cache.contains(m_persistent_uid)) {
+    auto contact_item = abook_roster_cache[m_persistent_uid];
+    if(contact_item->hasAvatar())
+      return contact_item->avatar();
+  }
+  static QImage empty;
+  return empty;
+}
+
+QString ChatMessage::avatar() {
+  if(abook_roster_cache.contains(m_persistent_uid)) {
+    auto contact_item = abook_roster_cache[m_persistent_uid];
+    return "image://avatar/" + m_persistent_uid + "?token=" + contact_item->avatar_token_hex();
+  }
 }
 
 bool ChatMessage::displayTimestamp() const {
