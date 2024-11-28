@@ -3,7 +3,7 @@
 #include <QCoreApplication>
 #include <QDebug>
 
-#include "lib/tp.h"
+#include "lib/tp/tp.h"
 #include "lib/utils.h"
 
 /*
@@ -32,7 +32,9 @@
  * - https://telepathy.freedesktop.org/spec/Channel_Type_Contact_Search.html
  */
 
-Telepathy::Telepathy(QObject *parent) : QObject(parent) {
+Telepathy::Telepathy(QObject *parent) : QObject(parent) {}
+
+void Telepathy::init() {
     Tp::AccountFactoryPtr accountFactory = Tp::AccountFactory::create(
                 QDBusConnection::sessionBus(),
                 Tp::Features()
@@ -81,8 +83,9 @@ Telepathy::Telepathy(QObject *parent) : QObject(parent) {
             Tp::SharedPtr<TelepathyHandler>(tphandler));
 
     tphandler->setTelepathyParent(this);
-
     registrar->registerClient(handler, "Conversations");
+
+    conv_abook_func_roster_updated = std::bind(&Telepathy::onRosterChanged, this);
 }
 
 /* When the account manager is ready, we will get a list of our accounts and
@@ -98,12 +101,151 @@ void Telepathy::onAccountManagerReady(Tp::PendingOperation *op) {
     }
 
     connect(m_accountmanager.data(), &Tp::AccountManager::newAccount, this, &Telepathy::onNewAccount);
-
     emit accountManagerReady();
+}
+
+void Telepathy::getContact(QString local_uid, QString remote_uid, std::function<void(Tp::ContactPtr)> cb) {
+    TelepathyAccountPtr account = accountByName(local_uid);
+    if(!account) {
+        qCritical() << "No account associated with" << local_uid;
+        return;
+    }
+
+    Tp::ConnectionPtr connection = account->acc->connection();
+    Tp::PendingContacts *pcontacts = connection->contactManager()->contactsForIdentifiers(QStringList() << remote_uid);
+
+    connect(pcontacts, &Tp::PendingContacts::finished, [this, cb, remote_uid](Tp::PendingOperation* op) {
+        if(op->isError()) {
+            qWarning() << "contactsForIdentifiers" << remote_uid << op->errorMessage();
+            return;
+        }
+
+        Tp::PendingContacts *pcontacts = qobject_cast<Tp::PendingContacts*>(op);
+        QList<Tp::ContactPtr> contacts = pcontacts->contacts();
+
+        if(pcontacts->identifiers().size() != 1 || contacts.size() != 1 || !contacts.first()) {
+            qWarning() << "could not fetch contact for remote_uid" << remote_uid;
+            return;
+        }
+
+        QString username = pcontacts->identifiers().first();
+        qDebug() << "username" << username;
+        Tp::ContactPtr contact = contacts.first();
+
+        cb(contact);
+    });
+}
+
+void Telepathy::authorizeContact(const QString &local_uid, const QString &remote_uid) {
+    qDebug() << "authorizeContact" << local_uid << remote_uid;
+
+    auto lambda = [this, local_uid, remote_uid](Tp::ContactPtr contact) {
+        QString message = "";  // empty for now
+        Tp::PendingOperation *auth_op = contact->authorizePresencePublication(message);
+        connect(auth_op, &Tp::PendingOperation::finished, [this, message, contact](Tp::PendingOperation *op) {
+
+            if (contact->subscriptionState() != Tp::Contact::PresenceStateYes) {
+                Tp::PendingOperation* req_op = contact->requestPresenceSubscription(message);
+                if (contact->subscriptionState() != Tp::Contact::PresenceStateYes) {
+                    connect(req_op, &Tp::PendingOperation::finished, [this, message, contact](Tp::PendingOperation *op) {
+
+                    });
+                }
+            }
+        });
+    };
+
+    getContact(local_uid, remote_uid, lambda);
+}
+
+void Telepathy::denyContact(const QString &local_uid, const QString &remote_uid) {
+    qDebug() << "denyContact" << local_uid << remote_uid;
+
+    auto lambda = [this, local_uid, remote_uid](Tp::ContactPtr contact) {
+        if (contact->publishState() != Tp::Contact::PresenceStateNo) {
+            Tp::PendingOperation* op = contact->removePresencePublication();
+            connect(op, &Tp::PendingOperation::finished, [this, contact](Tp::PendingOperation *_op) {
+                if(_op->isError()) {
+                    qWarning() << "removePresencePublication failed" << _op->errorMessage();
+                } else {
+                    qDebug() << "denying contact";
+                }
+            });
+        } else {
+            qWarning() << "ignoring deny operation, contact publishState is PresenceStateNo";
+        }
+    };
+
+    getContact(local_uid, remote_uid, lambda);
+}
+
+void Telepathy::removeContact(const QString &local_uid, const QString &remote_uid) {
+    qDebug() << "removeContact" << local_uid << remote_uid;
+
+    auto lambda = [this, local_uid, remote_uid](Tp::ContactPtr contact) {
+        if(contact->subscriptionState() != Tp::Contact::PresenceStateNo) {
+            // the contact cant see our presence and we cant see their presence
+            Tp::PendingOperation* pub_op = contact->removePresencePublication();
+            Tp::PendingOperation* sub_op = contact->removePresenceSubscription();
+
+            connect(pub_op, &Tp::PendingOperation::finished, [this, contact](Tp::PendingOperation *_op) {
+                if(_op->isError()) {
+                    qWarning() << "removePresencePublication failed" << _op->errorMessage();
+                } else {
+                    qDebug() << "removed publication for contact";
+                }
+            });
+
+            connect(sub_op, &Tp::PendingOperation::finished, [this, contact](Tp::PendingOperation *_op) {
+                if(_op->isError()) {
+                    qWarning() << "removePresenceSubscription failed" << _op->errorMessage();
+                } else {
+                    qDebug() << "removed subscription for contact";
+                }
+            });
+        } else {
+            qWarning() << "ignoring remove operation, contact subscriptionState is PresenceStateNo";
+        }
+    };
+
+    getContact(local_uid, remote_uid, lambda);
+}
+
+void Telepathy::blockContact(const QString &local_uid, const QString &remote_uid, bool block) {
+    qDebug() << "blockContact" << local_uid << remote_uid;
+
+    auto lambda = [this, local_uid, block, remote_uid](Tp::ContactPtr contact) {
+        Tp::PendingOperation* op = block ? contact->block() : contact->unblock();
+        connect(op, &Tp::PendingOperation::finished, [this, contact, block](Tp::PendingOperation *_op) {
+            if(_op->isError()) {
+                qWarning() << "blockContact failed" << _op->errorMessage();
+                return;
+            } else {
+                qDebug() << QString("block (%1)").arg(block) << "for contact";
+            }
+        });
+    };
+
+    getContact(local_uid, remote_uid, lambda);
+}
+
+bool Telepathy::has_feature_friends(const QString &local_uid) {
+    TelepathyAccountPtr account = accountByName(local_uid);
+    if(!account) {
+        qCritical() << "Could not find account for feature_friends" << local_uid;
+        return false;
+    }
+
+    return account->has_feature_friends();
 }
 
 void Telepathy::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
     emit databaseAddition(msg);
+}
+
+void Telepathy::onRosterChanged() {
+    qDebug() << "======= EMIT onRosterChanged()";
+    emit rosterChanged();
 }
 
 void Telepathy::onOpenChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel) {
@@ -346,9 +488,39 @@ TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc, QObject *parent) :
     m_protocol_name = acc->protocolName();
     m_parent = static_cast<Telepathy*>(parent);
 
+    onConnectionChanged(acc->connection());
+
     connect(acc.data(), &Tp::Account::removed, this, &TelepathyAccount::onRemoved);
     connect(acc.data(), &Tp::Account::onlinenessChanged, this, &TelepathyAccount::onOnline);
+    connect(acc.data(), &Tp::Account::connectionChanged, this, &TelepathyAccount::onConnectionChanged);
     connect(acc->becomeReady(), &Tp::PendingReady::finished, this, &TelepathyAccount::onAccReady);
+}
+
+void TelepathyAccount::onConnectionChanged(const Tp::ConnectionPtr &conn) {
+    if(conn.isNull() || conn->isReady(Tp::Connection::FeatureRoster))
+        return;
+
+    Tp::Features connectionFeatures;
+    connectionFeatures << Tp::Connection::FeatureRoster;
+
+    // only request roster groups if we support it, otherwise it can error and not finish becoming ready
+    if (conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS))
+        connectionFeatures << Tp::Connection::FeatureRosterGroups;
+
+    if (conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE))
+        connectionFeatures << Tp::Connection::FeatureSimplePresence;
+
+    // `bool TelepathyAccount::has_feature_friends()` uses this
+    if (conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS))
+        m_feature_friends = true;
+
+    Tp::PendingReady *op = conn->becomeReady(connectionFeatures);
+    op->setProperty("connection", QVariant::fromValue<Tp::ConnectionPtr>(conn));
+    connect(op, SIGNAL(finished(Tp::PendingOperation*)), SLOT(onConnectionReady(Tp::PendingOperation*)));
+}
+
+void TelepathyAccount::onConnectionReady(Tp::PendingOperation *op) {
+    m_connection = op->property("connection").value<Tp::ConnectionPtr>();
 }
 
 void TelepathyAccount::TpOpenChannelWindow(Tp::TextChannelPtr channel) {
@@ -702,6 +874,9 @@ void TelepathyAccount::onChannelLeft(QString channel) {
 void TelepathyAccount::onAccReady(Tp::PendingOperation *op) {
   this->joinSavedGroupChats();
   emit accountReady(this);
+
+  // fetch abook roster
+  get_contact_roster();
 }
 
 TelepathyChannelPtr TelepathyAccount::hasChannel(const QString &remote_uid) {

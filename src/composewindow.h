@@ -30,6 +30,7 @@ public:
 
 signals:
     void autoCloseChatWindowsChanged(bool enabled);
+    void message(QString account, QString to, QString msg);
 
 private:
     Conversations *m_ctx;

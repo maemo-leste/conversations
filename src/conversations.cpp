@@ -32,12 +32,18 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   this->ipc = ipc;
   connect(ipc, &IPC::commandReceived, this, &Conversations::onIPCReceived);
 
+  // request model
+  requestModel = new RequestModel(this->telepathy, this);
+  connect(this->telepathy, &Telepathy::rosterChanged, this->requestModel, &RequestModel::onLoad);
+
   // chat overview models
   overviewModel = new OverviewModel(this->telepathy, this->state, this);
   overviewModel->onLoad();
   connect(this->telepathy, &Telepathy::accountManagerReady, this->overviewModel, &OverviewModel::onLoad);
   connect(this->telepathy, &Telepathy::channelDeleted, this->state, &ConfigState::deleteItem);
   connect(this->state, &ConfigState::updated, this->overviewModel, &OverviewModel::onLoad);
+  // update overview table on contact presence status changes
+  connect(this->telepathy, &Telepathy::rosterChanged, this->overviewModel, &OverviewModel::onLoad);
 
   // Overview table updates
   // @TODO: do not refresh the whole overview table on new messages, edit specific entries 
@@ -62,12 +68,6 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
 
   Tp::registerTypes();
-#ifdef DEBUG
-  Tp::enableDebug(true);
-#else
-  Tp::enableDebug(false);
-#endif
-  Tp::enableWarnings(true);
 
   theme= new HildonTheme();
   qDebug() << "THEME: " << theme->name;

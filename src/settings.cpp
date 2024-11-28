@@ -88,6 +88,13 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
     emit enableDisplayGroupchatJoinLeaveToggled(toggled);
   });
 
+  // chat avatars
+  ui->checkBox_enableDisplayAvatars->setChecked(config()->get(ConfigKeys::EnableDisplayAvatars).toBool());
+  connect(ui->checkBox_enableDisplayAvatars, &QCheckBox::toggled, [this](bool toggled){
+    config()->set(ConfigKeys::EnableDisplayAvatars, toggled);
+    emit enableDisplayAvatarsToggled(toggled);
+  });
+
   // text scaling
   float textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
   if(textScaling < 1.0)

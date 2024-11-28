@@ -27,12 +27,24 @@ Compose::Compose(Conversations *ctx, QWidget *parent) :
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
 
-  connect(this->ui->btnTo, &QPushButton::clicked, [this]{
-    //
-  });
+  // @TODO: this code will be removed, we will start new messages from the addressbook instead
+  for(auto acc: m_ctx->telepathy->accounts) {
+    ui->comboAccount->addItem(acc->name(), QList<QVariant>() << acc->local_uid);
+  }
 
-  connect(this->ui->btnSend, &QPushButton::clicked, [this]{
-    //
+  if(!m_ctx->telepathy->accounts.empty())
+    ui->comboAccount->setCurrentIndex(0);
+
+  connect(this->ui->btnSend, &QPushButton::clicked, [this] {
+    // account combobox
+    auto account_combo_data = ui->comboAccount->currentData().value<QList<QVariant>>();
+    auto account_local_uid = account_combo_data.first().toString();
+
+    auto to = ui->line_to->text().trimmed();
+    QString msg = ui->text_msg->toPlainText().trimmed();
+
+    qDebug() << "sending message from" << account_local_uid << "->" << to;
+    emit message(account_local_uid, to, msg);
   });
 }
 

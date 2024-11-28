@@ -13,6 +13,7 @@
 #include "mainwindow.h"
 #include "config-conversations.h"
 #include "lib/globals.h"
+#include "lib/abook_roster.h"
 
 #include "ui_chatwindow.h"
 
@@ -75,6 +76,7 @@ ChatWindow::ChatWindow(
   const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
   qctx->setContextProperty("fixedFont", fixedFont);
   ui->quick->setAttribute(Qt::WA_AlwaysStackOnTop);
+  ui->quick->engine()->addImageProvider("avatar", new AvatarImageProvider);
 
   // theme
   auto theme = config()->get(ConfigKeys::ChatTheme).toString();
@@ -132,6 +134,62 @@ ChatWindow::ChatWindow(
 
   this->detectActiveChannel();
   this->onSetWindowTitle();
+  this->onSetupAuthorizeActions();
+
+  // menu: add/remove friend
+  connect(m_ctx->telepathy, &Telepathy::contactsChanged, this, &ChatWindow::onSetupAuthorizeActions);
+  connect(m_ctx->telepathy, &Telepathy::rosterChanged, this, &ChatWindow::onSetupAuthorizeActions);
+  connect(ui->actionAddFriend, &QAction::triggered, this, &ChatWindow::onAddFriend);
+  // connect(ui->actionRemoveFriend, &QAction::triggered, this, &ChatWindow::onRemoveFriend);
+  // connect(ui->actionAcceptFriendRequest, &QAction::triggered, this, &ChatWindow::onAcceptFriend);
+  // connect(ui->actionRejectFriendRequest, &QAction::triggered, this, &ChatWindow::onRejectFriend);
+
+  // abook avatar
+  connect(m_ctx->telepathy, &Telepathy::rosterChanged, this, &ChatWindow::onTrySubscribeAvatarChanged);
+  onTrySubscribeAvatarChanged();
+}
+
+void ChatWindow::onTrySubscribeAvatarChanged() {
+  auto persistent_uid = local_uid + "-" + remote_uid;
+  if(abook_roster_cache.contains(persistent_uid)) {
+    m_abook_contact = abook_roster_cache[persistent_uid];
+    disconnect(m_abook_contact.data(), &ContactItem::avatarChanged, nullptr, nullptr);
+    connect(m_abook_contact.data(), &ContactItem::avatarChanged, this, &ChatWindow::avatarChanged);
+  }
+}
+
+void ChatWindow::onAddFriend() {
+  m_ctx->telepathy->authorizeContact(local_uid, remote_uid);
+}
+
+void ChatWindow::onRemoveFriend() {
+  m_ctx->telepathy->removeContact(local_uid, remote_uid);
+}
+
+void ChatWindow::onAcceptFriend() {
+  m_ctx->telepathy->authorizeContact(local_uid, remote_uid);
+}
+
+void ChatWindow::onRejectFriend() {
+  m_ctx->telepathy->removeContact(local_uid, remote_uid);
+}
+
+void ChatWindow::onSetupAuthorizeActions() {
+  if(m_ctx->telepathy->has_feature_friends(local_uid)) {
+    qDebug() << "this protocol does not support roster friends";
+    return;
+  }
+
+  QString persistent_uid = local_uid + "-" + remote_uid;
+  if(abook_roster_cache.contains(persistent_uid)) {
+    QSharedPointer<ContactItem> item = abook_roster_cache[persistent_uid];
+
+    if(item->subscribed() == "yes") {
+      ui->menuAuthorize->setEnabled(false);
+    } else {
+      ui->menuAuthorize->setEnabled(true);
+    }
+  }
 }
 
 void ChatWindow::onShowMessageContextMenu(int event_id, QVariant point) {
@@ -161,7 +219,6 @@ void ChatWindow::onChatDelete() {
   this->chatModel->clear();
 
   m_ctx->telepathy->deleteChannel(local_uid, channel);
-
   this->close();
 }
 
@@ -272,6 +329,8 @@ QString ChatWindow::remoteId() const {
 }
 
 void ChatWindow::onGatherMessage() {
+  emit avatarChanged();
+
   QString _msg = this->ui->chatBox->toPlainText();
   _msg = _msg.trimmed();
   if(_msg.isEmpty())
@@ -510,5 +569,7 @@ void ChatWindow::changeEvent(QEvent *event) {
 
 ChatWindow::~ChatWindow() {
   qDebug() << "destroying chatWindow";
+  if(!m_abook_contact.isNull())
+    disconnect(m_abook_contact.data(), &ContactItem::avatarChanged, nullptr, nullptr);
   delete ui;
 }

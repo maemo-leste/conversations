@@ -1,18 +1,16 @@
-#include "overview/overviewwidget.h"
-#include "overview/ui_overviewwidget.h"
+#include "requests/requestwidget.h"
+#include "requests/ui_requestwidget.h"
 
-OverviewWidget::OverviewWidget(Conversations *ctx, QWidget *parent) :
+RequestWidget::RequestWidget(Conversations *ctx, QWidget *parent) :
     QWidget(parent),
     m_ctx(ctx),
-    ui(new Ui::OverviewWidget)
+    ui(new Ui::RequestWidget)
 {
   ui->setupUi(this);
   this->setupUITable();
-
-  connect(m_ctx, &Conversations::displayAvatarsChanged, this, &OverviewWidget::onAvatarDisplayChanged);
 }
 
-void OverviewWidget::setupUITable() {
+void RequestWidget::setupUITable() {
   auto *table = ui->tableOverview;
 
   // enable kinetic scrolling, disable overshoot
@@ -26,63 +24,47 @@ void OverviewWidget::setupUITable() {
   table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
   // row height
-
   const auto header = table->horizontalHeader();
   QHeaderView *verticalHeader = table->verticalHeader();
   verticalHeader->setSectionResizeMode(QHeaderView::Fixed);
   this->onSetTableHeight();
 
-  table->setModel(m_ctx->overviewProxyModel);
-  table->setColumnHidden(OverviewModel::ProtocolRole, true);
-  table->setColumnHidden(OverviewModel::TimeRole, true);
-  table->setColumnHidden(OverviewModel::COUNT, true);
+  table->setModel(m_ctx->requestModel);
+  table->setColumnHidden(RequestModel::COUNT, true);
+  table->setColumnHidden(RequestModel::ButtonRole, true);
 
-  this->onSetColumnStyleDelegate();
+  this->onSetContentDelegate();
 
-  header->setSectionResizeMode(OverviewModel::MsgStatusIcon, QHeaderView::ResizeToContents);
-  header->setSectionResizeMode(OverviewModel::ContentRole, QHeaderView::Stretch);
-  header->setSectionResizeMode(OverviewModel::PresenceIcon, QHeaderView::ResizeToContents);
-  header->setSectionResizeMode(OverviewModel::ChatTypeIcon, QHeaderView::ResizeToContents);
-  header->setSectionResizeMode(OverviewModel::AvatarIcon, QHeaderView::ResizeToContents);
-  header->setSectionResizeMode(OverviewModel::AvatarPadding, QHeaderView::ResizeToContents);
+  header->setSectionResizeMode(RequestModel::MsgStatusIcon, QHeaderView::ResizeToContents);
+  header->setSectionResizeMode(RequestModel::ContentRole, QHeaderView::Stretch);
   table->setFocusPolicy(Qt::NoFocus);
 
-  // table click handler
+  // // table click handler
   connect(table, &QAbstractItemView::clicked, this, [this](const QModelIndex& idx) {
-    // need to go through the proxy model to figure out the underlying 
-    // item in the base model. Register to OverviewModel::overviewRowClicked for 
-    // the actual signal.
-    m_ctx->overviewProxyModel->onOverviewRowClicked(idx.row());
+    QSharedPointer<ContactItem> contact_item = m_ctx->requestModel->requests.at(idx.row());
+    emit openDialog(contact_item);
   });
-
-  onAvatarDisplayChanged();
 }
 
-void OverviewWidget::onAvatarDisplayChanged() {
-  bool enableDisplayAvatars = config()->get(ConfigKeys::EnableDisplayAvatars).toBool();
-  ui->tableOverview->setColumnHidden(OverviewModel::AvatarIcon, !enableDisplayAvatars);
-  ui->tableOverview->setColumnHidden(OverviewModel::AvatarPadding, !enableDisplayAvatars);
-}
-
-void OverviewWidget::onSetTableHeight() {
-  auto itemHeight = 66;
+void RequestWidget::onSetTableHeight() {
+  m_itemHeight = 66;
   if(m_ctx->textScaling == 1.0) {
-    itemHeight = 66;
+    m_itemHeight = 66;
   } else if (m_ctx->textScaling <= 1.25) {
-    itemHeight = 80;
+    m_itemHeight = 80;
   } else if (m_ctx->textScaling <= 1.50) {
-    itemHeight = 92;
+    m_itemHeight = 92;
   } else if (m_ctx->textScaling <= 1.75) {
-    itemHeight = 100;
+    m_itemHeight = 100;
   } else {
-    itemHeight = 112;
+    m_itemHeight = 112;
   }
 
   QHeaderView *verticalHeader = ui->tableOverview->verticalHeader();
-  verticalHeader->setDefaultSectionSize(itemHeight);
+  verticalHeader->setDefaultSectionSize(m_itemHeight);
 }
 
-void OverviewWidget::onSetColumnStyleDelegate() {
+void RequestWidget::onSetContentDelegate() {
   if(m_richItemDelegate != nullptr)
     m_richItemDelegate->deleteLater();
 
@@ -100,9 +82,9 @@ void OverviewWidget::onSetColumnStyleDelegate() {
   css_tmpl = css_tmpl.replace("{{ font_size_small }}", QString::number(systemFontSizeScaled - 2));
   css_tmpl = css_tmpl.replace("{{ font_size_big }}", QString::number(systemFontSizeScaled + 2));
   m_richItemDelegate->setStyleSheet(css_tmpl);
-  ui->tableOverview->setItemDelegateForColumn(OverviewModel::ContentRole, m_richItemDelegate);
+  ui->tableOverview->setItemDelegateForColumn(RequestModel::ContentRole, m_richItemDelegate);
 }
 
-OverviewWidget::~OverviewWidget() {
+RequestWidget::~RequestWidget() {
   delete ui;
 }

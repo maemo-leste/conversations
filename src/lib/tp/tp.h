@@ -17,6 +17,7 @@
 #include <TelepathyQt/ContactMessenger>
 #include <TelepathyQt/ContactManager>
 #include <TelepathyQt/PendingSendMessage>
+#include <TelepathyQt/PendingContacts>
 #include <TelepathyQt/SimpleObserver>
 #include <TelepathyQt/ChannelClassSpec>
 #include <TelepathyQt/SimpleTextObserver>
@@ -64,7 +65,9 @@
 #include "lib/utils.h"
 #include "lib/config.h"
 #include "lib/state.h"
+#include "lib/abook_roster.h"
 #include "models/ChatMessage.h"
+#include "requests/RequestModel.h"
 
 #include "lib/rtcom.h"
 #include <rtcom-eventlogger/eventlogger.h>
@@ -72,6 +75,14 @@
 #ifdef OSSO_ABOOK
 #include <libosso-abook/osso-abook.h>
 #endif
+
+// needed to convert to Variant's
+Q_DECLARE_METATYPE(Tp::AccountSetPtr);
+Q_DECLARE_METATYPE(Tp::AccountPtr)
+Q_DECLARE_METATYPE(Tp::AccountManagerPtr);
+Q_DECLARE_METATYPE(Tp::ConnectionPtr);
+Q_DECLARE_METATYPE(Tp::TextChannelPtr);
+Q_DECLARE_METATYPE(Tp::ChannelPtr);
 
 class Telepathy;
 class TelepathyAccount;
@@ -104,6 +115,7 @@ public:
     QString getServiceName();
 
     bool isOnline = false;
+    bool has_feature_friends() const { return m_feature_friends; };
 
 signals:
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
@@ -126,6 +138,8 @@ public slots:
     void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
 
     void TpOpenChannelWindow(Tp::TextChannelPtr channel);
+    void onConnectionChanged(const Tp::ConnectionPtr &conn);
+    void onConnectionReady(Tp::PendingOperation *op);
 
     TelepathyChannelPtr hasChannel(const QString& remote_uid);
 
@@ -144,12 +158,12 @@ private slots:
     void onChannelLeft(QString channel);
     void onRemoved(void);
 
-    // TODO return value
-    // sendChannelMessage (if we cannot just use sendMessage)
-
 private:
     QString m_nickname;
     QString m_protocol_name;
+    bool m_feature_friends = false;
+
+    Tp::ConnectionPtr m_connection;
 
     Tp::SimpleTextObserverPtr textobserver;
     Tp::SimpleObserverPtr channelobserver;
@@ -200,6 +214,7 @@ Q_OBJECT
 
 public:
     explicit Telepathy(QObject *parent = nullptr);
+    void init();
     ~Telepathy() override;
 
     QList<TelepathyAccountPtr> accounts;
@@ -210,6 +225,16 @@ public:
     void joinChannel(const QString &local_uid, const QString &remote_uid);
     void leaveChannel(const QString &local_uid, const QString &remote_uid);
     void deleteChannel(const QString &local_uid, const QString &remote_uid);
+
+    void getContact(QString local_uid, QString remote_uid, std::function<void(Tp::ContactPtr)> cb);
+    void authorizeContact(const QString &local_uid, const QString &remote_uid);
+    void _authorizeContact(const QString &local_uid, const QString &remote_uid);
+    void denyContact(const QString &local_uid, const QString &remote_uid);
+    void removeContact(const QString &local_uid, const QString &remote_uid);
+    void blockContact(const QString &local_uid, const QString &remote_uid, bool block = true);
+    bool has_feature_friends(const QString &local_uid);
+    void onRosterChanged();
+
     TelepathyAccountPtr rtcomLocalUidToAccount(const QString &local_uid);
 
 signals:
@@ -223,6 +248,8 @@ signals:
     void channelLeft(QString local_uid, QString channel);
     void channelDeleted(QString local_uid, QString channel);
     void errorMessage(const QString &errorMsg);
+    void contactsChanged();
+    void rosterChanged();
 
 public slots:
     void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);

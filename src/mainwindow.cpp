@@ -35,6 +35,17 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   qDebug() << QString("%1x%2 (%3 DPI)").arg(
       this->screenRect.width()).arg(this->screenRect.height()).arg(this->screenDpi);
 
+  // friend requests widget
+  m_widgetRequest = new RequestWidget(ctx, this);
+  ui->mainLayout->addWidget(m_widgetRequest);
+  connect(m_widgetRequest, &RequestWidget::openDialog, this, &MainWindow::onFriendRequest);
+  connect(m_ctx, &Conversations::textScalingChanged, m_widgetRequest, &RequestWidget::onSetContentDelegate);
+  connect(m_ctx, &Conversations::textScalingChanged, m_widgetRequest, &RequestWidget::onSetTableHeight);
+  connect(m_ctx, &Conversations::textScalingChanged, this, &MainWindow::onRenderRequestsWidget);
+  connect(m_ctx->requestModel, &RequestModel::changed, this, &MainWindow::onRenderRequestsWidget);
+  onRenderRequestsWidget();
+
+  // messages overview widget
   m_widgetOverview = new OverviewWidget(ctx, this);
   ui->mainLayout->addWidget(m_widgetOverview);
   connect(m_ctx, &Conversations::textScalingChanged, m_widgetOverview, &OverviewWidget::onSetColumnStyleDelegate);
@@ -81,6 +92,15 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx->telepathy, &Telepathy::accountManagerReady, this, &MainWindow::onDeterminePage);
 
   this->onDeterminePage();
+}
+
+void MainWindow::onRenderRequestsWidget() {
+  m_widgetRequest->setFixedHeight(m_widgetRequest->itemHeight());
+
+  if(m_ctx->requestModel->size() >= 1)
+    m_widgetRequest->show();
+  else
+    m_widgetRequest->hide();
 }
 
 void MainWindow::onTPAccountManagerReady() {}
@@ -210,9 +230,38 @@ void MainWindow::onOpenComposeWindow() {
   m_compose = new Compose(m_ctx, this);
   m_compose->show();
 
-  // connect(m_s, &Settings::textScalingChanged, this->m_ctx, &Conversations::onTextScalingChanged);
+  connect(m_compose, &Compose::message, [this](QString account, QString to, QString msg) {
+    m_ctx->telepathy->sendMessage(account, to, msg);
+
+    m_compose->close();
+    m_compose->deleteLater();
+    m_compose = nullptr;
+  });
 }
 
+// message box ask
+void MainWindow::onFriendRequest(QSharedPointer<ContactItem> item) {
+  QString remote_uid = item->remote_uid();
+  QString local_uid = item->local_uid();
+  QString message = QString("Accept friend request from %1?").arg(remote_uid);
+
+  QWidget window;
+  QMessageBox msgBox(&window);
+  msgBox.setWindowTitle(remote_uid);
+  msgBox.setText(message);
+
+  //QPushButton *btn_add = msgBox.addButton("Add contact", QMessageBox::ActionRole);
+  //QPushButton *btn_deny = msgBox.addButton("Deny contact", QMessageBox::ActionRole);
+  msgBox.setText("Use the address book to accept/deny incoming friend request");
+  QPushButton *btn_nothing = msgBox.addButton("Do nothing", QMessageBox::ActionRole);
+
+  msgBox.exec();
+  // if (msgBox.clickedButton() == btn_add) {
+  //   m_ctx->telepathy->authorizeContact(local_uid, remote_uid);
+  // } else if (msgBox.clickedButton() == btn_deny) {
+  //   m_ctx->telepathy->removeContact(local_uid, remote_uid);
+  // }
+}
 
 void MainWindow::onOpenSettingsWindow() {
   m_settings = new Settings(m_ctx, this);
@@ -227,6 +276,10 @@ void MainWindow::onOpenSettingsWindow() {
   connect(m_settings, &Settings::enableDisplayGroupchatJoinLeaveToggled, this, [this](bool toggled){
     m_ctx->displayGroupchatJoinLeave = toggled;
     m_ctx->displayGroupchatJoinLeaveChanged(toggled);
+  });
+  connect(m_settings, &Settings::enableDisplayAvatarsToggled, this, [this](bool toggled){
+    m_ctx->displayAvatars = toggled;
+    m_ctx->displayAvatarsChanged(toggled);
   });
   connect(m_settings, &Settings::enterKeySendsChatToggled, m_ctx, &Conversations::enterKeySendsChatToggled);
 }

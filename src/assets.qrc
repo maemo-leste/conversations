@@ -19,5 +19,10 @@
         <file alias="overviewdots.png">assets/images/overviewdots.png</file>
         <file alias="glass.png">assets/images/glass.png</file>
         <file alias="hamburger.png">assets/images/hamburger.png</file>
+        <file alias="presence_online.png">assets/images/presence_online.png</file>
+        <file alias="presence_offline.png">assets/images/presence_offline.png</file>
+        <file alias="presence_away.png">assets/images/presence_away.png</file>
+        <file alias="presence_empty.png">assets/images/presence_empty.png</file>
+        <file alias="presence_unset.png">assets/images/presence_unset.png</file>
     </qresource>
 </RCC>

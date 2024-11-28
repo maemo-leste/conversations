@@ -17,6 +17,7 @@ namespace ConfigKeys {
         EnterKeySendsChat,
         EnableInheritSystemTheme,
         EnableDisplayGroupchatJoinLeave,
+        EnableDisplayAvatars,
         GroupChatChannels
     };
     Q_ENUM_NS(ConfigKey)

@@ -14,32 +14,35 @@
 
 #include "conversations.h"
 #include "lib/utils.h"
-#include "overview/OverviewModel.h"
-#include "overviewbtnwidget.h"
+#include "requests/RequestModel.h"
+#include "lib/QRichItemDelegate.h"
 
 namespace Ui {
-  class OverviewWidget;
+  class RequestWidget;
 }
 
-class OverviewWidget : public QWidget
+class RequestWidget : public QWidget
 {
 Q_OBJECT
 
 public:
-  explicit OverviewWidget(Conversations *ctx, QWidget *parent = nullptr);
-  ~OverviewWidget() override;
+  explicit RequestWidget(Conversations *ctx, QWidget *parent = nullptr);
+  ~RequestWidget() override;
+
+  unsigned int itemHeight() { return m_itemHeight; }
 
 signals:
   void overviewRowClicked(int idx);
+  void openDialog(QSharedPointer<ContactItem> item);
 
 public slots:
-  void onSetColumnStyleDelegate();
+  void onSetContentDelegate();
   void onSetTableHeight();
-  void onAvatarDisplayChanged();
 
 private:
   void setupUITable();
+  unsigned int m_itemHeight = 66;
   RichItemDelegate *m_richItemDelegate = nullptr;
-  Ui::OverviewWidget *ui;
+  Ui::RequestWidget *ui;
   Conversations *m_ctx;
 };
