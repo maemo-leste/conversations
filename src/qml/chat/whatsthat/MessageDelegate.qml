@@ -219,7 +219,7 @@ RowLayout {
                 Image {
                     id: imgAvatar
                     Layout.alignment: Qt.AlignTop
-                    visible: !outgoing && !chatWindow.groupchat && ctx.displayAvatars && hasAvatar
+                    visible: !outgoing && (isHead || display_timestamp) && !chatWindow.groupchat && ctx.displayAvatars && hasAvatar
                     source: visible ? avatar : ""
                     cache: false
                     Layout.preferredWidth: textContainer.avatarSize
@@ -230,7 +230,7 @@ RowLayout {
                         imgAvatar.source = avatar;
                         hasAvatar = true;
                         imgAvatar.visible = !outgoing && !chatWindow.groupchat && ctx.displayAvatars && hasAvatar;
-                        textContainer.calcPrefWidth();
+                        textContainer.Layout.preferredWidth = textContainer.calcPrefWidth();
                     }
                 }
 

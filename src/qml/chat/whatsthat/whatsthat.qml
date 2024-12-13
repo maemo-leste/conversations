@@ -80,7 +80,7 @@ Components.ChatRoot {
 
     Timer {
         interval: 100
-        running: chatWindow.displayChatGradient && chatListView.moving
+        running: chatListView.moving && chatWindow.displayChatGradient
         repeat: true
         onTriggered: {
             root.chatBgShaderUpdate();
