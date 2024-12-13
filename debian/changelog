@@ -1,3 +1,11 @@
+conversations (0.7.25) unstable; urgency=medium
+
+  * avatar: fix segfault
+  * chatWindow: gradient
+  * qml/whatsthat: tweak chat message widths
+
+ -- Sander <sander@sanderf.nl>  Wed, 11 Dec 2024 10:14:10 +0300
+
 conversations (0.7.24) unstable; urgency=medium
 
   * xmpp: presence, avatar
