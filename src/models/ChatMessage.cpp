@@ -87,6 +87,7 @@ QString ChatMessage::avatar() {
     auto contact_item = abook_roster_cache[m_persistent_uid];
     return "image://avatar/" + m_persistent_uid + "?token=" + contact_item->avatar_token_hex();
   }
+  return {};
 }
 
 bool ChatMessage::displayTimestamp() const {
