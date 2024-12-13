@@ -72,6 +72,8 @@ public:
 
     static void configRemove(const QString &backend_name, const QString &remote_id);
 
+    Q_INVOKABLE void singleShot(int msec, QJSValue callback);
+
 signals:
     void applicationLog(QString msg);
     void clockSkewDetected();
@@ -90,6 +92,7 @@ signals:
     void inheritSystemThemeChanged(bool enabled);
     void displayGroupchatJoinLeaveChanged(bool enabled);
     void displayAvatarsChanged(bool enabled);
+    void displayChatGradientChanged(bool enabled);
     void enterKeySendsChatToggled(bool enabled);
     void hildonThemeChanged();
 

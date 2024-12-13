@@ -18,7 +18,6 @@ ListView {
 
     onCountChanged: {  // scroll to bottom
         if(chatListView.mayAutoScroll) {
-            console.log('onCountChanged(); scrollToBottom();');
             scrollToBottom();
         }
     }

@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.0
+import QtGraphicalEffects 1.15
 
 import "../components" as Components
 import "."
@@ -28,7 +29,8 @@ Components.ChatRoot {
     historyPopupBackgroundColor: "#262d31"
     historyPopupTextColor: "white"
 
-    signal showMessageContextMenu(int event_id, var point)
+    signal showMessageContextMenu(int event_id, var point);
+    signal chatBgShaderUpdate();
 
     Image {
         // background
@@ -47,10 +49,41 @@ Components.ChatRoot {
         anchors.rightMargin: 32
 
         onScrollToBottom: root.scrollToBottom();
-
         delegate: MessageDelegate {
+            screenWidth: root.width
+            screenHeight: root.height
             highlight: root.highlightEventId == event_id
             onShowMessageContextMenu: root.showMessageContextMenu(event_id, point);
+        }
+    }
+
+    Connections {
+        target: root
+        function onScrollToBottomFinished() {
+            root.chatBgShaderUpdate();
+        }
+    }
+
+    Connections {
+        target: chatListView
+        function onCountChanged() {
+            root.chatBgShaderUpdate();
+        }
+    }
+
+    Connections {
+        target: chatWindow
+        function onChatPostReady() {
+            root.chatBgShaderUpdate();
+        }
+    }
+
+    Timer {
+        interval: 100
+        running: chatWindow.displayChatGradient && chatListView.moving
+        repeat: true
+        onTriggered: {
+            root.chatBgShaderUpdate();
         }
     }
 }

@@ -281,6 +281,9 @@ void MainWindow::onOpenSettingsWindow() {
     m_ctx->displayAvatars = toggled;
     m_ctx->displayAvatarsChanged(toggled);
   });
+  connect(m_settings, &Settings::enableDisplayChatGradientToggled, this, [this](bool toggled){
+    m_ctx->displayChatGradientChanged(toggled);
+  });
   connect(m_settings, &Settings::enterKeySendsChatToggled, m_ctx, &Conversations::enterKeySendsChatToggled);
 }
 

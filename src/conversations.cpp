@@ -150,6 +150,13 @@ void Conversations::setWindowTitle(const QString &title) {
   emit setTitle(title);
 }
 
+void Conversations::singleShot(int msec, QJSValue callback) {
+  QTimer::singleShot(msec, this, [callback] () mutable {
+    if (callback.isCallable())
+      callback.call();
+  });
+}
+
 QString Conversations::ossoIconLookup(const QString &filename) {
   if(filename.isEmpty()) {
     qWarning() << "ossoIconLookup called with empty filename";

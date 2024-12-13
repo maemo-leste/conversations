@@ -15,6 +15,7 @@ Rectangle {
     property string highlightEventId: ""
     property int atTopHeight: 0
     signal scrollToBottom()
+    signal scrollToBottomFinished()
     signal fetchHistory()
 
     property bool chatPostReady: false
@@ -183,6 +184,7 @@ Rectangle {
             console.log('scrollBottomTimer() fired');
             while(!chatList.atBottom)
               chatList.positionViewAtEnd();
+            chatRoot.scrollToBottomFinished();
         }
     }
 
@@ -227,7 +229,7 @@ Rectangle {
         // hack to emit signal when root.atTop changes
         visible: chatListView.atTop
         onVisibleChanged: {
-            console.log('atTop', chatListView.atTop);
+            // console.log('atTop', chatListView.atTop);
             root.atTopHeight = chatList.childrenRect.height;
         }
     }

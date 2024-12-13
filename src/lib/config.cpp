@@ -23,6 +23,7 @@ static const QHash<ConfigKeys::ConfigKey, ConfigDirective> configStrings = {
   {ConfigKeys::EnableInheritSystemTheme,{QS("EnableInheritSystemTheme"), false}},
   {ConfigKeys::EnableDisplayGroupchatJoinLeave,{QS("EnableDisplayGroupchatJoinLeave"), true}},
   {ConfigKeys::EnableDisplayAvatars,{QS("EnableDisplayAvatars"), true}},
+  {ConfigKeys::EnableDisplayChatGradient,{QS("EnableDisplayChatGradient"), true}},
   {ConfigKeys::EnterKeySendsChat,{QS("EnterKeySendsChat"), false}},
   {ConfigKeys::GroupChatChannels, {QS("GroupChatChannels"), "{}"}}
 };

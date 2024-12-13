@@ -31,6 +31,7 @@ Q_OBJECT
 Q_PROPERTY(QString local_uid MEMBER local_uid);
 Q_PROPERTY(QString remote_uid MEMBER remote_uid);
 Q_PROPERTY(bool groupchat MEMBER groupchat NOTIFY groupchatChanged);
+Q_PROPERTY(bool displayChatGradient MEMBER displayChatGradient NOTIFY displayChatGradientChanged);
 
 public:
     Ui::ChatWindow *ui;
@@ -44,6 +45,7 @@ public:
     QString channel;
     QString service_uid;
     bool groupchat;
+    bool displayChatGradient;
 public:
     void setHighlight(const unsigned int event_id);
     void fillBufferUntil(const unsigned int event_id) const;
@@ -88,6 +90,7 @@ signals:
     void chatCleared();
     void avatarChanged();
     void groupchatChanged();
+    void displayChatGradientChanged();
 
 private:
     Conversations *m_ctx;

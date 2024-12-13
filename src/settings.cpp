@@ -95,6 +95,13 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
     emit enableDisplayAvatarsToggled(toggled);
   });
 
+  // chat bg gradient shader
+  ui->checkBox_enableDisplayChatGradient->setChecked(config()->get(ConfigKeys::EnableDisplayChatGradient).toBool());
+  connect(ui->checkBox_enableDisplayChatGradient, &QCheckBox::toggled, [this](bool toggled){
+    config()->set(ConfigKeys::EnableDisplayChatGradient, toggled);
+    emit enableDisplayChatGradientToggled(toggled);
+  });
+
   // text scaling
   float textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
   if(textScaling < 1.0)

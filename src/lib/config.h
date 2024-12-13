@@ -18,6 +18,7 @@ namespace ConfigKeys {
         EnableInheritSystemTheme,
         EnableDisplayGroupchatJoinLeave,
         EnableDisplayAvatars,
+        EnableDisplayChatGradient,
         GroupChatChannels
     };
     Q_ENUM_NS(ConfigKey)
