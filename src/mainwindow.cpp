@@ -52,7 +52,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx, &Conversations::textScalingChanged, m_widgetOverview, &OverviewWidget::onSetTableHeight);
 
   // error messages from Telepathy
-  connect(m_ctx->telepathy, &Telepathy::errorMessage, [this](QString msg){
+  connect(m_ctx->telepathy, &Telepathy::errorMessage, [this](const QString& msg){
     QMessageBox msgBox;
     msgBox.setText(msg);
     msgBox.exec();
@@ -105,7 +105,7 @@ void MainWindow::onRenderRequestsWidget() {
 
 void MainWindow::onTPAccountManagerReady() {}
 
-void MainWindow::onDeterminePage() {
+void MainWindow::onDeterminePage() const {
   bool hasTpAccounts = m_ctx->telepathy->accounts.length() > 0;
   bool hasDatabase = m_ctx->overviewModel->messages.length() > 0;
   qDebug() << "tp accounts" << m_ctx->telepathy->accounts.length();
@@ -120,19 +120,19 @@ void MainWindow::onDeterminePage() {
   }
 }
 
-void MainWindow::onShowOverviewPage() {
+void MainWindow::onShowOverviewPage() const {
   qDebug() << "onShowOverviewPage";
   ui->overviewPages->setCurrentIndex(0);
 }
 
-void MainWindow::onShowEmptyDbPage() {
+void MainWindow::onShowEmptyDbPage() const {
   QFont robotoRegular(QFontDatabase::applicationFontFamilies(0).at(0));
   robotoRegular.setPointSize(16);
   ui->label_emptyDb->setFont(robotoRegular);
   ui->overviewPages->setCurrentIndex(2);
 }
 
-void MainWindow::onShowWelcomePage() {
+void MainWindow::onShowWelcomePage() const {
   qDebug() << "onShowWelcomePage";
   ui->overviewPages->setCurrentIndex(1);
 

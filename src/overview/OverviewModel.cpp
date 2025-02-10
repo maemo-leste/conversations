@@ -275,8 +275,8 @@ void OverviewModel::onLoad() {
   // =====
   // rtcom
   // =====
-  const uint32_t limit = 50000;
-  const uint32_t offset = 0;
+  constexpr uint32_t limit = 50000;
+  constexpr uint32_t offset = 0;
   RTComElQuery *query = qtrtcom::startQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_GROUP);
   bool query_prepared = FALSE;
 

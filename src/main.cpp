@@ -34,11 +34,9 @@
 
 int main(int argc, char *argv[]) {
   // are we already running?
-  int ipc_sock = Utils::IPCOpen("/tmp/conversations-user.sock");
-  if(ipc_sock >= 0) {
+  if(const int ipc_sock = Utils::IPCOpen("/tmp/conversations-user.sock"); ipc_sock >= 0) {
     while(*argv != nullptr) {  // remote-uid via args?
-      auto arg = QString::fromUtf8(*argv, strlen(*argv));
-      if(arg.contains(globals::reRemoteUID)) {
+      if(auto arg = QString::fromUtf8(*argv, strlen(*argv)); arg.contains(globals::reRemoteUID)) {
         return Utils::IPCSend(ipc_sock, arg);
       }
       argv++;
@@ -73,17 +71,16 @@ int main(int argc, char *argv[]) {
   qputenv("QML_DISABLE_DISK_CACHE", "1");
 #endif
 
-  //QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
   QApplication::setApplicationName("conversations");
   QApplication::setOrganizationDomain("https://maemo-leste.github.io/");
   QApplication::setOrganizationName("Maemo Leste");
   QApplication::setQuitOnLastWindowClosed(false);  // allow conversations to operate in the background
   QApplication::setApplicationVersion(CONVERSATIONS_VERSION);
 
-  QApplication app(argc, argv);
+  const QApplication app(argc, argv);
 
   // logging
-  QString logPath = "/tmp/conversations.log";
+  const QString logPath = "/tmp/conversations.log";
   logFile = new QFile(logPath);
   if(!logFile->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
     qWarning() << QString("could not open logfile: %1").arg(logPath);
@@ -93,25 +90,25 @@ int main(int argc, char *argv[]) {
   app.setAttribute(Qt::AA_CompressTabletEvents);
   app.setAttribute(Qt::AA_CompressHighFrequencyEvents);
 
+  // handle program arguments
   QCommandLineParser parser;
   parser.addHelpOption();
   parser.setApplicationDescription("Communications");
 
-  QCommandLineOption backgroundModeOption(QStringList() << "background", "Start without spawning the GUI.");
+  const QCommandLineOption backgroundModeOption(QStringList() << "background", "Start without spawning the GUI.");
   parser.addOption(backgroundModeOption);
 
-  QCommandLineOption debugModeOption(QStringList() << "debug", "Start in debug mode.");
+  const QCommandLineOption debugModeOption(QStringList() << "debug", "Start in debug mode.");
   parser.addOption(debugModeOption);
 
-  QCommandLineOption versionOption(QStringList() << "version", "Print version.");
+  const QCommandLineOption versionOption(QStringList() << "version", "Print version.");
   parser.addOption(versionOption);
 
   QStringList argv_;
   for(int i = 0; i != argc; i++)
     argv_ << QString::fromStdString(argv[i]);
 
-  auto parsed = parser.parse(argv_);
-  if(!parsed) {
+  if(const auto parsed = parser.parse(argv_); !parsed) {
     qCritical() << parser.errorText();
     exit(1);
   }
@@ -133,7 +130,7 @@ int main(int argc, char *argv[]) {
   for (const auto &k: info.keys())
     qWarning().nospace().noquote() << QString("%1: %2").arg(k, info[k]);
 
-  bool debugMode = parser.isSet(debugModeOption);
+  const bool debugMode = parser.isSet(debugModeOption);
   parser.process(app);
 
   // Listen on IPC

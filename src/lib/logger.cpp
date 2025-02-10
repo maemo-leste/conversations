@@ -32,7 +32,7 @@ void conversationsMessageHandler(QtMsgType type, const QMessageLogContext& conte
         break;
     }
 
-    auto fn = QString(context.file);
+    const auto fn = QString(context.file);
     auto fnspl = fn.split("/");
     logMessage += QString("[%1::%2] %3").arg(fnspl.last()).arg(context.line).arg(msg);
 
@@ -44,7 +44,7 @@ void conversationsMessageHandler(QtMsgType type, const QMessageLogContext& conte
     if(logFile != nullptr && logFile->isOpen()) {
       if(logStream == nullptr)
         logStream = new QTextStream(logFile);
-      *logStream << logMessage << endl;
+      *logStream << logMessage << Qt::endl;
     }
 
     // to app

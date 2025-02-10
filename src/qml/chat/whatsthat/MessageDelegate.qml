@@ -175,39 +175,39 @@ RowLayout {
             anchors.fill: parent
             anchors.margins: 2
 
-            ShaderEffect {
-                visible: chatWindow.displayChatGradient && outgoing
-                id: shaderEffect
-                anchors.fill: parent
-
-                function setGlobalY() {
-                    let _y = shaderEffect.mapToGlobal(Qt.point(0, 0)).y;
-                    if(_y < 0)  _y = 0.0;
-                    else if(_y > item.screenHeight) _y = item.screenHeight;
-                    shaderEffect.globalY = _y;
-                }
-
-                fragmentShader: "
-                    uniform lowp float qt_Opacity;
-                    uniform highp vec2 resolution;
-                    uniform highp float globalY;
-                    uniform lowp vec3 gradientStart;
-                    uniform lowp vec3 gradientEnd;
-
-                    void main() {
-                        highp float normalizedY = globalY / resolution.y;
-                        highp float gradientPosition = clamp((normalizedY - 0.15) / (0.85 - 0.15), 0.0, 1.0);
-                        lowp vec3 color = mix(gradientStart, gradientEnd, gradientPosition);
-                        gl_FragColor = vec4(color, qt_Opacity);
-                    }
-                "
-
-                // uniforms
-                property var resolution: Qt.size(root.width, root.height)
-                property real globalY: setGlobalY();
-                property var gradientStart: item.gColorStartVec
-                property var gradientEnd: item.gColorEndVec
-            }
+            // ShaderEffect {
+            //     visible: chatWindow.displayChatGradient && outgoing
+            //     id: shaderEffect
+            //     anchors.fill: parent
+            //
+            //     function setGlobalY() {
+            //         let _y = shaderEffect.mapToGlobal(Qt.point(0, 0)).y;
+            //         if(_y < 0)  _y = 0.0;
+            //         else if(_y > item.screenHeight) _y = item.screenHeight;
+            //         shaderEffect.globalY = _y;
+            //     }
+            //
+            //     fragmentShader: "
+            //         uniform lowp float qt_Opacity;
+            //         uniform highp vec2 resolution;
+            //         uniform highp float globalY;
+            //         uniform lowp vec3 gradientStart;
+            //         uniform lowp vec3 gradientEnd;
+            //
+            //         void main() {
+            //             highp float normalizedY = globalY / resolution.y;
+            //             highp float gradientPosition = clamp((normalizedY - 0.15) / (0.85 - 0.15), 0.0, 1.0);
+            //             lowp vec3 color = mix(gradientStart, gradientEnd, gradientPosition);
+            //             gl_FragColor = vec4(color, qt_Opacity);
+            //         }
+            //     "
+            //
+            //     // uniforms
+            //     property var resolution: Qt.size(root.width, root.height)
+            //     property real globalY: setGlobalY();
+            //     property var gradientStart: item.gColorStartVec
+            //     property var gradientEnd: item.gColorEndVec
+            // }
 
             RowLayout {
                 spacing: 10

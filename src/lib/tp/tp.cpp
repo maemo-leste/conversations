@@ -105,7 +105,7 @@ void Telepathy::onAccountManagerReady(Tp::PendingOperation *op) {
 }
 
 void Telepathy::getContact(QString local_uid, QString remote_uid, std::function<void(Tp::ContactPtr)> cb) {
-    TelepathyAccountPtr account = accountByName(local_uid);
+    const TelepathyAccountPtr account = accountByName(local_uid);
     if(!account) {
         qCritical() << "No account associated with" << local_uid;
         return;
@@ -128,7 +128,7 @@ void Telepathy::getContact(QString local_uid, QString remote_uid, std::function<
             return;
         }
 
-        QString username = pcontacts->identifiers().first();
+        const QString username = pcontacts->identifiers().first();
         qDebug() << "username" << username;
         Tp::ContactPtr contact = contacts.first();
 
@@ -185,8 +185,8 @@ void Telepathy::removeContact(const QString &local_uid, const QString &remote_ui
     auto lambda = [this, local_uid, remote_uid](Tp::ContactPtr contact) {
         if(contact->subscriptionState() != Tp::Contact::PresenceStateNo) {
             // the contact cant see our presence and we cant see their presence
-            Tp::PendingOperation* pub_op = contact->removePresencePublication();
-            Tp::PendingOperation* sub_op = contact->removePresenceSubscription();
+            const Tp::PendingOperation* pub_op = contact->removePresencePublication();
+            const Tp::PendingOperation* sub_op = contact->removePresenceSubscription();
 
             connect(pub_op, &Tp::PendingOperation::finished, [this, contact](Tp::PendingOperation *_op) {
                 if(_op->isError()) {
@@ -215,7 +215,7 @@ void Telepathy::blockContact(const QString &local_uid, const QString &remote_uid
     qDebug() << "blockContact" << local_uid << remote_uid;
 
     auto lambda = [this, local_uid, block, remote_uid](Tp::ContactPtr contact) {
-        Tp::PendingOperation* op = block ? contact->block() : contact->unblock();
+        const Tp::PendingOperation* op = block ? contact->block() : contact->unblock();
         connect(op, &Tp::PendingOperation::finished, [this, contact, block](Tp::PendingOperation *_op) {
             if(_op->isError()) {
                 qWarning() << "blockContact failed" << _op->errorMessage();
@@ -273,7 +273,7 @@ void Telepathy::onNewAccount(const Tp::AccountPtr &account) {
 
 void Telepathy::onAccountRemoved(const QString &local_uid) {
     qDebug() << "onAccountRemoved" << local_uid;
-    auto ptr = this->accountByName(local_uid);
+    const auto ptr = this->accountByName(local_uid);
     if(!ptr)
       throw std::runtime_error("debug me");
 
@@ -295,7 +295,7 @@ TelepathyAccountPtr Telepathy::accountByName(const QString &local_uid) {
     return account;
 }
 
-TelepathyAccountPtr Telepathy::accountByPtr(Tp::AccountPtr ptr) {
+TelepathyAccountPtr Telepathy::accountByPtr(const Tp::AccountPtr &ptr) {
   for(const auto &accountPtr: accounts) {
       if(accountPtr->acc == ptr)
           return accountPtr;
@@ -410,7 +410,7 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
 
         // https://telepathy.freedesktop.org/doc/telepathy-qt/a00879.html
         Tp::HandleType handleType = (Tp::HandleType) props.value(QString("%1.TargetHandleType").arg(TP_QT_IFACE_CHANNEL)).toInt();
-        bool isRoom = handleType == Tp::HandleTypeRoom;
+        const bool isRoom = handleType == Tp::HandleTypeRoom;
 
         QString initiator_id = props.value(QString("%1.InitiatorID").arg(TP_QT_IFACE_CHANNEL)).toString();
         QString room_name = props.value(QString("%1.Interface.Room2.RoomName").arg(TP_QT_IFACE_CHANNEL)).toString();
@@ -443,10 +443,10 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
             tcPtr->isRoom = isRoom;
             if(!room_name.isEmpty()) {  // register room name in rtcom
                 auto remote_uid_str = remote_uid.toStdString();
-                auto _remote_uid = remote_uid_str.c_str();
+                const auto _remote_uid = remote_uid_str.c_str();
 
                 auto room_name_str = room_name.toStdString();
-                auto _room_name = room_name_str.c_str();
+                const auto _room_name = room_name_str.c_str();
 
                 qtrtcom::setRoomName(_remote_uid, _room_name);
                 tcPtr->room_name = room_name;
@@ -524,9 +524,9 @@ void TelepathyAccount::onConnectionReady(Tp::PendingOperation *op) {
 }
 
 void TelepathyAccount::TpOpenChannelWindow(Tp::TextChannelPtr channel) {
-    auto remote_uid = getRemoteUid(channel);
-    auto group_uid = getGroupUid(channel);
-    auto service = getServiceName();
+    const auto remote_uid = getRemoteUid(channel);
+    const auto group_uid = getGroupUid(channel);
+    const auto service = getServiceName();
     QString channelstr;
 
     if (channel->targetHandleType() != Tp::HandleTypeContact) {
@@ -536,12 +536,12 @@ void TelepathyAccount::TpOpenChannelWindow(Tp::TextChannelPtr channel) {
     emit openChannelWindow(local_uid, remote_uid, group_uid, service, channelstr);
 }
 
-QString TelepathyAccount::getGroupUid(TelepathyChannelPtr channel) {
+QString TelepathyAccount::getGroupUid(const TelepathyChannelPtr &channel) {
     auto text_channel = Tp::TextChannelPtr::staticCast(channel->m_channel);
     return getGroupUid(text_channel);
 }
 
-QString TelepathyAccount::getRoomName(TelepathyChannelPtr channel) {
+QString TelepathyAccount::getRoomName(const TelepathyChannelPtr &channel) {
     for(const auto &c: channels) {
         if(c == channel) {
             return c->room_name;
@@ -550,7 +550,7 @@ QString TelepathyAccount::getRoomName(TelepathyChannelPtr channel) {
     return {};
 }
 
-QString TelepathyAccount::getGroupUid(Tp::TextChannelPtr channel) {
+QString TelepathyAccount::getGroupUid(Tp::TextChannelPtr channel) const {
     if (acc->cmName() == "ring") {
         /* Fremantle uses just the last 7 digits as a group ID and does not
          * include the account path. This is not great, because I think this can
@@ -572,13 +572,13 @@ QString TelepathyAccount::getRemoteUid(Tp::TextChannelPtr channel) {
     }
 }
 
-QString TelepathyAccount::getLocalUid() {
+QString TelepathyAccount::getLocalUid() const {
     return QString(acc->objectPath()).replace("/org/freedesktop/Telepathy/Account/", "");
 }
 
 bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias) {
-    char* channel_str = nullptr;
-    QString channel_qstr = QString();
+    const char* channel_str = nullptr;
+    auto channel_qstr = QString();
     QByteArray channel_ba = channel->targetId().toLocal8Bit();
     if (channel->targetHandleType() == Tp::HandleTypeContact) {
     } else {
@@ -586,7 +586,7 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
         channel_qstr = channel->targetId();
     }
 
-    QByteArray group_uid = getGroupUid(channel).toLocal8Bit();
+    const QByteArray group_uid = getGroupUid(channel).toLocal8Bit();
 
     const char* remote_name = nullptr;
     const char* abook_uid = nullptr;
@@ -626,14 +626,14 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
       remote_name = remote_name_str.c_str();
     }
 
-    auto self_name_str = m_nickname.toStdString();
-    auto self_name = self_name_str.c_str();
-    auto protocol_str = m_protocol_name.toStdString();
-    auto protocol = protocol_str.c_str();
-    auto local_uid_str = local_uid.toStdString();
-    auto local_uid = local_uid_str.c_str();
+    const auto self_name_str = m_nickname.toStdString();
+    const auto self_name = self_name_str.c_str();
+    const auto protocol_str = m_protocol_name.toStdString();
+    const auto protocol = protocol_str.c_str();
+    const auto local_uid_str = local_uid.toStdString();
+    const auto local_uid = local_uid_str.c_str();
 
-    unsigned int event_id = qtrtcom::registerMessage(
+    const unsigned int event_id = qtrtcom::registerMessage(
         epoch, epoch, self_name, local_uid,
         remote_uid.toLocal8Bit(), remote_name, abook_uid,
         text.toLocal8Bit(), outgoing, protocol,
@@ -643,8 +643,8 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
       return FALSE;
     }
 
-    auto service = getServiceName();
-    auto event_type = Utils::protocolIsTelephone(protocol) ? "RTCOM_EL_EVENTTYPE_SMS_MESSAGE" : "RTCOM_EL_EVENTTYPE_CHAT_MESSAGE";
+    const auto service = getServiceName();
+    const auto event_type = Utils::protocolIsTelephone(protocol) ? "RTCOM_EL_EVENTTYPE_SMS_MESSAGE" : "RTCOM_EL_EVENTTYPE_CHAT_MESSAGE";
 
     auto *chatMessage = new ChatMessage({
         .event_id = (int) event_id,  /* TODO: event id is wrong here but should not matter? or does it? */
@@ -674,10 +674,10 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
 
 /* Slot for when we have received a message */
 void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel) {
-    QDateTime dt = message.sent().isValid() ? message.sent() : message.received();
-    qint64 epoch = dt.toMSecsSinceEpoch();
+    const QDateTime dt = message.sent().isValid() ? message.sent() : message.received();
+    const qint64 epoch = dt.toMSecsSinceEpoch();
     bool isScrollback = message.isScrollback();
-    bool isDeliveryReport = message.isDeliveryReport();
+    const bool isDeliveryReport = message.isDeliveryReport();
 
     qDebug() << "onMessageReceived" << dt << channel->targetId() << message.senderNickname() << message.text();
     // qDebug() << "isDeliveryReport" << isDeliveryReport;
@@ -695,8 +695,8 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
     auto remote_uid = message.sender()->id();
 
     auto remote_alias = message.sender()->alias();
-    auto text = message.text().toLocal8Bit();
-    bool outgoing = groupSelfContact->handle() == message.sender()->handle() ||
+    const auto text = message.text().toLocal8Bit();
+    const bool outgoing = groupSelfContact->handle() == message.sender()->handle() ||
                     groupSelfContact->id() == remote_uid;
 
     if(outgoing) {
@@ -705,7 +705,7 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
     }
 
     // only insert newer messages, exit-early if neccesary
-    ConfigStateItemPtr configItem = configState->getItem(local_uid, channel->targetId());
+    const ConfigStateItemPtr configItem = configState->getItem(local_uid, channel->targetId());
     if(configItem && epoch <= configItem->date_last_message) {
         qDebug() << "dropping old message" << channel->targetId() << ":" << text;
         return;
@@ -719,9 +719,9 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
 void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags, const QString &sentMessageToken, const Tp::TextChannelPtr &channel) {
     qDebug() << "onMessageSent" << message.text();
 
-    time_t epoch = message.sent().toTime_t();
-    QString remote_uid = getRemoteUid(channel);
-    auto text = message.text().toLocal8Bit();
+    const time_t epoch = message.sent().toTime_t();
+    const QString remote_uid = getRemoteUid(channel);
+    const auto text = message.text().toLocal8Bit();
 
     log_event(epoch, text, true, channel, remote_uid, nullptr);
 }
@@ -738,12 +738,12 @@ void TelepathyAccount::joinChannel(const QString &remote_uid) {
     this->_joinChannel(remote_uid);
 }
 
-void TelepathyAccount::_joinChannel(QString remote_uid, bool auto_join) {
+void TelepathyAccount::_joinChannel(const QString& remote_uid, const bool auto_join) {
     qDebug() << "_joinChannel" << remote_uid << "protocol" << protocolName();
 
     // set a 'null' datetime on auto_join
-    QDateTime dt = auto_join ? QDateTime() : QDateTime::currentDateTime();
-    auto *pending = acc->ensureTextChatroom(remote_uid, dt);
+    const QDateTime dt = auto_join ? QDateTime() : QDateTime::currentDateTime();
+    const auto *pending = acc->ensureTextChatroom(remote_uid, dt);
 
     connect(pending, &Tp::PendingChannelRequest::channelRequestCreated, this, [this, remote_uid](const Tp::ChannelRequestPtr &channelRequest) {
       if(channelRequest->isValid()) {
@@ -758,7 +758,7 @@ void TelepathyAccount::_joinChannel(QString remote_uid, bool auto_join) {
 
 
 // register in rtcom
-void TelepathyAccount::onChannelJoined(const Tp::ChannelRequestPtr &channelRequest, QString channel) {
+void TelepathyAccount::onChannelJoined(const Tp::ChannelRequestPtr &channelRequest, const QString& channel) {
     if(!channelRequest->isValid()) {  // @TODO: handle error
       return;
     }

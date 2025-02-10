@@ -74,10 +74,10 @@ public slots:
 
 private slots:
     void onProtocolFilterClicked(const QString service);
-    void onShowWelcomePage();
-    void onShowOverviewPage();
-    void onDeterminePage();
-    void onShowEmptyDbPage();
+    void onShowWelcomePage() const;
+    void onShowOverviewPage() const;
+    void onDeterminePage() const;
+    void onShowEmptyDbPage() const;
     void onRenderRequestsWidget();
 
 signals:

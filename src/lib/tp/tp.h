@@ -146,15 +146,15 @@ public slots:
     bool log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias);
 
     static QString getRemoteUid(Tp::TextChannelPtr channel);
-    QString getGroupUid(TelepathyChannelPtr channel);
-    QString getRoomName(TelepathyChannelPtr channel);
-    QString getGroupUid(Tp::TextChannelPtr channel);
-    QString getLocalUid();
+    QString getGroupUid(const TelepathyChannelPtr &channel);
+    QString getRoomName(const TelepathyChannelPtr &channel);
+    QString getGroupUid(Tp::TextChannelPtr channel) const;
+    QString getLocalUid() const;
 
 private slots:
     void onOnline(bool online);
     void onAccReady(Tp::PendingOperation *op);
-    void onChannelJoined(const Tp::ChannelRequestPtr &channelRequest, QString channel);
+    void onChannelJoined(const Tp::ChannelRequestPtr &channelRequest, const QString& channel);
     void onChannelLeft(QString channel);
     void onRemoved(void);
 
@@ -172,7 +172,7 @@ private:
     Tp::AccountManagerPtr m_accountmanager;
 
     Telepathy* m_parent;
-    void _joinChannel(QString channel, bool auto_join = false);
+    void _joinChannel(const QString& channel, bool auto_join = false);
     void joinSavedGroupChats();
     void configRead();
 };
@@ -220,7 +220,7 @@ public:
     QList<TelepathyAccountPtr> accounts;
 
     TelepathyAccountPtr accountByName(const QString &local_uid);
-    TelepathyAccountPtr accountByPtr(Tp::AccountPtr ptr);
+    TelepathyAccountPtr accountByPtr(const Tp::AccountPtr &ptr);
     TelepathyChannelPtr channelByName(const QString &local_uid, const QString &remote_uid);
     void joinChannel(const QString &local_uid, const QString &remote_uid);
     void leaveChannel(const QString &local_uid, const QString &remote_uid);
@@ -228,7 +228,6 @@ public:
 
     void getContact(QString local_uid, QString remote_uid, std::function<void(Tp::ContactPtr)> cb);
     void authorizeContact(const QString &local_uid, const QString &remote_uid);
-    void _authorizeContact(const QString &local_uid, const QString &remote_uid);
     void denyContact(const QString &local_uid, const QString &remote_uid);
     void removeContact(const QString &local_uid, const QString &remote_uid);
     void blockContact(const QString &local_uid, const QString &remote_uid, bool block = true);

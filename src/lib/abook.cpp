@@ -149,9 +149,9 @@ void get_contact_roster() {
 QSharedPointer<ContactItem> upsert_abook_roster_cache(OssoABookContact *contact, bool &dirty) {
     QString persistent_uid = QString::fromUtf8(osso_abook_contact_get_persistent_uid(contact));
 
-    bool is_blocked = osso_abook_contact_get_blocked(contact);
-    bool can_block = osso_abook_contact_can_block(contact, NULL);
-    bool can_auth = osso_abook_contact_can_request_auth(contact, NULL);
+    const bool is_blocked = osso_abook_contact_get_blocked(contact);
+    const bool can_block = osso_abook_contact_can_block(contact, NULL);
+    const bool can_auth = osso_abook_contact_can_request_auth(contact, NULL);
 
     OssoABookPresence *abook_presence = OSSO_ABOOK_PRESENCE(contact);
     TpConnectionPresenceType presenceType = osso_abook_presence_get_presence_type(abook_presence);
@@ -276,16 +276,16 @@ QString presence_type_to_string(TpConnectionPresenceType presenceType) {
     }
 }
 
-QImage imageFromGdkPixbuf(gpointer buf) {
-    GdkPixbuf* pixbuf = static_cast<GdkPixbuf*>(buf);
+QImage imageFromGdkPixbuf(gpointer pixbufPointer) {
+    const auto* pixbuf = static_cast<GdkPixbuf*>(pixbufPointer);
     if(!pixbuf)
-        return QImage();
+        return {};
 
-    int width = gdk_pixbuf_get_width(pixbuf);
-    int height = gdk_pixbuf_get_height(pixbuf);
-    int rowstride = gdk_pixbuf_get_rowstride(pixbuf);
-    int n_channels = gdk_pixbuf_get_n_channels(pixbuf);
-    bool has_alpha = gdk_pixbuf_get_has_alpha(pixbuf);
+    const int width = gdk_pixbuf_get_width(pixbuf);
+    const int height = gdk_pixbuf_get_height(pixbuf);
+    const int rowstride = gdk_pixbuf_get_rowstride(pixbuf);
+    const int n_channels = gdk_pixbuf_get_n_channels(pixbuf);
+    const bool has_alpha = gdk_pixbuf_get_has_alpha(pixbuf);
     const guchar* pixels = gdk_pixbuf_get_pixels(pixbuf);
 
     QImage::Format format;
@@ -295,9 +295,9 @@ QImage imageFromGdkPixbuf(gpointer buf) {
         format = QImage::Format_RGBA8888;
     } else {
         qWarning() << "Unsupported format";
-        return QImage();
+        return {};
     }
 
-    QImage image(pixels, width, height, rowstride, format);
+    const QImage image(pixels, width, height, rowstride, format);
     return image.scaled(54, 54, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 }

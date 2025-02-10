@@ -186,9 +186,9 @@ void ChatWindow::onSetupAuthorizeActions() {
     return;
   }
 
-  QString persistent_uid = local_uid + "-" + remote_uid;
+  const QString persistent_uid = local_uid + "-" + remote_uid;
   if(abook_roster_cache.contains(persistent_uid)) {
-    QSharedPointer<ContactItem> item = abook_roster_cache[persistent_uid];
+    const QSharedPointer<ContactItem> item = abook_roster_cache[persistent_uid];
 
     if(item->subscribed() == "yes") {
       ui->menuAuthorize->setEnabled(false);
@@ -464,7 +464,7 @@ void ChatWindow::closeEvent(QCloseEvent *event) {
   QWidget::closeEvent(event);
 }
 
-void ChatWindow::showMessageContextMenu(unsigned int event_id, QPoint point) {
+void ChatWindow::showMessageContextMenu(const unsigned int event_id, const QPoint point) {
   QMenu contextMenu("Context menu", this);
 
   QSharedPointer<ChatMessage> msg;
@@ -506,7 +506,7 @@ void ChatWindow::showMessageContextMenu(unsigned int event_id, QPoint point) {
 
   // submenu; copy weblinks
   if(!msg->weblinks().isEmpty()) {
-    auto copyLinkMenu = new QMenu("Copy Link", &contextMenu);
+    const auto copyLinkMenu = new QMenu("Copy Link", &contextMenu);
 
     for(unsigned int i = 0; i != msg->weblinks().size(); i++) {
       auto weblink = msg->weblinks().at(i);
@@ -528,7 +528,7 @@ void ChatWindow::showMessageContextMenu(unsigned int event_id, QPoint point) {
 
   // submenu; open weblinks
   if(!msg->weblinks().isEmpty()) {
-    auto openLinkMenu = new QMenu("Open Link", &contextMenu);
+    const auto openLinkMenu = new QMenu("Open Link", &contextMenu);
 
     for(unsigned int i = 0; i != msg->weblinks().size(); i++) {
       auto weblink = msg->weblinks().at(i);
