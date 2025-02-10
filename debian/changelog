@@ -1,3 +1,9 @@
+conversations (0.7.26) unstable; urgency=medium
+
+  * temp. disable avatars
+
+ -- Sander <sander@sanderf.nl>  Wed, 10 Feb 2024 16:25:10 +0300
+
 conversations (0.7.25) unstable; urgency=medium
 
   * avatar: fix segfault
