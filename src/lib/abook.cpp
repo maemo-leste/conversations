@@ -39,6 +39,10 @@ bool conv_abook_init() {
     return TRUE;
 }
 
+void test(const auto& remote_uid) {
+
+}
+
 void contacts_changed_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer user_data) {
     bool dirty = false;
     while (*contacts) {
@@ -64,7 +68,7 @@ void contacts_changed_cb(OssoABookRoster *roster, OssoABookContact **contacts, g
             break;
         }
 
-        upsert_abook_roster_avatar(contact);
+        // upsert_abook_roster_avatar(contact);
 
         g_list_free(rc);
         contacts++;
@@ -103,7 +107,7 @@ void notify_avatar_image_cb(GObject *gobject, GParamSpec *pspec, gpointer user_d
     if(!contact)
         return;
 
-    upsert_abook_roster_avatar(contact);
+    // upsert_abook_roster_avatar(contact);
     conv_abook_func_roster_updated();
 }
 
@@ -135,9 +139,9 @@ void get_contact_roster() {
         // roster cache
         QSharedPointer<ContactItem> contact_item = upsert_abook_roster_cache(contact, dirty);
 
-        // avatar
-        if(upsert_abook_roster_avatar(contact))
-            emit contact_item->avatarChanged();
+        // avatar updated
+        // if(upsert_abook_roster_avatar(contact))
+        //     emit contact_item->avatarChanged();
     }
 
     g_list_free(contacts);

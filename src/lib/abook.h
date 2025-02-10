@@ -20,6 +20,8 @@
 #define FREE(x) free((void*)x)
 extern std::function<void()> conv_abook_func_roster_updated;
 
+void test(const auto& remote_uid);
+
 bool conv_abook_init();
 static bool conv_abook_inited = FALSE;
 static OssoABookRoster *conv_abook_roster = NULL;
