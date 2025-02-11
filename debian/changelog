@@ -1,3 +1,9 @@
+conversations (0.7.27) unstable; urgency=medium
+
+  * remove shader effect
+
+ -- Sander <sander@sanderf.nl>  Wed, 11 Feb 2024 09:34:10 +0300
+
 conversations (0.7.26) unstable; urgency=medium
 
   * temp. disable avatars
