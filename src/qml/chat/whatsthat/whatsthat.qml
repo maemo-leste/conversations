@@ -30,7 +30,7 @@ Components.ChatRoot {
     historyPopupTextColor: "white"
 
     signal showMessageContextMenu(int event_id, var point);
-    signal chatBgShaderUpdate();
+    // signal chatBgShaderUpdate();
 
     Image {
         // background
@@ -60,21 +60,21 @@ Components.ChatRoot {
     Connections {
         target: root
         function onScrollToBottomFinished() {
-            root.chatBgShaderUpdate();
+            // root.chatBgShaderUpdate();
         }
     }
 
     Connections {
         target: chatListView
         function onCountChanged() {
-            root.chatBgShaderUpdate();
+            // root.chatBgShaderUpdate();
         }
     }
 
     Connections {
         target: chatWindow
         function onChatPostReady() {
-            root.chatBgShaderUpdate();
+            // root.chatBgShaderUpdate();
         }
     }
 
@@ -83,7 +83,7 @@ Components.ChatRoot {
         running: chatListView.moving && chatWindow.displayChatGradient
         repeat: true
         onTriggered: {
-            root.chatBgShaderUpdate();
+            // root.chatBgShaderUpdate();
         }
     }
 }

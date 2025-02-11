@@ -12,20 +12,21 @@ RowLayout {
 
     property int screenHeight: 0
     property int screenWidth: 0
-    property alias chatBgShader: shaderEffect
+    // property alias chatBgShader: shaderEffect
     property color gColorStart: "#363e42"
     property color gColorEnd: "#056162"
     property var gColorStartVec: Qt.vector3d(gColorStart.r, gColorStart.g, gColorStart.b)
     property var gColorEndVec: Qt.vector3d(gColorEnd.r, gColorEnd.g, gColorEnd.b)
 
-    Connections {
-        target: root
-
-        function onChatBgShaderUpdate() {
-            if(chatWindow.displayChatGradient)
-                shaderEffect.setGlobalY();
-        }
-    }
+    // shader
+    // Connections {
+    //     target: root
+    //
+    //     function onChatBgShaderUpdate() {
+    //         if(chatWindow.displayChatGradient)
+    //             shaderEffect.setGlobalY();
+    //     }
+    // }
 
     Connections {
         target: chatWindow
