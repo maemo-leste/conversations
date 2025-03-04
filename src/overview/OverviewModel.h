@@ -11,9 +11,10 @@
 #include <glib/gstdio.h>
 
 #include "lib/utils.h"
-#include "lib/rtcom.h"
+#include "lib/rtcom/rtcom_public.h"
 #include "lib/tp/tp.h"
 #include "lib/state.h"
+#include "lib/abook/abook_contact.h"
 #include "lib/QRichItemDelegate.h"
 #include "models/ChatMessage.h"
 
@@ -85,6 +86,7 @@ public:
 public slots:
   void onLoad();
   void onClear();
+  void onContacsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts);
 
 signals:
   void overviewRowClicked(const QSharedPointer<ChatMessage> &ptr);

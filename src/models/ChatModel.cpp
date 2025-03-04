@@ -1,10 +1,9 @@
 #include <QObject>
 #include <QDebug>
+#include <ranges>
 
-#ifdef RTCOM
-#include "lib/rtcom.h"
-#include <rtcom-eventlogger/eventlogger.h>
-#endif
+#include "lib/rtcom/rtcom_public.h"
+#include "lib/rtcom/rtcom_models.h"
 
 #include "models/ChatModel.h"
 
@@ -20,7 +19,7 @@ void ChatModel::prependMessage(ChatMessage *message) {
 
 void ChatModel::prependMessage(const QSharedPointer<ChatMessage> &message) {
   if(!chats.isEmpty()) {
-    auto n = chats.at(0);
+    const auto n = chats.at(0);
     message->next = n;
     n->previous = message;
   }
@@ -191,7 +190,7 @@ QHash<int, QByteArray> ChatModel::roleNames() const {
 }
 
 void ChatModel::clear() {
-  qDebug() << "Clearing chatModel";
+  qDebug() << "Clearing chatModel" << this->chats.size();
   beginResetModel();
 
   for(const QSharedPointer<ChatMessage> &msg: this->chats) {
@@ -215,88 +214,39 @@ unsigned int ChatModel::getMessages(const QString &service_id, const QString &gr
 }
 
 unsigned int ChatModel::searchMessages(const QString &search) {
-  return this->searchMessages(search, nullptr);
+  return this->searchMessages(search, "");
 }
 
 unsigned int ChatModel::searchMessages(const QString &search, const QString &group_uid) {
   this->clear();
 
-  RTComElQuery *query = qtrtcom::startQuery(20, 0, RTCOM_EL_QUERY_GROUP_BY_NONE);
-  gint rtcom_sms_service_id = rtcom_el_get_service_id(qtrtcom::rtcomel(), "RTCOM_EL_SERVICE_SMS");
-  bool query_prepared = FALSE;
-
-  if(group_uid == nullptr) {
-    query_prepared = rtcom_el_query_prepare(
-      query,
-      "free-text", search.toStdString().c_str(), RTCOM_EL_OP_STR_LIKE,
-//      "service-id", rtcom_sms_service_id, RTCOM_EL_OP_EQUAL,
-      NULL);
-  } else {
-    m_group_uid = group_uid;
-    query_prepared = rtcom_el_query_prepare(
-      query,
-      "free-text", search.toStdString().c_str(), RTCOM_EL_OP_STR_LIKE,
-      "group-uid", group_uid.toStdString().c_str(), RTCOM_EL_OP_EQUAL,
-//      "service-id", rtcom_sms_service_id, RTCOM_EL_OP_EQUAL,
-      NULL);
-  }
-
-  if(!query_prepared) {
-    qCritical() << "Couldn't prepare query";
-    g_object_unref(query);
-    return 0;
-  }
-
-  auto results = iterateRtComEvents(query);
-
-  g_object_unref(query);
+  auto results = rtcom_qt::search_messages(search.toStdString(), group_uid.toStdString());
 
   for(auto const &message: results) {
-    this->appendMessage(message);
+    this->appendMessage(new ChatMessage(message));
   }
 
-  return results.length();
+  return results.size();
 }
 
 unsigned int ChatModel::getMessages(const QString &service_id, const QString &group_uid, const int limit, const int offset) {
   m_group_uid = group_uid;
   m_service_id = service_id;
 
-  RTComElQuery *query = qtrtcom::startQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_NONE);
-  gint sid = rtcom_el_get_service_id(qtrtcom::rtcomel(), m_service_id.toStdString().c_str());
-  bool query_prepared = FALSE;
-  query_prepared = rtcom_el_query_prepare(query,
-                                          "group-uid", group_uid.toStdString().c_str(), RTCOM_EL_OP_EQUAL,
-                                          "service-id", sid, RTCOM_EL_OP_EQUAL,
-                                          NULL);
-
-  if(!query_prepared) {
-    qCritical() << "Couldn't prepare query";
-    g_object_unref(query);
-    return 0;
-  }
-
-  auto results = iterateRtComEvents(query);
-
-  g_object_unref(query);
+  auto results = rtcom_qt::get_messages(service_id.toStdString(), group_uid.toStdString(), limit, offset);
 
   bool prepend = offset != 0;
   if(prepend) {
     for(auto const &message: results) {
-      this->prependMessage(message);
+      this->prependMessage(new ChatMessage(message));
     }
   } else {
-    QList<ChatMessage *>::const_iterator rIt;
-    rIt = results.constEnd();
-
-    while (rIt != results.constBegin()) {
-      --rIt;
-      if (offset == 0)
-        this->appendMessage(*rIt);
+    for (const auto entry: std::ranges::reverse_view(results)) {
+      this->appendMessage(new ChatMessage(entry));
     }
   }
 
-  return results.length();
+  return results.size();
 }
 
 int ChatModel::eventIdToIdx(int event_id) {
@@ -311,7 +261,7 @@ bool ChatModel::setMessagesRead() {
   bool rtn = false;
   for(auto const &msg: chats) {
     if(!msg->message_read()) {
-      auto event_id = msg->event_id();
+      const auto event_id = msg->event_id();
       msg->set_message_read();
       emit messageRead(event_id);
       rtn = true;
@@ -329,7 +279,7 @@ unsigned int ChatModel::getPage(int custom_limit) {
   if(custom_limit)
     limit = custom_limit;
 
-  auto count = this->getMessages(m_service_id, m_group_uid, limit, m_offset);
+  const auto count = this->getMessages(m_service_id, m_group_uid, limit, m_offset);
   emit offsetChanged();
 
   if(count < limit) {

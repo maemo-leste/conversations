@@ -13,7 +13,7 @@
 #include "qtcsv/writer.h"
 
 #include "models/ChatMessage.h"
-#include "lib/rtcom.h"
+#include "lib/rtcom/rtcom_public.h"
 
 
 class ChatModel : public QAbstractListModel

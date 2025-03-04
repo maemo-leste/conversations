@@ -2,64 +2,46 @@
 
 #include <QObject>
 #include <QDebug>
+#include <QImage>
 #include <QDateTime>
 
-#include "lib/rtcom.h"
-#include "lib/abook_roster.h"
-
-struct ChatMessageParams {
-    int event_id = -1;
-    const QString service;
-    const QString group_uid;
-
-    const QString local_uid;
-    const QString remote_uid;
-    const QString remote_name;
-    const QString remote_ebook_uid;
-    QString text;
-    const QString icon_name;
-    time_t timestamp = -1;
-    unsigned int count = -1;
-    const QString group_title;
-    const QString channel;
-    const QString event_type;
-    const bool outgoing = true;
-    bool is_read = false;
-    unsigned int flags = -1;
-};
+#include "utils.h"
+#include "lib/rtcom/rtcom_public.h"
+#include "lib/abook/abook_public.h"
+#include "lib/abook/abook_roster.h"
 
 class ChatMessage : public QObject
 {
 Q_OBJECT
 
 public:
-    explicit ChatMessage(ChatMessageParams params, QObject *parent = nullptr);
+    explicit ChatMessage(rtcom_qt::ChatMessageEntry* raw_msg, QObject *parent = nullptr);
     ~ChatMessage() override;
 
-    unsigned int event_id() const { return m_params.event_id; }
-    QString service() const { return m_params.service; }
-    QString group_uid() const { return m_params.group_uid; }
-    QString channel() const { return m_params.channel; }
-    QString local_uid() const { return m_params.local_uid; }
-    QString remote_uid() const { return m_params.remote_uid; }
-    QString local_remote_uid() const { return m_params.local_uid + "-" + m_params.remote_uid; }
-    QString remote_name() const { return m_params.remote_name; }
-    QString remote_ebook_uid() const { return m_params.remote_ebook_uid; }
-    QString icon_name() const { return m_params.icon_name; }
-    unsigned int count() const { return m_params.count; }
-    QString group_title() const { return m_params.group_title; }
-    QString event_type() const { return m_params.event_type; }
-    bool outgoing() const { return m_params.outgoing; }
-    unsigned int flags() const { return m_params.flags; }
+    unsigned int event_id() const { return m_raw->event_id; }
+    QString service() const { return QString::fromStdString(m_raw->service); }
+    QString group_uid() const { return QString::fromStdString(m_raw->group_uid); }
+    QString channel() const { return QString::fromStdString(m_raw->channel); }
+    QString local_uid() const { return QString::fromStdString(m_raw->local_uid); }
+    QString remote_uid() const { return QString::fromStdString(m_raw->remote_uid); }
+    QString local_remote_uid() const { return QString::fromStdString(m_raw->local_uid + "-" + m_raw->remote_uid); }
+    QString remote_name() const { return QString::fromStdString(m_raw->remote_name); }
+    QString remote_ebook_uid() const { return QString::fromStdString(m_raw->remote_ebook_uid); }
+    QString icon_name() const { return QString::fromStdString(m_raw->icon_name); }
+    unsigned int count() const { return m_raw->count; }
+    QString group_title() const { return QString::fromStdString(m_raw->group_title); }
+    QString event_type() const { return QString::fromStdString(m_raw->event_type); }
+    bool outgoing() const { return m_raw->outgoing; }
+    unsigned int flags() const { return m_raw->flags; }
     QString cid() const { return m_cid; }
     QDateTime date() const { return m_date; }
+    QString protocol() const { return QString::fromStdString(m_raw->protocol); }
 
     QString text() const;
     QString textSnippet() const;
 
     QString name() const;
     QString overview_name() const;
-    QString protocol;
     QString overviewItemDelegateRichText;
     void generateOverviewItemDelegateRichText();
 
@@ -68,33 +50,49 @@ public:
     QString datestr() const { return m_date.toString("dd/MM/yyyy"); }
     time_t epoch() const { return m_date.toTime_t(); }
     void set_message_read() {
-      qtrtcom::setRead(this->event_id(), true);
-      m_params.is_read = true;
+      rtcom_qt::set_read(this->event_id(), true);
+      m_raw->is_read = true;
     }
-    bool message_read() { return m_params.is_read; }
+    bool message_read() { return m_raw->is_read; }
 
-    bool chat_event() const { auto et = this->event_type(); return et == "RTCOM_EL_EVENTTYPE_SMS_MESSAGE" || et == "RTCOM_EL_EVENTTYPE_CHAT_MESSAGE"; }
-    bool join_event() const { return this->event_type() == "RTCOM_EL_EVENTTYPE_CHAT_JOIN"; }  // groupchat join
-    bool leave_event() const { return this->event_type() == "RTCOM_EL_EVENTTYPE_CHAT_LEAVE"; }  // groupchat leave
+    bool chat_event() const { return m_raw->event_type == "RTCOM_EL_EVENTTYPE_SMS_MESSAGE" || m_raw->event_type == "RTCOM_EL_EVENTTYPE_CHAT_MESSAGE"; }
+    bool join_event() const { return m_raw->event_type == "RTCOM_EL_EVENTTYPE_CHAT_JOIN"; }  // groupchat join
+    bool leave_event() const { return m_raw->event_type == "RTCOM_EL_EVENTTYPE_CHAT_LEAVE"; }  // groupchat leave
 
     bool hasAvatar();
     QString avatar();
-    QImage &avatarImage();
+    QPixmap __attribute__((always_inline)) avatarImage() const {
+      const auto local_uid_str = local_uid().toStdString();
+      const auto remote_uid_str = remote_uid().toStdString();
+
+      const std::string avatar_token = abook_qt::get_avatar_token(local_uid_str, remote_uid_str);
+      if (!avatar_token.empty() && avatar_token != "0") {
+        QPixmap pixmap;
+        auto result = Utils::get_avatar(local_uid_str, remote_uid_str, avatar_token, pixmap);
+
+        if (!result)
+          return {};
+
+        return pixmap;
+      }
+
+      return {};
+    }
+
     bool isHead() const;
     bool isLast() const;
     bool displayTimestamp() const;
     bool shouldHardWordWrap() const;
 
-    QStringList weblinks();
+    QStringList weblinks() const;
 
     QSharedPointer<ChatMessage> previous = nullptr;
     QSharedPointer<ChatMessage> next = nullptr;
 
 private:
-    ChatMessageParams m_params;
+    rtcom_qt::ChatMessageEntry* m_raw = nullptr;
     QString m_persistent_uid;
     QDateTime m_date;
     QString m_cid;
 };
 
-QList<ChatMessage *> iterateRtComEvents(RTComElQuery *query_struct);

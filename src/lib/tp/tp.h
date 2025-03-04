@@ -65,16 +65,11 @@
 #include "lib/utils.h"
 #include "lib/config.h"
 #include "lib/state.h"
-#include "lib/abook_roster.h"
 #include "models/ChatMessage.h"
-#include "requests/RequestModel.h"
 
-#include "lib/rtcom.h"
-#include <rtcom-eventlogger/eventlogger.h>
-
-#ifdef OSSO_ABOOK
-#include <libosso-abook/osso-abook.h>
-#endif
+#include "lib/abook/abook_public.h"
+#include "lib/rtcom/rtcom_public.h"
+// #include <rtcom-eventlogger/eventlogger.h>
 
 // needed to convert to Variant's
 Q_DECLARE_METATYPE(Tp::AccountSetPtr);
@@ -155,7 +150,7 @@ private slots:
     void onOnline(bool online);
     void onAccReady(Tp::PendingOperation *op);
     void onChannelJoined(const Tp::ChannelRequestPtr &channelRequest, const QString& channel);
-    void onChannelLeft(QString channel);
+    void onChannelJoinedOrLeft(bool joined, QString channel);
     void onRemoved(void);
 
 private:

@@ -18,6 +18,9 @@
 #include "conversations.h"
 #include "lib/config.h"
 #include "lib/state.h"
+#include "lib/abook/abook_public.h"
+#include "lib/abook/abook_roster.h"
+#include "lib/rtcom/rtcom_public.h"
 #include "searchwindow.h"
 #include "models/ChatModel.h"
 #include "models/ChatMessage.h"
@@ -74,7 +77,8 @@ private slots:
     void onChatRequestDelete();
     void onShowMessageContextMenu(int event_id, QVariant test);
     void onSetupAuthorizeActions();
-    void onTrySubscribeAvatarChanged();
+    void onContactsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts);
+    void onAvatarChanged(std::string local_uid_str, std::string remote_uid_str);
     void onAddFriend();
     void onRemoveFriend();
     void onAcceptFriend();
@@ -94,7 +98,7 @@ signals:
 
 private:
     Conversations *m_ctx;
-    ChatModel *chatModel;
+    ChatModel *chatModel = nullptr;
     static ChatWindow *pChatWindow;
     SearchWindow *m_searchWindow = nullptr;
     bool m_auto_join = false;
@@ -103,6 +107,7 @@ private:
 private:
     QTimer *m_windowFocusTimer;
     bool m_enterKeySendsChat = false;
+    AvatarImageProvider* avatarProvider = nullptr;
     unsigned int m_windowFocus = 0; // seconds
     bool m_active = false;  // do we have an active Tp connection?
     bool m_windowActive = false;
@@ -116,16 +121,3 @@ protected:
     void changeEvent(QEvent *event);
 };
 
-class AvatarImageProvider : public QQuickImageProvider {
-public:
-    AvatarImageProvider() : QQuickImageProvider(QQuickImageProvider::Image) {}
-    QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override {
-        int last_slash = id.lastIndexOf("?token=");
-        QString hex_str = id.mid(last_slash + 7);
-        QString _uid = id.left(last_slash);
-
-        if(abook_roster_cache.contains(_uid))
-            return abook_roster_cache[_uid]->avatar();
-        return {};
-    }
-};

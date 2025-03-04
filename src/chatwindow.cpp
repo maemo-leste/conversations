@@ -13,7 +13,6 @@
 #include "mainwindow.h"
 #include "config-conversations.h"
 #include "lib/globals.h"
-#include "lib/abook_roster.h"
 
 #include "ui_chatwindow.h"
 
@@ -41,56 +40,56 @@ ChatWindow::ChatWindow(
   ui->setupUi(this);
   ui->menuBar->hide();
 
-  qDebug() << "ChatWindow()";
-  qDebug() << "local_uid:" << local_uid;
-  qDebug() << "group_uid:" << group_uid;
-  qDebug() << "remote_uid:" << remote_uid;
-  qDebug() << "channel:" << channel;
-  qDebug() << "service:" << service_uid;
-  qDebug() << "groupchat:" << groupchat;
+   qDebug() << "ChatWindow()";
+   qDebug() << "local_uid:" << local_uid;
+   qDebug() << "group_uid:" << group_uid;
+   qDebug() << "remote_uid:" << remote_uid;
+   qDebug() << "channel:" << channel;
+   qDebug() << "service:" << service_uid;
+   qDebug() << "groupchat:" << groupchat;
 
-  // properties
-  setProperty("X-Maemo-Orientation", 2);
-  setProperty("X-Maemo-StackedWindow", 0);
+   // properties
+   setProperty("X-Maemo-Orientation", 2);
+   setProperty("X-Maemo-StackedWindow", 0);
 
-  // [chatBox]
-  ui->chatBox->setFocus();
-  // force chatEdit widget to 1 line (visually)
-  QFontMetrics metrics(ui->chatBox->font());
-  int lineHeight = metrics.lineSpacing();
-  int margins = 25;  // ew, hardcoded.
-  ui->chatBox->setFixedHeight(lineHeight + (margins*2));
-  // catch Enter/RETURN
-  ui->chatBox->installEventFilter(this);
-  m_enterKeySendsChat = config()->get(ConfigKeys::EnterKeySendsChat).toBool();
+   // [chatBox]
+   ui->chatBox->setFocus();
+   // force chatEdit widget to 1 line (visually)
+   QFontMetrics metrics(ui->chatBox->font());
+   int lineHeight = metrics.lineSpacing();
+   int margins = 25;  // ew, hardcoded.
+   ui->chatBox->setFixedHeight(lineHeight + (margins*2));
+   // catch Enter/RETURN
+   ui->chatBox->installEventFilter(this);
+   m_enterKeySendsChat = config()->get(ConfigKeys::EnterKeySendsChat).toBool();
 
-  this->chatModel = new ChatModel(this);
-  this->chatModel->getMessages(service_uid, group_uid);
+   this->chatModel = new ChatModel(this);
+   this->chatModel->getMessages(service_uid, group_uid);
 
-  // QML
-  auto *qctx = ui->quick->rootContext();
-  qctx->setContextProperty("chatWindow", this);
-  qctx->setContextProperty("chatModel", this->chatModel);
-  qctx->setContextProperty("ctx", m_ctx);
-  qctx->setContextProperty("theme", m_ctx->theme);
-  const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-  qctx->setContextProperty("fixedFont", fixedFont);
-  ui->quick->setAttribute(Qt::WA_AlwaysStackOnTop);
-  ui->quick->engine()->addImageProvider("avatar", new AvatarImageProvider);
+   // QML
+   auto *qctx = ui->quick->rootContext();
+   qctx->setContextProperty("chatWindow", this);
+   qctx->setContextProperty("chatModel", this->chatModel);
+   qctx->setContextProperty("ctx", m_ctx);
+   qctx->setContextProperty("theme", m_ctx->theme);
+   const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);  // has no effect on Leste?
+   qctx->setContextProperty("fixedFont", fixedFont);
+   ui->quick->setAttribute(Qt::WA_AlwaysStackOnTop);
+   ui->quick->engine()->addImageProvider("avatar", new AvatarImageProvider);
 
-  // theme
-  auto theme = config()->get(ConfigKeys::ChatTheme).toString();
-  if(theme == "chatty")
-    ui->quick->setSource(QUrl("qrc:/chatty/chatty.qml"));
-  else if(theme == "irssi")
-    ui->quick->setSource(QUrl("qrc:/irssi/irssi.qml"));
-  else
-    ui->quick->setSource(QUrl("qrc:/whatsthat/whatsthat.qml"));
+   // theme
+   const auto theme = config()->get(ConfigKeys::ChatTheme).toString();
+   if(theme == "chatty")
+     ui->quick->setSource(QUrl("qrc:/chatty/chatty.qml"));
+   else if(theme == "irssi")
+     ui->quick->setSource(QUrl("qrc:/irssi/irssi.qml"));
+   else
+     ui->quick->setSource(QUrl("qrc:/whatsthat/whatsthat.qml"));
 
   // auto-close inactivity timer
   m_windowFocusTimer->setInterval(1000);
   connect(m_windowFocusTimer, &QTimer::timeout, [this] {
-     auto *window = QApplication::activeWindow();
+     const auto *window = QApplication::activeWindow();
      if(window == nullptr || window->windowTitle() != this->windowTitle()) {
        m_windowFocus += 1;
        if(m_windowFocus == 60*15) {  // 15 minutes
@@ -150,19 +149,22 @@ ChatWindow::ChatWindow(
   // connect(ui->actionAcceptFriendRequest, &QAction::triggered, this, &ChatWindow::onAcceptFriend);
   // connect(ui->actionRejectFriendRequest, &QAction::triggered, this, &ChatWindow::onRejectFriend);
 
-  // abook avatar
-  connect(m_ctx->telepathy, &Telepathy::rosterChanged, this, &ChatWindow::onTrySubscribeAvatarChanged);
-  onTrySubscribeAvatarChanged();
+  connect(m_ctx, &Conversations::avatarChanged, this, &ChatWindow::onAvatarChanged);
+  connect(m_ctx, &Conversations::contactsChanged, this, &ChatWindow::onContactsChanged);
 }
 
-void ChatWindow::onTrySubscribeAvatarChanged() {
-  auto persistent_uid = local_uid + "-" + remote_uid;
-  if(abook_roster_cache.contains(persistent_uid)) {
-    m_abook_contact = abook_roster_cache[persistent_uid];
-    disconnect(m_abook_contact.data(), &ContactItem::avatarChanged, nullptr, nullptr);
-    connect(m_abook_contact.data(), &ContactItem::avatarChanged, this, &ChatWindow::avatarChanged);
-  }
+void ChatWindow::onContactsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts) {
+  int wegweg = 1;
 }
+
+// void ChatWindow::onTrySubscribeAvatarChanged() {
+//   auto persistent_uid = local_uid + "-" + remote_uid;
+//   if(abook_roster_cache.contains(persistent_uid)) {
+//     m_abook_contact = abook_roster_cache[persistent_uid];
+//     disconnect(m_abook_contact.data(), &ContactItem::avatarChanged, nullptr, nullptr);
+//     connect(m_abook_contact.data(), &ContactItem::avatarChanged, this, &ChatWindow::avatarChanged);
+//   }
+// }
 
 void ChatWindow::onAddFriend() {
   m_ctx->telepathy->authorizeContact(local_uid, remote_uid);
@@ -181,20 +183,29 @@ void ChatWindow::onRejectFriend() {
 }
 
 void ChatWindow::onSetupAuthorizeActions() {
-  if(m_ctx->telepathy->has_feature_friends(local_uid)) {
-    qDebug() << "this protocol does not support roster friends";
-    return;
-  }
+  // if(m_ctx->telepathy->has_feature_friends(local_uid)) {
+  //   qDebug() << "this protocol does not support roster friends";
+  //   return;
+  // }
+  //
+  // // @TODO: avatar
+  // const auto persistent_uid = (local_uid + "-" + remote_uid).toStdString();
+  // if(abook_qt::ROSTER.contains(persistent_uid)) {
+  //   const QSharedPointer<ContactItem> item = abook_roster_cache[persistent_uid];
+  //
+  //   if(item->subscribed() == "yes") {
+  //     ui->menuAuthorize->setEnabled(false);
+  //   } else {
+  //     ui->menuAuthorize->setEnabled(true);
+  //   }
+  // }
+}
 
-  const QString persistent_uid = local_uid + "-" + remote_uid;
-  if(abook_roster_cache.contains(persistent_uid)) {
-    const QSharedPointer<ContactItem> item = abook_roster_cache[persistent_uid];
-
-    if(item->subscribed() == "yes") {
-      ui->menuAuthorize->setEnabled(false);
-    } else {
-      ui->menuAuthorize->setEnabled(true);
-    }
+void ChatWindow::onAvatarChanged(std::string local_uid_str, std::string remote_uid_str) {
+  QString _local_uid = QString::fromStdString(local_uid_str);
+  QString _remote_uid = QString::fromStdString(remote_uid_str);
+  if (_local_uid == local_uid && _remote_uid == remote_uid) {
+    emit avatarChanged();  // @TODO: emit local/remote too, for groupchats
   }
 }
 
@@ -221,7 +232,7 @@ void ChatWindow::onChatRequestClear() {
 void ChatWindow::onChatDelete() {
   auto group_uid_str = group_uid.toStdString();
   auto _group_uid = group_uid_str.c_str();
-  qtrtcom::deleteEvents(_group_uid);
+  rtcom_qt::delete_events(_group_uid);
   this->chatModel->clear();
 
   m_ctx->telepathy->deleteChannel(local_uid, channel);
@@ -231,7 +242,7 @@ void ChatWindow::onChatDelete() {
 void ChatWindow::onChatClear() {
   auto group_uid_str = group_uid.toStdString();
   auto _group_uid = group_uid_str.c_str();
-  qtrtcom::deleteEvents(_group_uid);
+  rtcom_qt::delete_events(_group_uid);
   this->chatModel->clear();
   this->chatModel->getMessages(service_uid, group_uid);
   emit chatCleared();
@@ -400,11 +411,11 @@ void ChatWindow::onSetWindowTitle() {
   if(groupchat) {
       auto channel_str = channel.toStdString();
       auto _channel_str = channel_str.c_str();
-      auto room_name = qtrtcom::getRoomName(_channel_str);
-      if(room_name.isEmpty())
+      auto room_name = rtcom_qt::get_room_name(_channel_str);
+      if(room_name.empty())
         windowTitle +=  " - " + channel;
       else
-        windowTitle +=  " - " + room_name;
+        windowTitle +=  " - " + QString::fromStdString(room_name);
   } else {
     if(!remote_name.isEmpty())
       windowTitle += " - " + remote_name;
@@ -459,7 +470,9 @@ bool ChatWindow::eventFilter(QObject *watched, QEvent *event) {
 
 void ChatWindow::closeEvent(QCloseEvent *event) {
   setChatState(Tp::ChannelChatStateInactive);
-  this->chatModel->clear();
+  if (this->chatModel)
+    this->chatModel->clear();
+
   emit closed(group_uid);
   QWidget::closeEvent(event);
 }
@@ -575,7 +588,5 @@ void ChatWindow::changeEvent(QEvent *event) {
 
 ChatWindow::~ChatWindow() {
   qDebug() << "destroying chatWindow";
-  if(!m_abook_contact.isNull())
-    disconnect(m_abook_contact.data(), &ContactItem::avatarChanged, nullptr, nullptr);
   delete ui;
 }
