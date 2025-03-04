@@ -11,11 +11,15 @@
 #include "lib/ipc.h"
 #include "lib/tp/tp.h"
 #include "lib/state.h"
+#include "lib/abook/abook_public.h"
 #include "lib/libnotify-qt/Notification.h"
 #include "models/ChatModel.h"
 #include "models/ContactItem.h"
 #include "models/ChatMessage.h"
 #include "overview/OverviewModel.h"
+
+class Conversations;
+extern Conversations* CTX;
 
 class Conversations : public QObject {
     Q_OBJECT
@@ -34,6 +38,11 @@ class Conversations : public QObject {
 public:
     explicit Conversations(QCommandLineParser *cmdargs, IPC *ipc);
     ~Conversations() override;
+    static Conversations* instance() {
+      if (CTX == nullptr) throw std::runtime_error("ctx is null");
+      return CTX;
+    }
+
     bool isDebug = false;
     bool isMaemo = false;
     bool isBackground = false;
@@ -59,10 +68,10 @@ public:
 
     ChatModel *chatOverviewModel;
     OverviewModel *overviewModel;
-    RequestModel *requestModel;
     OverviewProxyModel *overviewProxyModel;
     Telepathy *telepathy;
     QList<QSharedPointer<ServiceAccount>> serviceAccounts;
+    AvatarImageProvider* avatarProvider = nullptr;
 
     // keep track of previous libnotify broadcasts to prevent notification spam
     QMap<QString, QSharedPointer<ChatMessage>> notificationMap;  // remote_uid, context
@@ -86,6 +95,7 @@ signals:
     void hideApplication();
     void openChatWindow(const QString &remote_uid);
     void reloadOverview();
+    void contactsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts);
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
     void notificationClicked(const QSharedPointer<ChatMessage> &msg);
     void autoCloseChatWindowsChanged(bool enabled);
@@ -95,8 +105,11 @@ signals:
     void displayChatGradientChanged(bool enabled);
     void enterKeySendsChatToggled(bool enabled);
     void hildonThemeChanged();
+    void avatarChanged(std::string local_uid, std::string remote_uid);
 
 public slots:
+    void onContactsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts);
+    void onAvatarChanged(std::string local_uid, std::string remote_uid);
     void onSendOutgoingMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
     void onTextScalingChanged();
     void onIPCReceived(const QString &cmd);

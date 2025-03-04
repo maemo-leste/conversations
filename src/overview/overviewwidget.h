@@ -33,6 +33,7 @@ signals:
   void overviewRowClicked(int idx);
 
 public slots:
+  void onAvatarChanged(std::string local_uid_str, std::string remote_uid_str);
   void onSetColumnStyleDelegate();
   void onSetTableHeight();
   void onAvatarDisplayChanged();

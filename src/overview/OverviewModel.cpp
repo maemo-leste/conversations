@@ -1,14 +1,10 @@
 #include <QObject>
 #include <QDebug>
 
-#ifdef RTCOM
-#include "lib/rtcom.h"
-#include <rtcom-eventlogger/eventlogger.h>
-#endif
-
-#include "lib/abook_roster.h"
-
+#include "lib/abook/abook_public.h"
+#include "lib/abook/abook_roster.h"
 #include "overview/OverviewModel.h"
+#include "conversations.h"
 
 ServiceAccount::ServiceAccount() {}
 ServiceAccount* ServiceAccount::fromTpProtocol(const QString &local_uid, const QString &protocol) {
@@ -94,7 +90,7 @@ bool OverviewProxyModel::filterAcceptsRow(int source_row, const QModelIndex& sou
 
   if(!m_protocolFilter.isEmpty()) {
     QSharedPointer<ChatMessage> msg = mdl->messages[index.row()];
-    if(msg->protocol.contains(m_protocolFilter))
+    if(msg->protocol().contains(m_protocolFilter))
       show = true;
   }
 
@@ -124,6 +120,8 @@ OverviewModel::OverviewModel(Telepathy *tp, ConfigState *state, QObject *parent)
     m_state(state),
     QAbstractListModel(parent) {
   this->preloadPixmaps();
+
+  connect(Conversations::instance(), &Conversations::contactsChanged, this, &OverviewModel::onContacsChanged);
 }
 
 int OverviewModel::rowCount(const QModelIndex & parent) const {
@@ -151,7 +149,7 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
         return message->overviewItemDelegateRichText;
       }
       case OverviewModel::ProtocolRole: {
-        return message->protocol;
+        return message->protocol();
       }
       case OverviewModel::TimeRole: {
         return message->date();
@@ -168,37 +166,47 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
         if(!icon.isEmpty()) {
           if(m_pixmaps.contains(icon))
             return m_pixmaps[icon];
-          else {
-            qWarning() << "icon" << icon << "does not exist";
-            return m_pixmaps[icon_default];
-          }
-        } else {
+
+          qWarning() << "icon" << icon << "does not exist";
           return m_pixmaps[icon_default];
         }
+
+        return m_pixmaps[icon_default];
       }
       case OverviewModel::PresenceIcon: {
-        auto uid = message->local_remote_uid();
-        if(abook_roster_cache.contains(uid)) {
-          QSharedPointer<ContactItem> contact = abook_roster_cache[uid];
-          QString presence = contact->presence();
-          // @TODO: use get icon instead @ abook
-          if(presence == "available") {
-            return m_pixmaps["presence_online"];
-          } else if(presence == "unset") {
-            return m_pixmaps["presence_unset"];
-          } else if(presence == "offline") {
-            return m_pixmaps["presence_offline"];
-          } else {
-            return m_pixmaps["presence_unset"];
-          }
-        } else {
-          return QVariant();
+        const auto uid = message->local_remote_uid();
+        if(abook_qt::ROSTER.contains(uid.toStdString())) {
+          const auto contact = abook_qt::ROSTER[uid.toStdString()];
+
+          static std::map<std::string, QString> presence_to_pixmap{
+            {"Available", "presence_online"},
+            {"Unset", "presence_unset"},
+            {"Offline", "presence_offline"},
+          };
+
+          if (presence_to_pixmap.contains(contact->presence))
+            return m_pixmaps[presence_to_pixmap[contact->presence]];
+          return m_pixmaps["presence_unset"];
         }
+        return {};
       }
       case OverviewModel::AvatarIcon: {
-        if(message->hasAvatar())
-          return message->avatarImage();
-        return QVariant();
+        const auto uid = message->local_remote_uid();
+        const auto local_uid = message->local_uid().toStdString();
+        const auto remote_uid = message->remote_uid().toStdString();
+
+        const std::string avatar_token = abook_qt::get_avatar_token(local_uid, remote_uid);
+        if (!avatar_token.empty() && avatar_token != "0") {
+          QPixmap pixmap;
+          auto result = Utils::get_avatar(local_uid, remote_uid, avatar_token, pixmap);
+
+          if (!result)
+            return {};
+
+          return pixmap;
+        }
+
+        return {};
       }
       case OverviewModel::ChatTypeIcon: {
         const auto icon_default = "general_default_avatar";
@@ -215,7 +223,7 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
         }
       }
       default: {
-        return QVariant();
+        return {};
       }
     }
   }
@@ -275,24 +283,13 @@ void OverviewModel::onLoad() {
   // =====
   // rtcom
   // =====
-  constexpr uint32_t limit = 50000;
-  constexpr uint32_t offset = 0;
-  RTComElQuery *query = qtrtcom::startQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_GROUP);
-  bool query_prepared = FALSE;
+  constexpr unsigned int limit = 50000;
+  constexpr unsigned int offset = 0;
 
-  const gint service_id = rtcom_el_get_service_id(qtrtcom::rtcomel(), "RTCOM_EL_SERVICE_CALL");
-  query_prepared = rtcom_el_query_prepare(query, "service-id", service_id, RTCOM_EL_OP_NOT_EQUAL,  NULL);
-
-  if(!query_prepared) {
-    qCritical() << "Couldn't prepare query";
-  } else {
-    results = iterateRtComEvents(query);
-    for(const auto *msg: results) {
-      group_uids << msg->group_uid();
-    }
+  for(auto rtcom_results = rtcom_qt::get_overview_messages(limit, offset); auto *msg: rtcom_results) {
+    group_uids << QString::fromStdString(msg->group_uid);
+    results << new ChatMessage(msg);
   }
-
-  g_object_unref(query);
 
   // ==
   // tp
@@ -312,25 +309,19 @@ void OverviewModel::onLoad() {
       if(configItem)
         date_created = configItem->date_created / 1000;
 
-      results << new ChatMessage({
-        .event_id = -1,
-        .service = account->getServiceName(),
-        .group_uid = group_uid,
-        .local_uid = account->local_uid,
-        .remote_uid = "",
-        .remote_name = "",
-        .remote_ebook_uid = "",
-        .text = "",
-        .icon_name = "",
-        .timestamp = date_created,
-        .count = 0,
-        .group_title = "",
-        .channel = remote_uid,
-        .event_type = "-1",
-        .outgoing = false,
-        .is_read = true,
-        .flags = 0
-      });
+      results << new ChatMessage(new rtcom_qt::ChatMessageEntry(
+        -1,
+        account->getServiceName().toStdString(),
+        group_uid.toStdString(),
+        account->local_uid.toStdString(),
+        account->protocolName().toStdString(),
+        "", "", "", "", "", date_created, 0, "",
+        remote_uid.toStdString(),
+        "-1",
+        false,
+        true,
+        0
+      ));
 
       group_uids << group_uid;
     }
@@ -357,25 +348,20 @@ void OverviewModel::onLoad() {
     if(configItem->group_uid.isEmpty())
       continue;
 
-    results << new ChatMessage({
-      .event_id = -1,
-      .service = "RTCOM_EL_SERVICE_CHAT",
-      .group_uid = configItem->group_uid,
-      .local_uid = configItem->local_uid,
-      .remote_uid = remote_uid,
-      .remote_name = "",
-      .remote_ebook_uid = "",
-      .text = "",
-      .icon_name = "",
-      .timestamp = configItem->date_created / 1000,
-      .count = 0,
-      .group_title = "",
-      .channel = channel_str,
-      .event_type = "-1",
-      .outgoing = false,
-      .is_read = true,
-      .flags = 0
-    });
+    results << new ChatMessage(new rtcom_qt::ChatMessageEntry(
+        -1,
+        "RTCOM_EL_SERVICE_CHAT",
+        configItem->group_uid.toStdString(),
+        configItem->local_uid.toStdString(),
+        configItem->protocol().toStdString(),
+        remote_uid.toStdString(),
+        "", "", "", "", configItem->date_created / 1000, 0, "",
+        channel_str.toStdString(),
+        "-1",
+        false,
+        true,
+        0
+      ));
 
     group_uids << configItem->group_uid;
   }
@@ -429,6 +415,10 @@ void OverviewModel::preloadPixmaps() {
     } else {
     }
   }
+}
+
+void OverviewModel::onContacsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts) {
+  onLoad();
 }
 
 void OverviewModel::onClear() {

@@ -22,7 +22,6 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 configure_file("cmake/config-conversations.h.cmake" "${CMAKE_CURRENT_SOURCE_DIR}/src/config-conversations.h")
 
-include(FindCcache)
 include(CheckIncludeFiles)
 include(CheckFunctionExists)
 

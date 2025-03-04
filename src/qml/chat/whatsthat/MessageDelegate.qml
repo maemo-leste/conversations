@@ -7,16 +7,69 @@ import "../components" as Components
 
 RowLayout {
     id: item
+    width: ListView.view.width
+    property int itemMaxWidth: width / 6 * 3
+    spacing: 0
 
     signal showMessageContextMenu(int event_id, var point);
 
+    property bool highlight: false
     property int screenHeight: 0
     property int screenWidth: 0
+    property int avatarSize: 58
     // property alias chatBgShader: shaderEffect
     property color gColorStart: "#363e42"
     property color gColorEnd: "#056162"
     property var gColorStartVec: Qt.vector3d(gColorStart.r, gColorStart.g, gColorStart.b)
     property var gColorEndVec: Qt.vector3d(gColorEnd.r, gColorEnd.g, gColorEnd.b)
+
+    // handy snippet to determine if this current delegate is in view, in case
+    // we need it in the future
+    // property int yoff: Math.round(item.y - chatListView.contentY)
+    // property bool isFullyVisible: {
+    //     let _visible = yoff > chatListView.y && yoff + height < chatListView.y + chatListView.height;
+    //     return _visible;
+    // }
+
+    property int itemWidth: {
+        let max_width = itemMaxWidth;
+        let has_meta_row = isHead || display_timestamp;
+        let width_meta_row = 0;
+        if(outgoing)
+            width_meta_row += metaDateText.implicitWidth;
+        else
+            width_meta_row += metaNameText.implicitWidth + metaDateText.implicitWidth;
+        width_meta_row += 12;
+
+        let width_message = textItem.implicitWidth + 24;
+        let width_result = 70; // minimum
+
+        // console.log(message);
+
+        if(displayAvatar && hasAvatar) {
+            width_result += avatarSize;
+            // console.log("+= avatarSize", message);
+        }
+
+        if(has_meta_row) {
+            width_result += width_meta_row;
+            // console.log("+= width_meta_row", width_meta_row);
+        }
+
+        if(width_message > width_result) {
+            if(width_message < max_width) {
+                // console.log("return", width_message);
+                return width_message;
+            }
+
+            // console.log("max_width", max_width);
+            return max_width;
+        }
+
+        return width_result;
+    }
+
+    property bool displayAvatar: !outgoing && (isHead || display_timestamp) && !chatWindow.groupchat && ctx.displayAvatars && hasAvatar
 
     // shader
     // Connections {
@@ -41,244 +94,144 @@ RowLayout {
         target: chatListView
 
         // on flickable movement end, reset chat msg container state
-        function onMovementEnded() { 
+        function onMovementEnded() {
             textContainer.state = "off";
         }
     }
 
-    property int itemHeightSpacing: ctx.scaleFactor == 1 ? 18 : 24
-    property int itemHeight: {
-      if(!chat_event) return 18;  // join/leave
-      return textColumn.implicitHeight + item.itemHeightSpacing;  // normal msg
-    }
-    property bool highlight: false
+    height: {
+        let meta_height = 12 * ctx.scaleFactor;
+        if(!isHead && !display_timestamp)
+            meta_height = -12 * ctx.scaleFactor;
 
-    // handy snippet to determine if this current delegate is in view, in case
-    // we need it in the future
-    // property int yoff: Math.round(item.y - chatListView.contentY)
-    // property bool isFullyVisible: {
-    //     let _visible = yoff > chatListView.y && yoff + height < chatListView.y + chatListView.height;
-    //     return _visible;
-    // }
+        let _height = textItem.implicitHeight + textItem.font.pointSize + (20) + meta_height;
+        let _height_and_avatar = avatarContainer.childrenRect.height + (20 ) + meta_height;
 
-    height: itemHeight + 12
-    width: parent !== null ? parent.width : 0
-    spacing: 0
+        if (displayAvatar) {
+            if (_height_and_avatar > _height) {
+                if(textItem.text.length <= 20)  // hack
+                    return _height_and_avatar - 10;
 
-    // (group)join, leave events, etc. are displayed differently
-    Item {
-        visible: !chat_event && ctx.displayGroupchatJoinLeave
-        Layout.preferredHeight: 18
-        Layout.fillWidth: true
-
-        RowLayout {
-            anchors.fill: parent
-            Layout.preferredHeight: 18
-            Layout.fillWidth: true
-            spacing: 32
-
-            Item {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 18
+                return _height_and_avatar;
             }
-
-            Components.PlainText {
-                Layout.preferredHeight: 18
-                Layout.alignment: Qt.AlignHCenter
-
-                text: message
-                color: root.colorTextSelf
-                wrapMode: Text.WordWrap
-                font.pointSize: 14
-                font.bold: false
-            }
-
-            Components.PlainText {
-                Layout.preferredHeight: 18
-                Layout.alignment: Qt.AlignHCenter
-
-                text: datestr + " " + hourstr
-                color: root.colorTextSelf
-                wrapMode: Text.WordWrap
-                font.pointSize: 14
-                font.bold: false
-                opacity: 0.7
-            }
-
-            Item {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 18
-            }
+            return _height;
+        } else {
+            return _height;
         }
     }
 
-    Item {
-        visible: outgoing && chat_event
-        Layout.fillWidth: true
-        Layout.preferredHeight: 32
+    Rectangle {
+        visible: outgoing
+        color: "transparent"
+        Layout.preferredWidth: itemWidth
+        Layout.fillHeight: true
     }
 
     Rectangle {
         id: textContainer
-        visible: chat_event
-        property int avatarSize: 58 * ctx.scaleFactor
-        Layout.preferredHeight: itemHeight
-        Layout.preferredWidth: calcPrefWidth();
-
-        function calcPrefWidth() {
-            var max_width = item.width / 6 * 3;
-            var meta_width = metaRow.implicitWidth + 32 + (imgAvatar.visible ? imgAvatar.implicitWidth : 0);
-            var text_width = textMessage.implicitWidth + 32;
-
-            if(meta_width > text_width)
-                if(meta_width < max_width)
-                    return meta_width;
-
-            if(text_width < max_width)
-                return text_width;
-
-            return max_width;
-        }
-
-        state: "off"
-        states: [
-            State {
-                name: "on"
-                PropertyChanges {
-                    color: colorHighlight
-                    target: textContainer
-                }
-            },
-            State {
-                name: "off"
-                PropertyChanges {
-                    color: item.highlight ? colorHighlight : "transparent"
-                    target: textContainer
-                }
-            }
-        ]
-
-        transitions: Transition {
-            ColorAnimation {
-              id: highlightAnimation 
-              duration: 600
-              properties: "color"
-              easing.type: Easing.OutCubic
-            }
-        }
+        property string bgColor: outgoing ? root.chatBackgroundSelf : root.chatBackgroundThem
+        color: bgColor
+        radius: 4
+        // spacing: 0
+        Layout.preferredWidth: itemWidth
+        Layout.fillHeight: true
+        Layout.alignment: outgoing ? Qt.AlignRight : Qt.AlignLeft
+        // Layout.bottomMargin: 10
+        // Layout.topMargin: 10
 
         Rectangle {
-            id: textRectangle
-            radius: highlight ? 0 : 4
-            clip: true
-            property string bgColor: outgoing ? root.chatBackgroundSelf : root.chatBackgroundThem
-            color: bgColor
+            color: "transparent"
             anchors.fill: parent
-            anchors.margins: 2
-
-            // ShaderEffect {
-            //     visible: chatWindow.displayChatGradient && outgoing
-            //     id: shaderEffect
-            //     anchors.fill: parent
-            //
-            //     function setGlobalY() {
-            //         let _y = shaderEffect.mapToGlobal(Qt.point(0, 0)).y;
-            //         if(_y < 0)  _y = 0.0;
-            //         else if(_y > item.screenHeight) _y = item.screenHeight;
-            //         shaderEffect.globalY = _y;
-            //     }
-            //
-            //     fragmentShader: "
-            //         uniform lowp float qt_Opacity;
-            //         uniform highp vec2 resolution;
-            //         uniform highp float globalY;
-            //         uniform lowp vec3 gradientStart;
-            //         uniform lowp vec3 gradientEnd;
-            //
-            //         void main() {
-            //             highp float normalizedY = globalY / resolution.y;
-            //             highp float gradientPosition = clamp((normalizedY - 0.15) / (0.85 - 0.15), 0.0, 1.0);
-            //             lowp vec3 color = mix(gradientStart, gradientEnd, gradientPosition);
-            //             gl_FragColor = vec4(color, qt_Opacity);
-            //         }
-            //     "
-            //
-            //     // uniforms
-            //     property var resolution: Qt.size(root.width, root.height)
-            //     property real globalY: setGlobalY();
-            //     property var gradientStart: item.gColorStartVec
-            //     property var gradientEnd: item.gColorEndVec
-            // }
+            anchors.topMargin: 10
+            anchors.leftMargin: (hasAvatar && displayAvatar) ? 6 : 12
+            anchors.rightMargin: 12
+            anchors.bottomMargin: 10
 
             RowLayout {
-                spacing: 10
                 anchors.fill: parent
-                anchors.margins: 6 * ctx.scaleFactor
-                anchors.leftMargin: 10 * ctx.scaleFactor
-                anchors.rightMargin: 10 * ctx.scaleFactor
+                anchors.margins: 0
+                width: parent.width
+                height: parent.height
 
-                Image {
-                    id: imgAvatar
-                    Layout.alignment: Qt.AlignTop
-                    visible: !outgoing && (isHead || display_timestamp) && !chatWindow.groupchat && ctx.displayAvatars && hasAvatar
-                    source: visible ? avatar : ""
-                    cache: false
-                    Layout.preferredWidth: textContainer.avatarSize
-                    Layout.preferredHeight: textContainer.avatarSize
+                // avatar
+                Item {
+                    id: avatarContainer
+                    visible: displayAvatar
+                    // color: "yellow"
+                    Layout.preferredWidth: avatarSize + 10
+                    Layout.fillHeight: true
 
-                    function reload() {
-                        imgAvatar.source = "";
-                        imgAvatar.source = avatar;
-                        hasAvatar = true;
-                        imgAvatar.visible = !outgoing && !chatWindow.groupchat && ctx.displayAvatars && hasAvatar;
-                        textContainer.Layout.preferredWidth = textContainer.calcPrefWidth();
+                    Image {
+                        id: imgAvatar
+                        width: avatarSize
+                        height: avatarSize
+                        anchors.top: parent.top
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        source: visible && hasAvatar ? avatar : ""
+                        cache: true
+
+                        function reload() {
+                            imgAvatar.source = "";
+                            imgAvatar.source = avatar;
+                            hasAvatar = true;
+                            imgAvatar.visible = !outgoing && !chatWindow.groupchat && ctx.displayAvatars && hasAvatar;
+                            // textContainer.Layout.preferredWidth = textContainer.calcPrefWidth();
+                        }
                     }
                 }
 
                 ColumnLayout {
-                    id: textColumn
+                    spacing: 6
                     Layout.fillWidth: true
                     Layout.fillHeight: true
 
-                    RowLayout {
+                    Item {
                         id: metaRow
-                        spacing: 8
                         visible: isHead || display_timestamp
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 20 * ctx.scaleFactor
 
-                        Components.PlainText {
-                            visible: (!outgoing && isHead) || (!outgoing && display_timestamp)
-                            font.pointSize: 14 * ctx.scaleFactor
-                            font.bold: true
-                            color: root.colorTextThem
-                            text: name
-                        }
+                        RowLayout {
+                            anchors.fill: parent
 
-                        Item {
-                            Layout.fillWidth: true
-                        }
+                            Components.PlainText {
+                                id: metaNameText
+                                visible: (!outgoing && isHead) || !outgoing
+                                color: root.colorTextThem
+                                text: name
+                                font.pointSize: ctx.scaleFactor !== 1.0 ? 16 : 14;
+                                font.bold: true
+                                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                            }
 
-                        Components.PlainText {
-                            visible: display_timestamp
-                            font.pointSize: 12 * ctx.scaleFactor
-                            color: outgoing ? root.colorTextSelf : root.colorTextThem
-                            text: datestr + " " + hourstr
-                            Layout.rightMargin: 0
-                            opacity: 0.6
+                            Components.PlainText {
+                                id: metaDateText
+                                color: outgoing ? root.colorTextSelf : root.colorTextThem
+                                font.pointSize: ctx.scaleFactor !== 1.0 ? 14 : 12;
+                                font.family: fixedFont
+                                text: datestr + " " + hourstr
+                                Layout.alignment: Qt.AlignRight | Qt.AlignTop
+                                opacity: 0.6
+                            }
                         }
                     }
 
                     Components.PlainText {
-                        id: textMessage
+                        id: textItem
                         color: outgoing ? root.colorTextSelf : root.colorTextThem
                         text: message
-                        wrapMode: hardWordWrap ? Text.WrapAnywhere : Text.WordWrap
-                        width: parent.width
                         font.pointSize: 14 * ctx.scaleFactor
-                        Layout.preferredWidth: parent.width
+                        wrapMode: hardWordWrap ? Text.WrapAnywhere : Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+
+                    Item {
+                        // visible: !hasAvatar
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
                     }
                 }
             }
-
         }
 
         MouseArea {
@@ -295,17 +248,18 @@ RowLayout {
                     chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
             }
             onPressAndHold: function (mouse) {
-                 if (mouse.button === Qt.LeftButton /*&&
+                if (mouse.button === Qt.LeftButton /*&&
                      mouse.source === Qt.MouseEventNotSynthesized*/) {
                     chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
-                 }
+                }
             }
         }
     }
 
-    Item {
-        visible: !outgoing && chat_event
-        Layout.fillWidth: true
-        Layout.preferredHeight: 32
+    Rectangle {
+        visible: !outgoing
+        color: "transparent"
+        Layout.preferredWidth: itemWidth
+        Layout.fillHeight: true
     }
 }

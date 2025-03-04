@@ -11,7 +11,10 @@
 #include "lib/globals.h"
 #include "mainwindow.h"
 
+Conversations* CTX = nullptr;
+
 Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
+  CTX = this;
   Notification::init(QApplication::applicationName());
 
   // Paths
@@ -22,19 +25,19 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   configDirectory = QString("%1/.config/%2/").arg(configRoot, QCoreApplication::applicationName());
   createConfigDirectory(configDirectory);
 
+  this->avatarProvider = new AvatarImageProvider;
   this->telepathy = new Telepathy(this);
   this->state = new ConfigState(QString("%1state.json").arg(configDirectory));
   configState = this->state;
   connect(this->state, &ConfigState::autoJoinChanged, this->telepathy, &Telepathy::onSetAutoJoin);
 
+  this->displayAvatars = config()->get(ConfigKeys::EnableDisplayAvatars).toBool();
+  this->displayGroupchatJoinLeave = config()->get(ConfigKeys::EnableDisplayGroupchatJoinLeave).toBool();
+
   this->cmdargs = cmdargs;
 
   this->ipc = ipc;
   connect(ipc, &IPC::commandReceived, this, &Conversations::onIPCReceived);
-
-  // request model
-  requestModel = new RequestModel(this->telepathy, this);
-  connect(this->telepathy, &Telepathy::rosterChanged, this->requestModel, &RequestModel::onLoad);
 
   // chat overview models
   overviewModel = new OverviewModel(this->telepathy, this->state, this);
@@ -82,28 +85,24 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   emit displayGroupchatJoinLeaveChanged(displayGroupchatJoinLeave);
 
   this->onGetAvailableServiceAccounts();
+
+  // abook signals -> qt signals
+  abook_qt::func_contactsChangedSignal =
+    std::bind(&Conversations::onContactsChanged, this, std::placeholders::_1);
+  abook_qt::func_avatarChangedSignal =
+    std::bind(&Conversations::onAvatarChanged, this, std::placeholders::_1, std::placeholders::_2);
 }
 
 // get a list of 'service accounts' (AKA protocols) from both TP and rtcom
 void Conversations::onGetAvailableServiceAccounts() {
   serviceAccounts.clear();
 
-  RTComElQuery *query = qtrtcom::startQuery(0, 0, RTCOM_EL_QUERY_GROUP_BY_EVENTS_LOCAL_UID);
-  if(!rtcom_el_query_prepare(query, NULL)) {
-    qCritical() << "Could not prepare query";
-    g_object_unref(query);
-  } else {
-    auto items = iterateRtComEvents(query);
-    for(auto &item: items) {
-      auto local_uid = item->local_uid();
-      auto *sa = ServiceAccount::fromRtComUID(local_uid);
-      QSharedPointer<ServiceAccount> ptr(sa);
-      serviceAccounts << ptr;
-    }
-    qDeleteAll(items);
-    g_object_unref(query);
+  // rtcom
+  for (const auto&item: rtcom_qt::get_service_accounts()) {
+    ServiceAccount::fromRtComUID(QString::fromStdString(item));
   }
 
+  // telepathy
   for(const auto &acc: this->telepathy->accounts) {
     auto *sa = ServiceAccount::fromTpProtocol(acc->getLocalUid(), acc->protocolName());
     QSharedPointer<ServiceAccount> ptr(sa);
@@ -140,6 +139,14 @@ void Conversations::onIPCReceived(const QString &cmd) {
   } else if(cmd == "makeActive") {
     emit showApplication();
   }
+}
+
+void Conversations::onAvatarChanged(std::string local_uid, std::string remote_uid) {
+  emit avatarChanged(local_uid, remote_uid);
+}
+
+void Conversations::onContactsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts) {
+  emit contactsChanged(contacts);
 }
 
 void Conversations::onSendOutgoingMessage(const QString &local_uid, const QString &remote_uid, const QString &message) {

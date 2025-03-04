@@ -14,43 +14,6 @@ ContactItem::ContactItem(QString persistent_uid, QObject *parent) : QObject(pare
     qDebug() << "new ContactItem" << m_remote_uid;
 }
 
-void ContactItem::setPresence(QString presence, bool &dirty) {
-    presence = presence.toLower();
-
-    if(m_presence != presence) {
-        m_presence = presence;
-        dirty = true;
-    }
-}
-
-void ContactItem::setSubscribed(QString subscribed, bool &dirty) {
-    if(m_subscribed != subscribed) {
-        m_subscribed = subscribed;
-        dirty = true;
-    }
-}
-
-void ContactItem::setPublished(QString published, bool &dirty) {
-    if(m_published != published) {
-        m_published = published;
-        dirty = true;
-    }
-}
-
-void ContactItem::setIsBlocked(bool is_blocked, bool &dirty) {
-    if(m_is_blocked != is_blocked) {
-        m_is_blocked = is_blocked;
-        dirty = true;
-    }
-}
-
-void ContactItem::setCanBlock(bool can_block, bool &dirty) {
-    if(m_can_block != can_block) {
-        m_can_block = can_block;
-        dirty = true;
-    }
-}
-
 bool ContactItem::canSetNewAvatar(void* token) {
     return token != m_avatar_token;
 }
@@ -66,27 +29,6 @@ void ContactItem::setAvatar(void* token, QImage &img) {
         m_avatar_token_hex.remove(0, 2);
     m_avatar = img;
     emit avatarChanged();
-}
-
-void ContactItem::setCanAuth(bool can_auth, bool &dirty) {
-    if(m_can_auth != can_auth) {
-        m_can_auth = can_auth;
-        dirty = true;
-    }
-}
-
-void ContactItem::print() {
-    qDebug() << "======================== ContactItem";
-    qDebug() << "group_uid" << group_uid();
-    qDebug() << "local_uid" << local_uid();
-    qDebug() << "remote_uid" << remote_uid();
-    qDebug() << "presence" << presence();
-    qDebug() << "subscribed" << subscribed();
-    qDebug() << "published" << published();
-    qDebug() << "is_blocked" << is_blocked();
-    qDebug() << "can_block" << can_block();
-    qDebug() << "can_auth" << can_auth();
-    qDebug() << "========================";
 }
 
 ContactItem::~ContactItem() {

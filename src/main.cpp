@@ -1,9 +1,9 @@
-#undef signals
+// #undef signals
 /*Work around issues with signals being defined earlier */
-#include <glib.h>
-#include <gio/gio.h>
-#include <gtk/gtk.h>
-#include "lib/abook.h"
+// #include <glib.h>
+// #include <gio/gio.h>
+// #include <gtk/gtk.h>
+#include "lib/abook/abook_public.h"
 
 #include <QGuiApplication>
 #include <QSslSocket>
@@ -15,7 +15,7 @@
 #include "conversations.h"
 #include "lib/globals.h"
 #include "lib/ipc.h"
-#include "lib/rtcom.h"
+#include "lib/rtcom/rtcom_public.h"
 #include "conv-intl.h"
 #include "config-conversations.h"
 #include "mainwindow.h"
@@ -27,9 +27,7 @@
 #include <QDBusMessage>
 #endif
 
-#include <libosso-abook/osso-abook.h>
-
-#include "rtcom-eventlogger/eventlogger-query.h"
+#include <hildon/hildon-main.h>
 #include "lib/logger.h"
 
 int main(int argc, char *argv[]) {
@@ -51,15 +49,15 @@ int main(int argc, char *argv[]) {
   Q_INIT_RESOURCE(chatty);
   Q_INIT_RESOURCE(irssi);
 
-// #ifdef DEBUG
-//   Tp::enableDebug(true);
-//   Tp::enableWarnings(true);
-//   qputenv("G_MESSAGES_DEBUG", "all");
-//   qputenv("OSSO_ABOOK_DEBUG", "all");
-// #else
-//   Tp::enableDebug(false);
-//   Tp::enableWarnings(false);
-// #endif
+#ifdef DEBUG
+  // Tp::enableDebug(true);
+  // Tp::enableWarnings(true);
+  // qputenv("G_MESSAGES_DEBUG", "all");
+  // qputenv("OSSO_ABOOK_DEBUG", "all");
+#else
+  Tp::enableDebug(false);
+  Tp::enableWarnings(false);
+#endif
 
 #ifdef DEBUG
   clion_debug_setup();
@@ -137,7 +135,13 @@ int main(int argc, char *argv[]) {
   auto *ipc = new IPC();
   QTimer::singleShot(0, ipc, [ipc]{ ipc->bind(); });
 
-  hildon_init();  // @TODO: is this needed?
+  // init hildon (is this required?)
+  hildon_init();
+
+  // init abook
+  if (!abook_qt::abook_init())
+    throw std::runtime_error("cannot initialize abook");
+  abook_qt::abook_init_contact_roster();
 
   // initialize application
   auto *ctx = new Conversations(&parser, ipc);
@@ -147,8 +151,7 @@ int main(int argc, char *argv[]) {
 #ifdef MAEMO
   ctx->isMaemo = true;
 #endif
-  /* TODO: check for failure */
-  conv_abook_init();
+
   auto *mainWindow = new MainWindow(ctx);
   if(!parser.isSet(backgroundModeOption))
     mainWindow->onShowApplication();

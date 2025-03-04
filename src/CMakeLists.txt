@@ -128,6 +128,12 @@ set(CMAKE_CXX_FLAGS
         ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}
         )
 
+add_subdirectory(lib/abook/)
+target_include_directories(conversations PRIVATE lib/abook/)
+
+add_subdirectory(lib/rtcom/)
+target_include_directories(conversations PRIVATE lib/rtcom/)
+
 target_link_libraries(conversations PUBLIC
         ${CMAKE_DL_LIBS}
         Qt5::Core
@@ -144,15 +150,11 @@ target_link_libraries(conversations PUBLIC
         Qt5::Qml
         Qt5::QuickControls2
         Threads::Threads
+        abook_qt
+        rtcom_qt
         ${TELEPATHY_QT5_LIBRARIES}
-        ${GLIB_LIBRARIES}
-        ${OSSO_ABOOK_LIBRARIES}
         ${LIBHILDON_LIBRARIES}
-        ${GTK_LIBRARIES}
-        PkgConfig::RTCOM-EVENTLOGGER
-        PkgConfig::RTCOM-EVENTLOGGER-PLUGINS
-        PkgConfig::LIBEBOOK
-        PkgConfig::TELEPATHY-GLIB
+        /usr/lib/x86_64-linux-gnu/libhildonmime.so.0
 )
 
 if(MAEMO)
@@ -175,8 +177,6 @@ else()
 endif()
 message(STATUS "GLib: ${GLIB_VERSION}")
 message(STATUS "tp-qt: ${TELEPATHY_QT5_VERSION}")
-message(STATUS "rtcom-eventlogger: ${RTCOM-EVENTLOGGER_VERSION}")
-message(STATUS "rtcom-eventlogger-plugins: ${RTCOM-EVENTLOGGER-PLUGINS_VERSION}")
 if(OSSO_ABOOK)
     message(STATUS "osso-abook: ${OSSO_ABOOK_VERSION}")
 else()

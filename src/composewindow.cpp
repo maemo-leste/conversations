@@ -38,7 +38,7 @@ Compose::Compose(Conversations *ctx, QWidget *parent) :
   connect(this->ui->btnSend, &QPushButton::clicked, [this] {
     // account combobox
     auto account_combo_data = ui->comboAccount->currentData().value<QList<QVariant>>();
-    auto account_local_uid = account_combo_data.first().toString();
+    const auto account_local_uid = account_combo_data.first().toString();
 
     auto to = ui->line_to->text().trimmed();
     QString msg = ui->text_msg->toPlainText().trimmed();

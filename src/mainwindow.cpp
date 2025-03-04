@@ -35,16 +35,6 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   qDebug() << QString("%1x%2 (%3 DPI)").arg(
       this->screenRect.width()).arg(this->screenRect.height()).arg(this->screenDpi);
 
-  // friend requests widget
-  m_widgetRequest = new RequestWidget(ctx, this);
-  ui->mainLayout->addWidget(m_widgetRequest);
-  connect(m_widgetRequest, &RequestWidget::openDialog, this, &MainWindow::onFriendRequest);
-  connect(m_ctx, &Conversations::textScalingChanged, m_widgetRequest, &RequestWidget::onSetContentDelegate);
-  connect(m_ctx, &Conversations::textScalingChanged, m_widgetRequest, &RequestWidget::onSetTableHeight);
-  connect(m_ctx, &Conversations::textScalingChanged, this, &MainWindow::onRenderRequestsWidget);
-  connect(m_ctx->requestModel, &RequestModel::changed, this, &MainWindow::onRenderRequestsWidget);
-  onRenderRequestsWidget();
-
   // messages overview widget
   m_widgetOverview = new OverviewWidget(ctx, this);
   ui->mainLayout->addWidget(m_widgetOverview);
@@ -92,15 +82,6 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx->telepathy, &Telepathy::accountManagerReady, this, &MainWindow::onDeterminePage);
 
   this->onDeterminePage();
-}
-
-void MainWindow::onRenderRequestsWidget() {
-  m_widgetRequest->setFixedHeight(m_widgetRequest->itemHeight());
-
-  if(m_ctx->requestModel->size() >= 1)
-    m_widgetRequest->show();
-  else
-    m_widgetRequest->hide();
 }
 
 void MainWindow::onTPAccountManagerReady() {}
@@ -309,9 +290,9 @@ void MainWindow::onChatWindowClosed(const QString &group_uid) {
     window->deleteLater();
   m_chatWindows.remove(group_uid);
 
-  // after closing a chatwindow, we'll attempt to
-  // malloc_trim as usually *some* memory can be forced 
-  // freed, maybe it helps.
+  // // after closing a chatwindow, we'll attempt to
+  // // malloc_trim as usually *some* memory can be forced
+  // // freed, maybe it helps.
   QTimer::singleShot(500, [] {
     if (malloc_trim(0) == 0){  // returns 1 if memory was actually released
       qWarning() << "malloc_trim(0); no memory can be returned";

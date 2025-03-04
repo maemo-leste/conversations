@@ -9,11 +9,14 @@ OverviewWidget::OverviewWidget(Conversations *ctx, QWidget *parent) :
   ui->setupUi(this);
   this->setupUITable();
 
+  // avatars
+  connect(m_ctx, &Conversations::avatarChanged, this, &OverviewWidget::onAvatarChanged);
   connect(m_ctx, &Conversations::displayAvatarsChanged, this, &OverviewWidget::onAvatarDisplayChanged);
 }
 
 void OverviewWidget::setupUITable() {
   auto *table = ui->tableOverview;
+  table->setIconSize(QSize(58, 58));
 
   // enable kinetic scrolling, disable overshoot
   QScroller::grabGesture(table, QScroller::LeftMouseButtonGesture);
@@ -58,6 +61,10 @@ void OverviewWidget::setupUITable() {
   onAvatarDisplayChanged();
 }
 
+void OverviewWidget::onAvatarChanged(std::string local_uid_str, std::string remote_uid_str) {
+  m_ctx->overviewModel->onLoad();
+}
+
 void OverviewWidget::onAvatarDisplayChanged() {
   bool enableDisplayAvatars = config()->get(ConfigKeys::EnableDisplayAvatars).toBool();
   ui->tableOverview->setColumnHidden(OverviewModel::AvatarIcon, !enableDisplayAvatars);
@@ -90,8 +97,8 @@ void OverviewWidget::onSetColumnStyleDelegate() {
   auto css_tmpl = QString(Utils::fileOpen(":/overviewRichDelegate.css"));
 
   //auto systemFontSize = QApplication::font().pointSize();  // @TODO: returns 18?!
-  auto systemFontSize = 14;
-  unsigned int systemFontSizeScaled = systemFontSize * m_ctx->textScaling;
+  constexpr auto systemFontSize = 14;
+  const unsigned int systemFontSizeScaled = systemFontSize * m_ctx->textScaling;
 
   //qDebug() << "scalefactor" << m_ctx->textScaling;
   //qDebug() << "size" << QString::number(systemFontSize);

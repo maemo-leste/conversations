@@ -4,15 +4,16 @@
 #include <QFile>
 #include <QTextCodec>
 
-void clion_debug_setup() {
+inline void clion_debug_setup() {
   // For remote debugging (QEMU) with CLion, the environment variables need
   // to be correctly set such that e.g. dbus will work. We can execute
   // this hack to dump the environ to a file, then reads it below.
   // This snippet runs when `-D CMAKE_DEBUG_TYPE=Debug`
+  //
+  // inside QEMU VM, create ~/env.sh: `printenv > env.sh`
 
-  // /bin/sh -c 'nohup /tmp/tmp.wB7WLVouUV/cmake-build-debug/bin/example >/dev/null 2>&1 &'; sleep 2; cat "/proc/`pidof example`/environ" | tr "\0" "\n" > /home/user/env.sh; kill -9 "`pidof example`"
   setuid(1000);
-  QString path_env_file = "/home/user/env.sh";
+  const QString path_env_file = "/home/user/env.sh";
   qDebug() << "trying to read ENV from" << path_env_file << ", if it exists";
 
   if(QFile::exists(path_env_file)) {

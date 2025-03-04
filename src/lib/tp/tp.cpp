@@ -1,4 +1,6 @@
-#include "lib/abook.h"
+#include "lib/abook/abook_public.h"
+#include "lib/abook/abook_roster.h"
+#include "lib/abook/abook_contact.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -85,7 +87,8 @@ void Telepathy::init() {
     tphandler->setTelepathyParent(this);
     registrar->registerClient(handler, "Conversations");
 
-    conv_abook_func_roster_updated = std::bind(&Telepathy::onRosterChanged, this);
+    // @TODO: avatar?
+    // conv_abook_func_roster_updated = std::bind(&Telepathy::onRosterChanged, this);
 }
 
 /* When the account manager is ready, we will get a list of our accounts and
@@ -448,7 +451,7 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
                 auto room_name_str = room_name.toStdString();
                 const auto _room_name = room_name_str.c_str();
 
-                qtrtcom::setRoomName(_remote_uid, _room_name);
+                rtcom_qt::set_room_name(_remote_uid, _room_name);
                 tcPtr->room_name = room_name;
             }
 
@@ -461,12 +464,14 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
 
             // announce we joined a channel (valid for both room, and 1:1 contact)
             emit accountPtr->channelJoined(accountPtr->local_uid, remote_uid);
-        } else { //
-            qDebug() << "setting secondary ChannelPtr, replacing the first";
-            auto tcPtr = accountPtr->hasChannel(remote_uid);
-            tcPtr->setChannelPtr(channelPtr);
+        } else { // we already have a ChannelPtr, replace if the old one is not valid
+            const auto old_channel = accountPtr->hasChannel(remote_uid);
 
-            emit accountPtr->channelJoined(accountPtr->local_uid, remote_uid);
+            if (old_channel && !old_channel->m_channel->isValid() && channelPtr->isValid()) {
+                qDebug() << "setting new ChannelPtr, replacing the old";
+                old_channel->setChannelPtr(channelPtr);
+                emit accountPtr->channelJoined(accountPtr->local_uid, remote_uid);
+            }
         }
 
         // channel joined from 'external' Tp client (e.g addresbook), request chatWindow
@@ -577,99 +582,50 @@ QString TelepathyAccount::getLocalUid() const {
 }
 
 bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias) {
-    const char* channel_str = nullptr;
-    auto channel_qstr = QString();
+    std::string channel_str;
+
     QByteArray channel_ba = channel->targetId().toLocal8Bit();
     if (channel->targetHandleType() == Tp::HandleTypeContact) {
     } else {
         channel_str = channel_ba.data();
-        channel_qstr = channel->targetId();
+        // auto channel_qstr = channel->targetId();
     }
 
     const QByteArray group_uid = getGroupUid(channel).toLocal8Bit();
 
-    const char* remote_name = nullptr;
-    const char* abook_uid = nullptr;
-    OssoABookContact* contact = nullptr;
+    std::string remote_name;
+    const QString abook_uid = this->local_uid + "-" + remote_uid;
+    const auto abook_uid_str = abook_uid.toStdString();
 
-    if (m_protocol_name == "tel") {
-        qDebug() << "conv_abook_lookup_tel";
-        contact = conv_abook_lookup_tel(remote_uid.toLocal8Bit());
-        if (contact) {
-            remote_name = osso_abook_contact_get_display_name(contact);
-            abook_uid = osso_abook_contact_get_uid(contact);
-        }
-    } else if (m_protocol_name == "sip") {
-        qDebug() << "conv_abook_lookup_sip";
-        contact = conv_abook_lookup_sip(remote_uid.toLocal8Bit());
-        if (contact) {
-            remote_name = osso_abook_contact_get_display_name(contact);
-            abook_uid = osso_abook_contact_get_uid(contact);
-        }
+    if (abook_qt::ROSTER.contains(abook_uid_str) && !abook_qt::ROSTER[abook_uid_str]->display_name.empty()) {
+        remote_name = abook_qt::ROSTER[abook_uid.toStdString()]->display_name;
+    } else if (remote_alias != nullptr && !remote_alias.isEmpty()) {
+        remote_name = remote_alias.toStdString();
     } else {
-        qDebug() << "conv_abook_lookup_im";
-        contact = conv_abook_lookup_im(remote_uid.toLocal8Bit());
-        if (contact) {
-            remote_name = osso_abook_contact_get_display_name(contact);
-            abook_uid = osso_abook_contact_get_uid(contact);
-        }
-    }
-
-    QString remote_name_q = QString(remote_name);
-    if (!remote_name && (remote_alias != nullptr)) {
-        remote_name_q = QString(remote_alias);
-    }
-
-    std::string remote_name_str;
-    if(!remote_name) {
-      remote_name_str = remote_alias.toStdString();
-      remote_name = remote_name_str.c_str();
+        remote_name = remote_uid.toStdString();
     }
 
     const auto self_name_str = m_nickname.toStdString();
-    const auto self_name = self_name_str.c_str();
     const auto protocol_str = m_protocol_name.toStdString();
-    const auto protocol = protocol_str.c_str();
     const auto local_uid_str = local_uid.toStdString();
-    const auto local_uid = local_uid_str.c_str();
-
-    const unsigned int event_id = qtrtcom::registerMessage(
-        epoch, epoch, self_name, local_uid,
-        remote_uid.toLocal8Bit(), remote_name, abook_uid,
-        text.toLocal8Bit(), outgoing, protocol,
-        channel_str, group_uid);
-    if(event_id < 0) {
-      qWarning() << "log_event insertion error";
-      return FALSE;
-    }
 
     const auto service = getServiceName();
-    const auto event_type = Utils::protocolIsTelephone(protocol) ? "RTCOM_EL_EVENTTYPE_SMS_MESSAGE" : "RTCOM_EL_EVENTTYPE_CHAT_MESSAGE";
 
-    auto *chatMessage = new ChatMessage({
-        .event_id = (int) event_id,  /* TODO: event id is wrong here but should not matter? or does it? */
-        .service = service,
-        .group_uid = group_uid,
-        .local_uid = local_uid,
-        .remote_uid = remote_uid,
-        .remote_name = remote_name_q,
-        .remote_ebook_uid = "",
-        .text = text,
-        .icon_name = "",
-        .timestamp = epoch,
-        .count = 0,
-        .group_title = "",
-        .channel = channel_qstr,
-        .event_type = event_type,
-        .outgoing = outgoing,
-        .is_read = false,
-        .flags = 0
-      });
+    rtcom_qt::ChatMessageEntry* new_message = rtcom_qt::register_message(
+        epoch, epoch, self_name_str, local_uid_str,
+        remote_uid.toStdString(), remote_name, abook_uid.toStdString(),
+        text.toStdString(), outgoing, protocol_str,
+        channel_str, group_uid.toStdString());
+
+    if (!new_message)
+      return false;
+
+    auto *chatMessage = new ChatMessage(new_message);
 
     QSharedPointer<ChatMessage> ptr(chatMessage);
     emit databaseAddition(ptr);
 
-    return TRUE;
+    return true;
 }
 
 /* Slot for when we have received a message */
@@ -712,7 +668,9 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
     }
 
     configState->setLastMessageTimestamp(local_uid, channel->targetId(), epoch);
-    log_event(dt.toTime_t(), text, outgoing, channel, remote_uid, remote_alias);
+    const auto result = log_event(dt.toTime_t(), text, outgoing, channel, remote_uid, remote_alias);
+    if (!result)
+      qWarning() << "Failed to add a database event";
 }
 
 /* When we have managed to send a message */
@@ -723,7 +681,9 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
     const QString remote_uid = getRemoteUid(channel);
     const auto text = message.text().toLocal8Bit();
 
-    log_event(epoch, text, true, channel, remote_uid, nullptr);
+    const auto result = log_event(epoch, text, true, channel, remote_uid, nullptr);
+    if (!result)
+      qWarning() << "Failed to add a database event";
 }
 
 void TelepathyAccount::onOnline(bool online) {
@@ -759,135 +719,55 @@ void TelepathyAccount::_joinChannel(const QString& remote_uid, const bool auto_j
 
 // register in rtcom
 void TelepathyAccount::onChannelJoined(const Tp::ChannelRequestPtr &channelRequest, const QString& channel) {
-    if(!channelRequest->isValid()) {  // @TODO: handle error
+    if(!channelRequest->isValid()) {
+      qWarning() << "onChannelJoined: !channelRequest->isValid()";
       return;
     }
-
-    auto abook_uid = nullptr;  // @TODO: ?
-
-    auto local_uid_str = local_uid.toStdString();
-    auto _local_uid = local_uid_str.c_str();
-
-    auto remote_uid_str  = m_nickname.toStdString();
-    auto _remote_uid = remote_uid_str.c_str();
-
-    std::string channel_str = channel.toStdString();
-    const char *_channel = channel_str.c_str();
-
-    std::string protocol_str = m_protocol_name.toStdString();
-    const char *_protocol = protocol_str.c_str();
-
-    auto group_uid = QString("%1-%2").arg(local_uid, channel);
-    auto group_uid_str = group_uid.toStdString();
-    auto _group_uid = group_uid_str.c_str();
-
-    time_t now = QDateTime::currentDateTime().toTime_t();
-    const char* remote_name = nullptr;
-
-    qtrtcom::registerChatJoin(now, now, _remote_uid, _local_uid,
-                         _remote_uid, remote_name, abook_uid,
-                         "join", _protocol, _channel, _group_uid);
-
-    // @TODO: duplicate code like in log_event, refactor
-    auto service = getServiceName();
-    auto text = QString("%1 joined the groupchat").arg(m_nickname);
-
-    auto *chatMessage = new ChatMessage({
-        .event_id = 1,  /* TODO: event id is wrong here but should not matter */
-        .service = service,
-        .group_uid = group_uid,
-        .local_uid = local_uid,
-        .remote_uid = m_nickname,
-        .remote_name = QString(remote_name),
-        .remote_ebook_uid = "",
-        .text = text,
-        .icon_name = "",
-        .timestamp = now,
-        .count = 0,
-        .group_title = "",
-        .channel = channel,
-        .event_type = "-1",
-        .outgoing = false,
-        .is_read = true,
-        .flags = 0
-      });
-
-    QSharedPointer<ChatMessage> ptr(chatMessage);
-    emit databaseAddition(ptr);
+    this->onChannelJoinedOrLeft(true, channel);
 }
 
-// register in rtcom
-void TelepathyAccount::onChannelLeft(QString channel) {
-    auto abook_uid = nullptr;  // @TODO: ?
+void TelepathyAccount::onChannelJoinedOrLeft(bool joined, QString channel) {
+    const std::string local_uid_str = local_uid.toStdString();
+    const std::string remote_uid_str  = m_nickname.toStdString();
+    const std::string abook_uid = this->local_uid.toStdString() + "-" + remote_uid_str;
+    const std::string channel_str = channel.toStdString();
+    const std::string protocol_str = m_protocol_name.toStdString();
+    const auto group_uid = QString("%1-%2").arg(local_uid, channel);
+    const std::string group_uid_str = group_uid.toStdString();
+    const std::string text_content = joined ? "!joined!" : "!left!";
 
-    auto local_uid_str = local_uid.toStdString();
-    auto _local_uid = local_uid_str.c_str();
+    const time_t now = QDateTime::currentDateTime().toTime_t();
+    const std::string remote_name = "";
 
-    auto remote_uid_str  = m_nickname.toStdString();
-    auto _remote_uid = remote_uid_str.c_str();
+    auto* new_message = rtcom_qt::register_chat_leave(
+      now, now, remote_uid_str, local_uid_str,
+      remote_uid_str, remote_name, abook_uid,
+      text_content, protocol_str, channel_str,
+      group_uid_str);
 
-    std::string channel_str = channel.toStdString();
-    const char *_channel = channel_str.c_str();
-
-    std::string protocol_str = m_protocol_name.toStdString();
-    const char *_protocol = protocol_str.c_str();
-
-    auto group_uid = QString("%1-%2").arg(local_uid, channel);
-    auto group_uid_str = group_uid.toStdString();
-    auto _group_uid = group_uid_str.c_str();
-
-    time_t now = QDateTime::currentDateTime().toTime_t();
-    const char* remote_name = nullptr;
-
-    qtrtcom::registerChatLeave(now, now, _remote_uid, _local_uid,
-                              _remote_uid, remote_name, abook_uid,
-                              "left", _protocol, _channel, _group_uid);
-
-    // @TODO: duplicate code like in log_event, refactor
-    auto service = getServiceName();
-    auto text = QString("%1 has left the groupchat").arg(m_nickname);
-
-    auto *chatMessage = new ChatMessage({
-        .event_id = 1,
-        .service = service,
-        .group_uid = group_uid,
-        .local_uid = local_uid,
-        .remote_uid = m_nickname,
-        .remote_name = QString(remote_name),
-        .remote_ebook_uid = "",
-        .text = text,
-        .icon_name = "",
-        .timestamp = now,
-        .count = 0,
-        .group_title = "",
-        .channel = channel,
-        .event_type = "-1",
-        .outgoing = false,
-        .is_read = true,
-        .flags = 0
-      });
-
-    QSharedPointer<ChatMessage> ptr(chatMessage);
+    auto *chatMessage = new ChatMessage(new_message);
+    const QSharedPointer<ChatMessage> ptr(chatMessage);
     emit databaseAddition(ptr);
 }
 
 void TelepathyAccount::onAccReady(Tp::PendingOperation *op) {
   this->joinSavedGroupChats();
   emit accountReady(this);
-
-  // fetch abook roster
-  get_contact_roster();
 }
 
 TelepathyChannelPtr TelepathyAccount::hasChannel(const QString &remote_uid) {
     TelepathyChannelPtr channel;
 
-    if(channels.contains(remote_uid) &&
-          channels[remote_uid] &&
-          channels[remote_uid]->m_channel->targetId() == remote_uid)
-        channel = channels[remote_uid];
+    if (channels.contains(remote_uid) && channels[remote_uid]) {
+        const auto isValid = channels[remote_uid]->m_channel->isValid();
+        if (isValid) {
+            const auto targetId = channels[remote_uid]->m_channel->targetId();
+            if (targetId == remote_uid)
+                channel = channels[remote_uid];
+        }
+  }
 
-    return channel;
+  return channel;
 }
 
 void TelepathyAccount::leaveChannel(const QString &remote_uid) {
@@ -908,7 +788,7 @@ void TelepathyAccount::leaveChannel(const QString &remote_uid) {
             channels.remove(remote_uid);
 
         // @TODO: for now, we do not register chat join/leave events
-        //this->onChannelLeft(remote_uid);
+        //this->onChannelJoinedOrLeft(false, remote_uid);
         emit channelLeft(local_uid, remote_uid);
     });
 }
@@ -1011,8 +891,9 @@ TelepathyChannel::TelepathyChannel(const QString &remote_uid, TelepathyAccountPt
 void TelepathyChannel::onChannelReady(Tp::PendingOperation *op) {
     qDebug() << "onChannelReady" << remote_uid << "isError:" << op->isError();
     if (op->isError()) {
-        qDebug() << "onChannelReady, errorName:" << op->errorName();
-        qDebug() << "onChannelReady, errorMessage:" << op->errorMessage();
+        qWarning() << "onChannelReady, errorName:" << op->errorName();
+        qWarning() << "onChannelReady, errorMessage:" << op->errorMessage();
+        return;
     }
 
     Tp::TextChannel *channel = (Tp::TextChannel *)m_channel.data();

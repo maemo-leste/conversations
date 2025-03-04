@@ -24,6 +24,12 @@ public:
   bool auto_join = false;
   qint64 date_created;           // in msecs since epoch
   qint64 date_last_message = 0;  // in msecs since epoch
+
+  [[nodiscard]] QString protocol() const {
+    if (const auto spl = local_uid.split("/"); spl.length() > 1)
+      return spl.at(1);
+    return "unknown";
+  }
 };
 
 class ConfigState : public QObject {
