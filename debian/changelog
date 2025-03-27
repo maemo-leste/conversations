@@ -1,3 +1,22 @@
+conversations (0.7.28) unstable; urgency=medium
+
+  * move abook/rtcom to separate libraries, which are statically linked
+  * prevents mixing Glib and Qt, which causes include conflicts
+    - separates abook/rtcom code from conversations, meaning C code is not mixed with C++
+    - provides an easy C++ interface
+  * Fixes segfault when launching a contact window through the address
+    book application. When doing that twice, conversations erroneously
+    replaced a working TextChannel with a faulty one.
+  * Avatars are now only fetched 'on-demand'
+  * Avatars are now cached through QPixMapCache (10mb RAM)
+  * Rewrote WhatsThat QML theme to better accommodate avatars, as well as
+    fix clipping issues with varied length text messages.
+  * Removed the ability to accept/deny friend requests, as that is the
+    responsibility of the address book (which already includes such
+    functionality)
+
+ -- Sander <sander@sanderf.nl>  Tue, 4 Mar 2024 15:00:10 +0300
+
 conversations (0.7.27) unstable; urgency=medium
 
   * remove shader effect
