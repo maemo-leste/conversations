@@ -371,8 +371,9 @@ namespace qtrtcom {
   }
 
   void rtcom_log(const std::string &msg, const bool error) {
-    const auto x = error ? stderr : stdout;
-    fprintf(x, msg.c_str() + '\n');
-    fflush(x);
+    const auto stream = error ? stderr : stdout;
+    fputs(msg.c_str(), stream);
+    fputc('\n', stream);
+    fflush(stream);
   }
 }
