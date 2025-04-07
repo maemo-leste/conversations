@@ -1,8 +1,3 @@
-// #undef signals
-/*Work around issues with signals being defined earlier */
-// #include <glib.h>
-// #include <gio/gio.h>
-// #include <gtk/gtk.h>
 #include "lib/abook/abook_public.h"
 
 #include <QGuiApplication>
