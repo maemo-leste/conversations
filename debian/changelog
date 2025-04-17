@@ -1,3 +1,9 @@
+conversations (0.7.30) unstable; urgency=medium
+
+  * introduce executable `conversations_slim`, conversations without QtQuick
+
+ -- Sander <sander@sanderf.nl>  Tue, 17 Apr 2025 17:05:10 +0300
+
 conversations (0.7.29) unstable; urgency=medium
 
   * fix unsafe fprintf, bump version 0.7.29

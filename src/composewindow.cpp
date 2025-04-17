@@ -3,7 +3,9 @@
 #include <QDesktopServices>
 #include <QCoreApplication>
 #include <QSystemTrayIcon>
+#ifdef QUICK
 #include <QQmlContext>
+#endif
 #include <QMessageBox>
 #include <QGroupBox>
 #include <QFileDialog>

@@ -3,7 +3,6 @@
 #include <QDesktopServices>
 #include <QCoreApplication>
 #include <QSystemTrayIcon>
-#include <QQmlContext>
 #include <QMessageBox>
 #include <QGroupBox>
 #include <QFileDialog>

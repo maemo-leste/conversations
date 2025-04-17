@@ -3,7 +3,9 @@
 #include <QObject>
 #include <QSettings>
 #include <QPointer>
+#ifdef QUICK
 #include <QQmlEngine>
+#endif
 #include <QDir>
 
 namespace ConfigKeys {

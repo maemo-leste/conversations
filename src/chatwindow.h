@@ -10,7 +10,10 @@
 #include <QtCore>
 #include <QtGui>
 #include <QFileInfo>
+
+#ifdef QUICK
 #include <QQuickImageProvider>
+#endif
 
 #include <iostream>
 #include <hildon-uri.h>
@@ -50,6 +53,10 @@ public:
     bool groupchat;
     bool displayChatGradient;
 public:
+#ifndef QUICK
+    void setupChatWidget();
+    static QString generateChatHTML(const QSharedPointer<ChatMessage> &chats);
+#endif
     void setHighlight(const unsigned int event_id);
     void fillBufferUntil(const unsigned int event_id) const;
     Q_INVOKABLE void showMessageContextMenu(unsigned int event_id, QPoint point);

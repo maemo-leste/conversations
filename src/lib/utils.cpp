@@ -97,6 +97,13 @@ QString Utils::formatBytes(quint64 bytes)
 
 QMap<QString, QLocale> Utils::localeCache = {};
 
+QString Utils::escapeHtml(const QString& text) {
+  QString escaped = text;
+  escaped.replace("<", "&lt;");
+  escaped.replace(">", "&gt;");
+  return escaped;
+}
+
 double Utils::roundUp(double value, int decimal_places) {
     const double multiplier = std::pow(10.0, decimal_places);
     return std::ceil(value * multiplier) / multiplier;

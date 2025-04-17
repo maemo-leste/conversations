@@ -205,7 +205,7 @@ void ChatModel::clear() {
 }
 
 unsigned int ChatModel::getMessages(const QString &service_id, const QString &group_uid) {
-  auto count = this->getMessages(service_id, group_uid, m_limit, m_offset);
+  const auto count = this->getMessages(service_id, group_uid, m_limit, m_offset);
   if(count < m_limit) {
     m_exhausted = true;
     emit exhaustedChanged();

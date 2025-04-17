@@ -11,11 +11,14 @@
 #include <stdexcept>
 
 #include <QObject>
+#include <QDebug>
 #include <QSettings>
 #include <QRegExp>
 #include <QPixmapCache>
+#ifdef QUICK
 #include <QQmlContext>
 #include <QQuickImageProvider>
+#endif
 #include <QStandardItemModel>
 #include <QRegularExpression>
 #include <QRegularExpressionMatchIterator>
@@ -51,6 +54,7 @@ public:
   static int IPCOpen(const std::string &path);
   static bool IPCSend(int sock, const QString &message);
   static QStringList extractWebLinks(const QString &content);
+  static QString escapeHtml(const QString& text);
 
   static __attribute__((always_inline)) bool get_avatar(const std::string& local_uid, const std::string& remote_uid, const std::string& token, QPixmap& pixmap) {
     // check cache
@@ -81,10 +85,22 @@ public:
   }
 };
 
+#ifdef QUICK
 class AvatarImageProvider : public QQuickImageProvider {
 public:
   AvatarImageProvider() : QQuickImageProvider(QQuickImageProvider::Pixmap) {}
-  QPixmap requestPixmap(const QString &id, QSize *size, const QSize &requestedSize) override {
+#else
+class AvatarImageProvider : public QObject {
+Q_OBJECT
+public:
+  AvatarImageProvider() = default;
+#endif
+
+  QPixmap requestPixmap(const QString &id, QSize *size, const QSize &requestedSize)
+#ifdef QUICK
+    override
+#endif
+    {
     qDebug() << "AvatarImageProvider::requestImage";
     const int last_slash = id.lastIndexOf("?token=");
     QString hex_str = id.mid(last_slash + 7);

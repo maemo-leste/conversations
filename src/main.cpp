@@ -39,10 +39,12 @@ int main(int argc, char *argv[]) {
     return Utils::IPCSend(ipc_sock, "makeActive");
   }
 
+#ifdef QUICK
   Q_INIT_RESOURCE(assets);
   Q_INIT_RESOURCE(whatsthat);
   Q_INIT_RESOURCE(chatty);
   Q_INIT_RESOURCE(irssi);
+#endif
 
 #ifdef DEBUG
   // Tp::enableDebug(true);
@@ -143,9 +145,7 @@ int main(int argc, char *argv[]) {
   logger_ctx = ctx;
   ctx->applicationPath = argv_.at(0);
   ctx->isDebug = debugMode;
-#ifdef MAEMO
-  ctx->isMaemo = true;
-#endif
+  ctx->isMaemo = true;  // @TODO: remove
 
   auto *mainWindow = new MainWindow(ctx);
   if(!parser.isSet(backgroundModeOption))

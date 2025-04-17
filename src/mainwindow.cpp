@@ -52,6 +52,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   this->onSetupUIAccounts();
 
   // js: cfg.get(Config.MaemoTest);  |  cfg.set(Config.MaemoTest , "foo");
+#ifdef QUICK
   qmlRegisterUncreatableMetaObject(
       ConfigKeys::staticMetaObject,
       "MaemoConfig",
@@ -59,6 +60,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
       "Config",
       "Error: only enums"
   );
+#endif
 
   connect(m_ctx, &Conversations::setTitle, this, &QMainWindow::setWindowTitle);
   connect(m_ctx, &Conversations::showApplication, this, &MainWindow::onShowApplication);

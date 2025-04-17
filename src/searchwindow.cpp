@@ -3,7 +3,9 @@
 #include <QDesktopServices>
 #include <QCoreApplication>
 #include <QSystemTrayIcon>
+#ifdef QUICK
 #include <QQmlContext>
+#endif
 #include <QMessageBox>
 #include <QGroupBox>
 #include <QFileDialog>
@@ -13,8 +15,11 @@
 #include "config-conversations.h"
 #include "lib/globals.h"
 
+#ifdef QUICK
 #include "ui_searchwindow.h"
-
+#else
+#include "ui_searchwindow_widgets.h"
+#endif
 
 SearchWindow * SearchWindow::pSearchWindow = nullptr;
 SearchWindow::SearchWindow(Conversations *ctx, QString group_uid, QWidget *parent) :
@@ -78,9 +83,10 @@ void SearchWindow::drawContactsSearch() {
 }
 
 void SearchWindow::drawContentSearch() {
+#ifdef QUICK
   if(!m_qml)
     setupQML();
-
+#endif
   ui->frame_contacts->hide();
   ui->frame_content->show();
   ui->radio_contacts->setChecked(false);
@@ -109,6 +115,7 @@ void SearchWindow::closeEvent(QCloseEvent *event) {
   QWidget::closeEvent(event);
 }
 
+#ifdef QUICK
 void SearchWindow::setupQML() {
   auto *qctx = ui->quick->rootContext();
   qctx->setContextProperty("searchWindow", this);
@@ -122,6 +129,7 @@ void SearchWindow::setupQML() {
   connect((QObject*)ui->quick->rootObject(), SIGNAL(itemClicked(int)), this, SLOT(onItemClicked(int)));
   m_qml = true;
 }
+#endif
 
 SearchWindow::~SearchWindow() {
   qDebug() << "destroying SearchWindow";

@@ -81,7 +81,9 @@ public:
 
     static void configRemove(const QString &backend_name, const QString &remote_id);
 
+#ifdef QUICK
     Q_INVOKABLE void singleShot(int msec, QJSValue callback);
+#endif
 
 signals:
     void applicationLog(QString msg);

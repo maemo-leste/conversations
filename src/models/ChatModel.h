@@ -71,6 +71,7 @@ public:
     void appendMessage(ChatMessage *message);
     void appendMessage(const QSharedPointer<ChatMessage> &message);
     bool setMessagesRead();
+    void setLimit(const int limit) { m_limit = limit; }
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;

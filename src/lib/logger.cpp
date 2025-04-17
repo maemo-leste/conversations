@@ -2,7 +2,6 @@
 #include <QDir>
 #include <QJsonArray>
 #include <QJsonObject>
-#include <QQmlContext>
 #include <QCommandLineParser>
 #include <QStandardPaths>
 

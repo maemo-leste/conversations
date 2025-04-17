@@ -33,6 +33,7 @@ namespace qtrtcom {
   }
 
   std::vector<rtcom_qt::ChatMessageEntry*> get_messages(const char* service_id_cstr, const char* group_uid_cstr, unsigned int limit, unsigned int offset) {
+    if (limit == -1) limit = 9999999;
     RTComElQuery *query = startQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_NONE);
     const gint sid = rtcom_el_get_service_id(rtcomel(), service_id_cstr);
 

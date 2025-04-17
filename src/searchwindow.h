@@ -8,7 +8,9 @@
 #include <QtWidgets/QMenu>
 #include <QMainWindow>
 #include <QObject>
+#ifdef QUICK
 #include <QQuickItem>
+#endif
 #include <QtCore>
 #include <QtGui>
 #include <QFileInfo>
@@ -54,7 +56,9 @@ private:
     void drawContactsSearch();
     void drawContentSearch();
     void resetSearch();
+#ifdef QUICK
     void setupQML();
+#endif
 
     bool m_qml = false;
     Conversations *m_ctx;

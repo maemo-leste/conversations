@@ -157,12 +157,14 @@ void Conversations::setWindowTitle(const QString &title) {
   emit setTitle(title);
 }
 
+#ifdef QUICK
 void Conversations::singleShot(int msec, QJSValue callback) {
   QTimer::singleShot(msec, this, [callback] () mutable {
     if (callback.isCallable())
       callback.call();
   });
 }
+#endif
 
 QString Conversations::ossoIconLookup(const QString &filename) {
   if(filename.isEmpty()) {

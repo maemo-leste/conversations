@@ -3,7 +3,6 @@
 #include <QDesktopServices>
 #include <QCoreApplication>
 #include <QSystemTrayIcon>
-#include <QQmlContext>
 #include <QMessageBox>
 #include <QGroupBox>
 #include <QFileDialog>
@@ -24,10 +23,9 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
   pSettings = this;
   ui->setupUi(this);
 
-#ifdef MAEMO
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
-#endif
+
   QPixmap p_theme_whatsthat(":whatsthat/whatsthat.png");
   QPixmap p_theme_chatty(":chatty/chatty.png");
   QPixmap p_theme_irssi(":irssi/irssi.png");

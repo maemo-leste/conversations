@@ -3,7 +3,9 @@
 #include <QDesktopServices>
 #include <QCoreApplication>
 #include <QSystemTrayIcon>
+#ifdef QUICK
 #include <QQmlContext>
+#endif
 #include <QMessageBox>
 #include <QGroupBox>
 #include <QFileDialog>
@@ -14,8 +16,11 @@
 #include "config-conversations.h"
 #include "lib/globals.h"
 
+#ifdef QUICK
 #include "ui_chatwindow.h"
-
+#else
+#include "ui_chatwindow_widgets.h"
+#endif
 
 ChatWindow * ChatWindow::pChatWindow = nullptr;
 ChatWindow::ChatWindow(
@@ -64,9 +69,13 @@ ChatWindow::ChatWindow(
    m_enterKeySendsChat = config()->get(ConfigKeys::EnterKeySendsChat).toBool();
 
    this->chatModel = new ChatModel(this);
+#ifndef QUICK
+  this->chatModel->setLimit(-1);
+#endif
    this->chatModel->getMessages(service_uid, group_uid);
 
    // QML
+#ifdef QUICK
    auto *qctx = ui->quick->rootContext();
    qctx->setContextProperty("chatWindow", this);
    qctx->setContextProperty("chatModel", this->chatModel);
@@ -77,7 +86,7 @@ ChatWindow::ChatWindow(
    ui->quick->setAttribute(Qt::WA_AlwaysStackOnTop);
    ui->quick->engine()->addImageProvider("avatar", new AvatarImageProvider);
 
-   // theme
+   // QML theme
    const auto theme = config()->get(ConfigKeys::ChatTheme).toString();
    if(theme == "chatty")
      ui->quick->setSource(QUrl("qrc:/chatty/chatty.qml"));
@@ -85,6 +94,7 @@ ChatWindow::ChatWindow(
      ui->quick->setSource(QUrl("qrc:/irssi/irssi.qml"));
    else
      ui->quick->setSource(QUrl("qrc:/whatsthat/whatsthat.qml"));
+#endif
 
   // auto-close inactivity timer
   m_windowFocusTimer->setInterval(1000);
@@ -130,13 +140,14 @@ ChatWindow::ChatWindow(
 
   connect(ui->actionExportChatToCsv, &QAction::triggered, this, &ChatWindow::onExportToCsv);
   connect(ui->actionSearchChat, &QAction::triggered, this, &ChatWindow::onOpenSearchWindow);
+#ifdef QUICK
   connect((QObject*)ui->quick->rootObject(),
           SIGNAL(chatPreReady()), this,
           SLOT(onChatPreReady()));
   connect((QObject*)ui->quick->rootObject(),
           SIGNAL(showMessageContextMenu(int, QVariant)), this,
           SLOT(onShowMessageContextMenu(int, QVariant)));
-
+#endif
   this->detectActiveChannel();
   this->onSetWindowTitle();
   this->onSetupAuthorizeActions();
@@ -151,7 +162,37 @@ ChatWindow::ChatWindow(
 
   connect(m_ctx, &Conversations::avatarChanged, this, &ChatWindow::onAvatarChanged);
   connect(m_ctx, &Conversations::contactsChanged, this, &ChatWindow::onContactsChanged);
+
+#ifndef QUICK
+  setupChatWidget();
+  connect(this->chatModel, &ChatModel::countChanged, this, [this]() {
+    if (this->chatModel->chats.size() == 0) return;
+    auto html = generateChatHTML(this->chatModel->chats.last());
+    ui->chat->moveCursor(QTextCursor::End);
+    ui->chat->insertHtml(html);
+  });
+#endif
 }
+
+#ifndef QUICK
+QString ChatWindow::generateChatHTML(const QSharedPointer<ChatMessage> &chats) {
+  return QString("<span class=\"date\">[%1]</span> <b>%2</b>: %3<br>").arg(
+    chats->partialdate(),
+    Utils::escapeHtml(chats->name()),
+    Utils::escapeHtml(chats->text())
+  );
+}
+
+void ChatWindow::setupChatWidget() {
+  QString html = "";
+  ui->chat->document()->setDefaultStyleSheet(".date{color:grey;}");
+  for (const auto& chat: this->chatModel->chats) {
+    html += generateChatHTML(chat);
+  }
+  ui->chat->setHtml(html);
+  ui->chat->moveCursor(QTextCursor::End);
+}
+#endif
 
 void ChatWindow::onContactsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts) {
   int wegweg = 1;
