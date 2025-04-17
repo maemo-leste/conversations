@@ -660,11 +660,14 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
         remote_alias = nullptr;
     }
 
-    // only insert newer messages, exit-early if neccesary
-    const ConfigStateItemPtr configItem = configState->getItem(local_uid, channel->targetId());
-    if(configItem && epoch <= configItem->date_last_message) {
+    // only insert newer messages, exit-early if necessary
+    // never drop messages for SMS
+    if (!Utils::protocolIsTelephone(m_protocol_name)) {
+      const ConfigStateItemPtr configItem = configState->getItem(local_uid, channel->targetId());
+      if(configItem && epoch <= configItem->date_last_message - 5000) {
         qDebug() << "dropping old message" << channel->targetId() << ":" << text;
         return;
+      }
     }
 
     configState->setLastMessageTimestamp(local_uid, channel->targetId(), epoch);

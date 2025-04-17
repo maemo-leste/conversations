@@ -1,3 +1,9 @@
+conversations (0.7.31) unstable; urgency=medium
+
+  * lib/tp: never drop messages for SMS, and increase 'older than' time.
+
+ -- Sander <sander@sanderf.nl>  Tue, 17 Apr 2025 17:23:10 +0300
+
 conversations (0.7.30) unstable; urgency=medium
 
   * introduce executable `conversations_slim`, conversations without QtQuick
