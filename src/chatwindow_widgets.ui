@@ -41,7 +41,7 @@
      <number>0</number>
     </property>
     <item>
-     <widget class="QTextEdit" name="chat">
+     <widget class="QGrabScrollTextEdit" name="chat">
       <property name="palette">
        <palette>
         <active>
@@ -299,6 +299,13 @@ p, li { white-space: pre-wrap; }
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QGrabScrollTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>lib/QGrabScrollTextEdit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="assets.qrc"/>
  </resources>

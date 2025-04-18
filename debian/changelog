@@ -1,3 +1,9 @@
+conversations (0.7.33) unstable; urgency=medium
+
+  * conversations_slim/chatwindow: QGrabScrollTextEdit.h, scrolling with grab gestures
+
+ -- Sander <sander@sanderf.nl>  Tue, 18 Apr 2025 15:08:10 +0300
+
 conversations (0.7.32) unstable; urgency=medium
 
   * conversations: stop notification spam
