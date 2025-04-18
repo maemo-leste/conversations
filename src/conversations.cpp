@@ -121,6 +121,8 @@ void Conversations::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
 
     if (!notificationMap.contains(msg->group_uid()))
       notificationMap[msg->group_uid()] = msg;
+    else
+      return;
 
     auto title = QString("Message from %1").arg(msg->remote_name());
     auto *notification = Notification::issue(title, msg->textSnippet(), msg);
