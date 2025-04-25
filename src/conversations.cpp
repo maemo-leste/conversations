@@ -114,20 +114,36 @@ void Conversations::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
   // chat message notification
   auto notificationsEnabled = config()->get(ConfigKeys::EnableNotifications).toBool();
   if (notificationsEnabled && !msg->outgoing()) {
-    QWidget *chatWindow = MainWindow::getChatWindow(msg->group_uid());
+    auto uid = msg->protocol() + msg->group_uid();
+    auto title = QString("Message from %1").arg(msg->remote_name());
+    const auto body = msg->textSnippet();
 
+    // SMS always gets a notification
+    if (Utils::protocolIsTelephone(msg->protocol()))
+      return this->OSnotify(title, body, msg);
+
+    // No notification when this chat window is already opened, and in focus
+    const QWidget *chatWindow = MainWindow::getChatWindow(msg->group_uid());
     if (chatWindow && chatWindow->isActiveWindow())
       return;
 
-    if (!notificationMap.contains(msg->group_uid()))
-      notificationMap[msg->group_uid()] = msg;
-    else
-      return;
+    // A message from a specific sender may only notify once per 30 sec
+    if (!notificationMap.contains(uid)) {
+      notificationMap[uid] = static_cast<uint64_t>(QDateTime::currentSecsSinceEpoch());
+      return this->OSnotify(title, body, msg);
+    }
 
-    auto title = QString("Message from %1").arg(msg->remote_name());
-    auto *notification = Notification::issue(title, msg->textSnippet(), msg);
-    connect(notification, &Notification::clicked, this, &Conversations::onNotificationClicked);
+    const auto now = static_cast<uint64_t>(QDateTime::currentSecsSinceEpoch());
+    if (now - notificationMap[uid] >= 30) {
+      notificationMap[uid] = static_cast<uint64_t>(QDateTime::currentSecsSinceEpoch());
+      return this->OSnotify(title, body, msg);
+    }
   }
+}
+
+void Conversations::OSnotify(const QString& title, const QString& message, const QSharedPointer<ChatMessage> &msg_obj) {
+  const auto *notification = Notification::issue(title, message, msg_obj);
+  connect(notification, &Notification::clicked, this, &Conversations::onNotificationClicked);
 }
 
 void Conversations::onNotificationClicked(const QSharedPointer<ChatMessage> &msg) {

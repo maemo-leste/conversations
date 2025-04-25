@@ -1,7 +1,10 @@
 #pragma once
 
+#include <stdint.h>
+
 #include <QObject>
 #include <QProcess>
+#include <QDateTime>
 #include <QNetworkAccessManager>
 #include <QTimer>
 
@@ -74,10 +77,11 @@ public:
     AvatarImageProvider* avatarProvider = nullptr;
 
     // keep track of previous libnotify broadcasts to prevent notification spam
-    QMap<QString, QSharedPointer<ChatMessage>> notificationMap;  // remote_uid, context
+    QMap<QString, uint64_t> notificationMap;  // remote_uid, context
 
     void setWindowTitle(const QString &title);
     Q_INVOKABLE QString ossoIconLookup(const QString &filename); // /usr/share/icons/hicolor/48x48/hildon/
+    void OSnotify(const QString& title, const QString& message, const QSharedPointer<ChatMessage> &msg_obj);
 
     static void configRemove(const QString &backend_name, const QString &remote_id);
 
