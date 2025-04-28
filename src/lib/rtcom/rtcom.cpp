@@ -300,7 +300,7 @@ namespace qtrtcom {
 
     const auto rtcom_service = protocol_to_rtcom_service_id(protocol);
     const char* rtcom_service_cstr = rtcom_service.c_str();
-    channel = NULL;
+
     auto *ev = _defaultEvent(start_time, end_time, backend_name, remote_uid, text, protocol, channel, is_outgoing, group_uid, rtcom_service_cstr);
     if (protocol == "sms" || protocol == "tel" || protocol == "ofono") {
       RTCOM_EL_EVENT_SET_FIELD(ev, event_type,  g_strdup("RTCOM_EL_EVENTTYPE_SMS_MESSAGE"));

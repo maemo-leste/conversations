@@ -39,7 +39,7 @@ namespace rtcom_qt {
     auto abook_uid_cstr = abook_uid.c_str();
     auto text_cstr = text.c_str();
     auto protocol_cstr = protocol.c_str();
-    auto channel_cstr = channel.c_str();
+    auto channel_cstr = channel.empty() || channel == "" ? NULL : channel.c_str();
     auto group_uid_cstr = group_uid.c_str();
 
     return qtrtcom::register_message(
