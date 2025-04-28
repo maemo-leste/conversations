@@ -630,50 +630,56 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
 
 /* Slot for when we have received a message */
 void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel) {
+    auto groupSelfContact = channel->groupSelfContact();
+    bool is_scrollback = message.isScrollback();
+    auto remote_uid = message.sender()->id();
+    auto remote_alias = message.sender()->alias();
+    const bool outgoing = groupSelfContact->handle() == message.sender()->handle() || groupSelfContact->id() == remote_uid;
     const QDateTime dt = message.sent().isValid() ? message.sent() : message.received();
-    const qint64 epoch = dt.toMSecsSinceEpoch();
-    bool isScrollback = message.isScrollback();
-    const bool isDeliveryReport = message.isDeliveryReport();
+    qint64 epoch = dt.toMSecsSinceEpoch();
+    const bool is_delivery_report = message.isDeliveryReport();
 
-    qDebug() << "onMessageReceived" << dt << channel->targetId() << message.senderNickname() << message.text();
-    // qDebug() << "isDeliveryReport" << isDeliveryReport;
-    // qDebug() << "isScrollback" << isScrollback;
-    // qDebug() << "channel->targetId()" << channel->targetId();
-    // qDebug() << "isRescued" << message.isRescued();
-
-    if (isDeliveryReport) {
-        // TODO: We do not want to reply to it not write anything for now
-        // Later we want to update the rtcom db with the delivery report
-        return;
+    if (is_delivery_report) {
+      // TODO: We do not want to reply to it not write anything for now
+      // Later we want to update the rtcom db with the delivery report
+      return;
     }
 
-    auto groupSelfContact = channel->groupSelfContact();
-    auto remote_uid = message.sender()->id();
-
-    auto remote_alias = message.sender()->alias();
     const auto text = message.text().toLocal8Bit();
-    const bool outgoing = groupSelfContact->handle() == message.sender()->handle() ||
-                    groupSelfContact->id() == remote_uid;
+    // if (!text.contains("last"))
+    //   return;
+
+    qDebug() << "onMessageReceived" << dt << channel->targetId() << message.senderNickname() << message.text();
+    qDebug() << "is_scrollback" << is_scrollback;
+    qDebug() << "channel->targetId()" << channel->targetId();
+    qDebug() << "isRescued" << message.isRescued();
 
     if(outgoing) {
         remote_uid = channel->targetId();
         remote_alias = nullptr;
     }
 
-    // only insert newer messages, exit-early if necessary
-    // never drop messages for SMS
-    if (!Utils::protocolIsTelephone(m_protocol_name)) {
-      const ConfigStateItemPtr configItem = configState->getItem(local_uid, channel->targetId());
-      if(configItem && epoch <= configItem->date_last_message - 5000) {
-        qDebug() << "dropping old message" << channel->targetId() << ":" << text;
-        return;
-      }
+    const ConfigStateItemPtr configItem = configState->getItem(local_uid, channel->targetId());
+    if (is_scrollback && !Utils::protocolIsTelephone(m_protocol_name) && !configItem.isNull()) {
+        // try to drop scrollbacks that we have already registered
+        if (auto now = QDateTime::currentMSecsSinceEpoch(); epoch > now) {
+            qWarning() << "WARNING: a message from the future detected for protocol:" << m_protocol_name << " remote_uid:" << remote_uid << "text: " << text << ", defaulting to current time (NOW)";
+            epoch = now;
+        }
+
+        if (epoch < configItem->date_last_message) {
+            qDebug() << "dropping old message" << channel->targetId() << ":" << text;
+            return;
+        }
+    }
+
+    const auto result = log_event(dt.toTime_t(), text, outgoing, channel, remote_uid, remote_alias);
+    if (!result) {
+      qWarning() << "Failed to add a database event";
+      return;
     }
 
     configState->setLastMessageTimestamp(local_uid, channel->targetId(), epoch);
-    const auto result = log_event(dt.toTime_t(), text, outgoing, channel, remote_uid, remote_alias);
-    if (!result)
-      qWarning() << "Failed to add a database event";
 }
 
 /* When we have managed to send a message */
