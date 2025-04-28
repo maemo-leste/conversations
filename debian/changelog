@@ -1,3 +1,11 @@
+conversations (0.7.36) unstable; urgency=medium
+
+  * rtcom: regression: fix rtcom 'channel' field (groupchats)
+  * lib/tp: deal with misbehaving CM *or* XMPP server that may send faulty timestamps (from the future) for incoming messages
+  * conversations: a message from a specific sender may only notify once per 30 sec
+
+ -- Sander <sander@sanderf.nl>  Tue, 28 Apr 2025 19:25:10 +0300
+
 conversations (0.7.35) unstable; urgency=medium
 
   * conversations_slim/chatwindow: QGrabScrollTextEdit.h, scrolling with grab gestures + kinetic scrolling + text selecting
