@@ -1,3 +1,11 @@
+conversations (0.7.37) unstable; urgency=medium
+
+  * do not refresh the whole overview table on a new message, edit specific rows instead.
+  * only change last timestamp in state when db insertion was OK
+  * do not emit update signals for benign changes (in favor of not redrawing the whole overview table)
+
+ -- Sander <sander@sanderf.nl>  Tue, 30 Apr 2025 17:08:10 +0300
+
 conversations (0.7.36) unstable; urgency=medium
 
   * rtcom: regression: fix rtcom 'channel' field (groupchats)
