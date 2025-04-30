@@ -49,9 +49,7 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   connect(this->telepathy, &Telepathy::rosterChanged, this->overviewModel, &OverviewModel::onLoad);
 
   // Overview table updates
-  // @TODO: do not refresh the whole overview table on new messages, edit specific entries 
-  // instead. For now though, it is not that important as it is still performant enough.
-  connect(telepathy, &Telepathy::databaseAddition, overviewModel, &OverviewModel::onLoad);
+  connect(telepathy, &Telepathy::databaseAddition, overviewModel, &OverviewModel::onDatabaseAddition);
   connect(telepathy, &Telepathy::channelJoined, [this](QString local_uid, QString remote_uid) {
     overviewModel->onLoad();
   });

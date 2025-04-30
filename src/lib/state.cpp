@@ -130,7 +130,7 @@ bool ConfigState::setAutoJoin(const QString &local_uid, const QString &remote_id
   item->auto_join = auto_join;
   emit autoJoinChanged(local_uid, remote_id, auto_join);
 
-  save();
+  save(false);
   m_dirty = true;
   return true;
 }
@@ -151,7 +151,7 @@ void ConfigState::setLastMessageTimestamp(const QString &local_uid, const QStrin
 
   item->date_last_message = timestamp;
 
-  save();
+  save(false);
   m_dirty = true;
 }
 
@@ -162,7 +162,7 @@ qint64 ConfigState::getLastMessageTimestamp(const QString &local_uid, const QStr
   return item->date_last_message;
 }
 
-void ConfigState::save() {
+void ConfigState::save(const bool emit_update_signal) {
   qDebug() << "ConfigState::save()";
 
   QJsonArray arr;
@@ -188,13 +188,14 @@ void ConfigState::save() {
     file.close();
   }
 
-  emit updated();
+  if (emit_update_signal)
+    emit updated();
 }
 
 void ConfigState::onSaveTimerTimeout() {
   if(!m_dirty)
     return;
 
-  save();
+  save(false);
   m_dirty = false;
 }

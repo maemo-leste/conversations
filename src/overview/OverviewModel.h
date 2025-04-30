@@ -31,6 +31,7 @@ public:
 };
 
 
+class OverviewModel;
 class OverviewProxyModel : public QSortFilterProxyModel
 {
 Q_OBJECT
@@ -47,6 +48,9 @@ public slots:
 protected:
   bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
   int rowCount(const QModelIndex &parent) const override;
+  QHash<int, QByteArray> roleNames() const {
+     return sourceModel()->roleNames();
+  }
 
 private:
   QString m_nameFilter = "";
@@ -80,12 +84,14 @@ public:
   int rowCount(const QModelIndex &parent = QModelIndex()) const override;
   int columnCount(const QModelIndex &parent = QModelIndex()) const override;
   QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+  void updateMessage(int row, QSharedPointer<ChatMessage> &msg);
 public:
   QList<QSharedPointer<ChatMessage>> messages;
 
 public slots:
   void onLoad();
   void onClear();
+  void onDatabaseAddition(QSharedPointer<ChatMessage> &msg);
   void onContacsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts);
 
 signals:

@@ -113,7 +113,7 @@ public:
     bool has_feature_friends() const { return m_feature_friends; };
 
 signals:
-    void databaseAddition(const QSharedPointer<ChatMessage> &msg);
+    void databaseAddition(QSharedPointer<ChatMessage> &msg);
     void openChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
     void removed(TelepathyAccount* account);
     void channelJoined(QString local_uid, QString remote_uid);
@@ -232,7 +232,7 @@ public:
     TelepathyAccountPtr rtcomLocalUidToAccount(const QString &local_uid);
 
 signals:
-    void databaseAddition(const QSharedPointer<ChatMessage> &msg);
+    void databaseAddition(QSharedPointer<ChatMessage> &msg);
     void openChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
     void accountManagerReady();
     void accountAdded(TelepathyAccountPtr account);
@@ -249,7 +249,7 @@ public slots:
     void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
     void setChatState(const QString &local_uid, const QString &remote_uid, Tp::ChannelChatState state);
 
-    void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
+    void onDatabaseAddition(QSharedPointer<ChatMessage> &msg);
     void onOpenChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
 
     void onNewAccount(const Tp::AccountPtr &account);

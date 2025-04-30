@@ -38,7 +38,7 @@ Q_OBJECT
 public:
   explicit ConfigState(const QString &path_statefile, QObject *parent = nullptr);
   QList<ConfigStateItemPtr> items;
-  void save();
+  void save(bool emit_update_signal=true);
 
 public:
   bool setAutoJoin(const QString &local_uid, const QString &remote_id, bool auto_join);

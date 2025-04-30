@@ -242,7 +242,7 @@ bool Telepathy::has_feature_friends(const QString &local_uid) {
     return account->has_feature_friends();
 }
 
-void Telepathy::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
+void Telepathy::onDatabaseAddition(QSharedPointer<ChatMessage> &msg) {
     emit databaseAddition(msg);
 }
 
@@ -667,19 +667,19 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
             epoch = now;
         }
 
-        if (epoch < configItem->date_last_message) {
+        if (epoch <= configItem->date_last_message) {
             qDebug() << "dropping old message" << channel->targetId() << ":" << text;
             return;
         }
     }
 
     const auto result = log_event(dt.toTime_t(), text, outgoing, channel, remote_uid, remote_alias);
-    if (!result) {
+    if (!result)
       qWarning() << "Failed to add a database event";
-      return;
+    else {
+      // only write to state when insertion was successful
+      configState->setLastMessageTimestamp(local_uid, channel->targetId(), epoch);
     }
-
-    configState->setLastMessageTimestamp(local_uid, channel->targetId(), epoch);
 }
 
 /* When we have managed to send a message */
@@ -755,7 +755,7 @@ void TelepathyAccount::onChannelJoinedOrLeft(bool joined, QString channel) {
       group_uid_str);
 
     auto *chatMessage = new ChatMessage(new_message);
-    const QSharedPointer<ChatMessage> ptr(chatMessage);
+    QSharedPointer<ChatMessage> ptr(chatMessage);
     emit databaseAddition(ptr);
 }
 

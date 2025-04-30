@@ -135,6 +135,50 @@ int OverviewModel::columnCount(const QModelIndex &parent) const {
   return OverviewModelRoles::COUNT;
 }
 
+void OverviewModel::onDatabaseAddition(QSharedPointer<ChatMessage> &msg) {
+  // try to modify an existing row
+  // if it's a new row, onLoad() as usual
+  const auto uid = msg->group_uid();
+  bool found = false;
+  for (int row = 0; row < messages.count(); row++) {
+    if (const auto _msg = messages[row]; _msg->group_uid() == uid) {
+      if (row < 0 || row >= messages.size())
+        return;
+      messages[row] = msg;
+
+      const QModelIndex index = this->index(row);
+      QVector<int> roles;
+      roles << ContentRole << MsgStatusIcon << OverviewNameRole;
+
+      emit dataChanged(index, index, roles);
+
+      // @TODO: layoutChanged() is hack to force repainting of the table. For some reason,
+      // the table is not updated (visually) when we modify a row. For example, changing a
+      // row, then moving to a new window in Hildon, then moving back to the overview
+      // window, ONLY THEN do we see a change in the data. This is a rendering bug
+      // somewhere. `MainWindow::onOpenJoinChatWindow()` suffers from the same quirk.
+      emit layoutChanged();
+
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) {
+    this->onLoad();
+  }
+}
+
+void OverviewModel::updateMessage(int row, QSharedPointer<ChatMessage> &msg) {
+  if (row < 0 || row >= messages.size())
+    return;
+
+  messages[row] = msg;
+
+  QModelIndex index = this->index(row);
+  emit dataChanged(index, index);
+}
+
 QVariant OverviewModel::data(const QModelIndex &index, int role) const {
   const auto row = index.row();
   if (row < 0 || row >= messages.count())
