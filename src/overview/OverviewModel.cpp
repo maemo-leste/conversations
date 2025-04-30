@@ -157,7 +157,7 @@ void OverviewModel::onDatabaseAddition(QSharedPointer<ChatMessage> &msg) {
       // row, then moving to a new window in Hildon, then moving back to the overview
       // window, ONLY THEN do we see a change in the data. This is a rendering bug
       // somewhere. `MainWindow::onOpenJoinChatWindow()` suffers from the same quirk.
-      emit layoutChanged();
+      // emit layoutChanged();
 
       found = true;
       break;

@@ -1,3 +1,9 @@
+conversations (0.7.38) unstable; urgency=medium
+
+  * overview: dont force redraw when updating rows
+
+ -- Sander <sander@sanderf.nl>  Tue, 30 Apr 2025 19:00:10 +0300
+
 conversations (0.7.37) unstable; urgency=medium
 
   * do not refresh the whole overview table on a new message, edit specific rows instead.
