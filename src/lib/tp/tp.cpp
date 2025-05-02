@@ -7,7 +7,7 @@
 
 #include "lib/tp/tp.h"
 
-#include "rtcom.h"
+#include "rtcom_models.h"
 #include "lib/utils.h"
 
 /*
