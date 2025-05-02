@@ -22,6 +22,10 @@ namespace rtcom_qt {
     return qtrtcom::set_room_name(group_uid_str, title_str);
   }
 
+  void toggle_flag(const unsigned int event_id, const unsigned int flags, bool unset) {
+    return qtrtcom::toggle_flag(event_id, flags, unset);
+  }
+
   void set_read(const unsigned int event_id, const bool read) {
     return qtrtcom::set_read(event_id, read);
   }
@@ -31,7 +35,7 @@ namespace rtcom_qt {
       time_t end_time, 
       std::string self_name, std::string backend_name,
       std::string remote_uid, std::string remote_name, std::string abook_uid, std::string text,
-      bool is_outgoing, std::string protocol, std::string channel, std::string group_uid) {
+      bool is_outgoing, std::string protocol, std::string channel, std::string group_uid, unsigned int flags) {
     auto self_name_cstr = self_name.c_str();
     auto backend_name_cstr = backend_name.c_str();
     auto remote_uid_cstr = remote_uid.c_str();
@@ -44,7 +48,8 @@ namespace rtcom_qt {
 
     return qtrtcom::register_message(
       start_time, end_time, self_name_cstr, backend_name_cstr, remote_uid_cstr,
-      remote_name_cstr, abook_uid_cstr, text_cstr, is_outgoing, protocol_cstr, channel_cstr, group_uid_cstr);
+      remote_name_cstr, abook_uid_cstr, text_cstr, is_outgoing, protocol_cstr,
+      channel_cstr, group_uid_cstr, flags);
   }
 
   bool delete_events(std::string group_uid) {

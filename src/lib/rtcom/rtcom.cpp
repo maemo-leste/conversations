@@ -217,6 +217,36 @@ namespace qtrtcom {
     return true;
   }
 
+  void toggle_flag(const unsigned int event_id, const unsigned int flags, bool unset) {
+    rtcom_log("toggle_flag, event_id " + std::to_string(event_id) + " flags: " + std::to_string(flags), false);
+
+    GError *err = NULL;
+    auto clear_err = [&err]() -> bool {
+      if (err) {
+        rtcom_log("Error handling event flag: " + std::string(err->message), true);
+        g_clear_error(&err);
+        return true;
+      }
+      return false;
+    };
+
+    auto handle_event_flag = [&](const unsigned int flag, const std::string& flag_name) {
+      if (flags & flag) {
+        if (unset) {
+          rtcom_el_unset_event_flag(el, event_id, flag_name.c_str(), &err);
+        } else {
+          rtcom_el_set_event_flag(el, event_id, flag_name.c_str(), &err);
+        }
+        if (clear_err()) return true;
+      }
+      return false;
+    };
+
+    if (handle_event_flag(rtcom_qt::RTCOM_EL_FLAG_SMS_PENDING, "RTCOM_EL_FLAG_SMS_PENDING")) return;
+    if (handle_event_flag(rtcom_qt::RTCOM_EL_FLAG_SMS_TEMPORARY_ERROR, "RTCOM_EL_FLAG_SMS_TEMPORARY_ERROR")) return;
+    if (handle_event_flag(rtcom_qt::RTCOM_EL_FLAG_SMS_PERMANENT_ERROR, "RTCOM_EL_FLAG_SMS_PERMANENT_ERROR")) return;
+  }
+
   void set_read(const unsigned int event_id, const gboolean read) {
     rtcom_log("set_read, event_id " + std::to_string(event_id), false);
     /* Ignore error for now by setting GError error to NULL */
@@ -296,12 +326,11 @@ namespace qtrtcom {
 
   rtcom_qt::ChatMessageEntry* register_message(
       time_t start_time, time_t end_time, const char* self_name, const char* backend_name,
-      const char *remote_uid, const char *remote_name, const char* abook_uid, const char* text, bool is_outgoing, const char* protocol, const char* channel, const char* group_uid) {
-
+      const char *remote_uid, const char *remote_name, const char* abook_uid, const char* text, bool is_outgoing, const char* protocol, const char* channel, const char* group_uid, unsigned int flags) {
     const auto rtcom_service = protocol_to_rtcom_service_id(protocol);
     const char* rtcom_service_cstr = rtcom_service.c_str();
 
-    auto *ev = _defaultEvent(start_time, end_time, backend_name, remote_uid, text, protocol, channel, is_outgoing, group_uid, rtcom_service_cstr);
+    auto *ev = _defaultEvent(start_time, end_time, backend_name, remote_uid, text, protocol, channel, is_outgoing, group_uid, rtcom_service_cstr, flags);
     if (protocol == "sms" || protocol == "tel" || protocol == "ofono") {
       RTCOM_EL_EVENT_SET_FIELD(ev, event_type,  g_strdup("RTCOM_EL_EVENTTYPE_SMS_MESSAGE"));
     } else {
@@ -344,7 +373,7 @@ namespace qtrtcom {
   RTComElEvent* _defaultEvent(
       time_t start_time, time_t end_time, const char* local_uid, const char *remote_uid,
       const char* text, const char* protocol, const char* channel, bool is_outgoing,
-      const char* group_uid, const char* rtcom_service) {
+      const char* group_uid, const char* rtcom_service, unsigned int flags) {
     RTComElEvent *ev = rtcom_el_event_new();
 
     RTCOM_EL_EVENT_SET_FIELD(ev, service, g_strdup(rtcom_service));
@@ -361,7 +390,7 @@ namespace qtrtcom {
     RTCOM_EL_EVENT_SET_FIELD(ev, remote_uid, g_strdup(remote_uid));
     RTCOM_EL_EVENT_SET_FIELD (ev, free_text, g_strdup(text));
     RTCOM_EL_EVENT_SET_FIELD(ev, outgoing, is_outgoing);
-    RTCOM_EL_EVENT_SET_FIELD (ev, flags, 0);  // @TODO: flags
+    RTCOM_EL_EVENT_SET_FIELD (ev, flags, flags);
     return ev;
   }
 

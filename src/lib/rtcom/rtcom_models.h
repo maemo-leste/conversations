@@ -4,6 +4,12 @@
 #include <algorithm>
 
 namespace rtcom_qt {
+  enum {
+    RTCOM_EL_FLAG_SMS_PENDING         = 1 << 0,
+    RTCOM_EL_FLAG_SMS_TEMPORARY_ERROR = 1 << 1,
+    RTCOM_EL_FLAG_SMS_PERMANENT_ERROR = 1 << 2
+  };
+
   struct ChatMessageEntry {
     int event_id = -1;
     std::string service;

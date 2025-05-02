@@ -10,6 +10,7 @@ namespace rtcom_qt {
   std::string               get_room_name(std::string channel);
   void                      set_room_name(const std::string& group_uid, const std::string& title);
   void                      set_read(const unsigned int event_id, const bool read);
+  void                      toggle_flag(const unsigned int event_id, const unsigned int flags, bool unset = false);
   bool                      delete_events(std::string group_uid);
 
   rtcom_qt::ChatMessageEntry* register_message(
@@ -17,7 +18,7 @@ namespace rtcom_qt {
       time_t end_time,
       std::string self_name, std::string backend_name,
       std::string remote_uid, std::string remote_name, std::string abook_uid, std::string text,
-      bool is_outgoing, std::string protocol, std::string channel, std::string group_uid);
+      bool is_outgoing, std::string protocol, std::string channel, std::string group_uid, unsigned int flags = 0);
 
   std::vector<rtcom_qt::ChatMessageEntry*> get_messages(const std::string& service_id, const std::string& group_uid, int limit, int offset);
   std::vector<rtcom_qt::ChatMessageEntry*> get_overview_messages(unsigned int limit, unsigned int offset);

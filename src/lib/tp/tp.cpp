@@ -6,6 +6,8 @@
 #include <QDebug>
 
 #include "lib/tp/tp.h"
+
+#include "rtcom.h"
 #include "lib/utils.h"
 
 /*
@@ -581,7 +583,7 @@ QString TelepathyAccount::getLocalUid() const {
     return QString(acc->objectPath()).replace("/org/freedesktop/Telepathy/Account/", "");
 }
 
-bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias) {
+QSharedPointer<ChatMessage> TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias, unsigned int flags) {
     std::string channel_str;
 
     QByteArray channel_ba = channel->targetId().toLocal8Bit();
@@ -615,40 +617,64 @@ bool TelepathyAccount::log_event(time_t epoch, const QString &text, bool outgoin
         epoch, epoch, self_name_str, local_uid_str,
         remote_uid.toStdString(), remote_name, abook_uid.toStdString(),
         text.toStdString(), outgoing, protocol_str,
-        channel_str, group_uid.toStdString());
+        channel_str, group_uid.toStdString(), flags);
 
     if (!new_message)
-      return false;
+      return {};
 
     auto *chatMessage = new ChatMessage(new_message);
 
     QSharedPointer<ChatMessage> ptr(chatMessage);
     emit databaseAddition(ptr);
 
-    return true;
+    return ptr;
 }
 
 /* Slot for when we have received a message */
 void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel) {
     auto groupSelfContact = channel->groupSelfContact();
     bool is_scrollback = message.isScrollback();
-    auto remote_uid = message.sender()->id();
-    auto remote_alias = message.sender()->alias();
-    const bool outgoing = groupSelfContact->handle() == message.sender()->handle() || groupSelfContact->id() == remote_uid;
-    const QDateTime dt = message.sent().isValid() ? message.sent() : message.received();
-    qint64 epoch = dt.toMSecsSinceEpoch();
     const bool is_delivery_report = message.isDeliveryReport();
 
     if (is_delivery_report) {
-      // TODO: We do not want to reply to it not write anything for now
-      // Later we want to update the rtcom db with the delivery report
+      const auto details = message.deliveryDetails();
+      if(!details.hasOriginalToken()) {  // matching the delivery report to the original message is impossible without the token
+        qWarning() << "delivery report without original message token received";
+        return;
+      }
+
+      const auto token = details.originalToken();
+      if (!m_deliveryTokenCache.contains(token)) {
+        qWarning() << "the original message for this delivery report was not found";
+        return;
+      }
+
+      const unsigned int event_id = m_deliveryTokenCache[token];
+      Tp::DeliveryStatus status = details.status();
+
+      if (status == Tp::DeliveryStatusTemporarilyFailed) {
+        return rtcom_qt::toggle_flag(event_id, rtcom_qt::RTCOM_EL_FLAG_SMS_TEMPORARY_ERROR);
+      } else if (status == Tp::DeliveryStatusPermanentlyFailed) {
+        return rtcom_qt::toggle_flag(event_id, rtcom_qt::RTCOM_EL_FLAG_SMS_PERMANENT_ERROR);
+      } else if (status == Tp::DeliveryStatusDelivered || Tp::DeliveryStatusAccepted || Tp::DeliveryStatusRead) {
+        constexpr unsigned int flags = rtcom_qt::RTCOM_EL_FLAG_SMS_PENDING |
+                                       rtcom_qt::RTCOM_EL_FLAG_SMS_PERMANENT_ERROR |
+                                       rtcom_qt::RTCOM_EL_FLAG_SMS_TEMPORARY_ERROR;
+        return rtcom_qt::toggle_flag(event_id, flags, true /* unset */);
+      }
+
+      qWarning() << "delivery report; unhandled status:" << status;
       return;
     }
 
-    const auto text = message.text().toLocal8Bit();
-    // if (!text.contains("last"))
-    //   return;
+    auto remote_uid = message.sender()->id();
+    auto remote_alias = message.sender()->alias();
+    const bool outgoing = groupSelfContact->handle() == message.sender()->handle() || groupSelfContact->id() == remote_uid;
 
+    const QDateTime dt = message.sent().isValid() ? message.sent() : message.received();
+    qint64 epoch = dt.toMSecsSinceEpoch();
+
+    const auto text = message.text().toLocal8Bit();
     qDebug() << "onMessageReceived" << dt << channel->targetId() << message.senderNickname() << message.text();
     qDebug() << "is_scrollback" << is_scrollback;
     qDebug() << "channel->targetId()" << channel->targetId();
@@ -673,8 +699,14 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
         }
     }
 
-    const auto result = log_event(dt.toTime_t(), text, outgoing, channel, remote_uid, remote_alias);
-    if (!result)
+    // handle case where delivery report was sent to another client, but our instance is not aware yet
+    // of a message's new status. A scrollback of an outgoing message implies it was received by the server,
+    // update our local db to reflect this.
+    if (is_scrollback && outgoing) {
+      // @TODO:
+    }
+
+    if (const auto result = log_event(dt.toTime_t(), text, outgoing, channel, remote_uid, remote_alias); result.isNull())
       qWarning() << "Failed to add a database event";
     else {
       // only write to state when insertion was successful
@@ -690,9 +722,12 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
     const QString remote_uid = getRemoteUid(channel);
     const auto text = message.text().toLocal8Bit();
 
-    const auto result = log_event(epoch, text, true, channel, remote_uid, nullptr);
-    if (!result)
+    const auto result = log_event(epoch, text, true, channel, remote_uid, nullptr, rtcom_qt::RTCOM_EL_FLAG_SMS_PENDING);
+    if (result.isNull()) {
       qWarning() << "Failed to add a database event";
+    } else {
+      m_deliveryTokenCache[message.messageToken()] = result->event_id();
+    }
 }
 
 void TelepathyAccount::onOnline(bool online) {

@@ -111,6 +111,8 @@ public:
 
     bool isOnline = false;
     bool has_feature_friends() const { return m_feature_friends; };
+private:
+  QHash<QString /* token */, unsigned int /* event_id */> m_deliveryTokenCache = {};
 
 signals:
     void databaseAddition(QSharedPointer<ChatMessage> &msg);
@@ -138,7 +140,7 @@ public slots:
 
     TelepathyChannelPtr hasChannel(const QString& remote_uid);
 
-    bool log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias);
+    QSharedPointer<ChatMessage> log_event(time_t epoch, const QString &text, bool outgoing, const Tp::TextChannelPtr &channel, const QString &remote_uid, const QString &remote_alias, unsigned int flags = 0);
 
     static QString getRemoteUid(Tp::TextChannelPtr channel);
     QString getGroupUid(const TelepathyChannelPtr &channel);

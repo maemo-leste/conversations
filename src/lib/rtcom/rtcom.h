@@ -42,11 +42,12 @@ namespace qtrtcom {
   RTComElQuery* startQuery(const unsigned int limit, const unsigned int offset, RTComElQueryGroupBy group_by);
 
   RTComElEvent * _defaultEvent(time_t start_time, time_t end_time, const char *local_uid, const char *remote_uid,
-                               const char *text, const char* protocol, const char *channel, bool is_outgoing, const char *group_uid, const char* rtcom_service);
+                               const char *text, const char* protocol, const char *channel, bool is_outgoing, const char *group_uid, const char* rtcom_service,
+                               unsigned int flags = 0);
 
   rtcom_qt::ChatMessageEntry* register_message(time_t start_time, time_t end_time, const char *self_name, const char *backend_name,
                         const char *remote_uid, const char *remote_name, const char *abook_uid, const char *text,
-                        bool is_outgoing, const char *protocol, const char *channel, const char *group_uid);
+                        bool is_outgoing, const char *protocol, const char *channel, const char *group_uid, unsigned int flags);
 
   rtcom_qt::ChatMessageEntry* register_chat_join(time_t start_time, time_t end_time, const char *self_name, const char *backend_name,
                         const char *remote_uid, const char *remote_name, const char *abook_uid, const char *text,
@@ -57,6 +58,7 @@ namespace qtrtcom {
                         const char *protocol, const char *channel, const char *group_uid);
 
   void set_read(const unsigned int event_id, const gboolean read);
+  void toggle_flag(const unsigned int event_id, const unsigned int flags, bool unset = false);
 
   std::string protocol_to_rtcom_service_id(const std::string& protocol);
 
