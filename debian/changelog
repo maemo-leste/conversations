@@ -1,3 +1,10 @@
+conversations (0.7.39) unstable; urgency=medium
+
+  * lib/tp: implement delivery status
+  * rtcom: register delivery status
+
+ -- Sander <sander@sanderf.nl>  Tue, 3 May 2025 20:25:10 +0300
+
 conversations (0.7.38) unstable; urgency=medium
 
   * overview: dont force redraw when updating rows
