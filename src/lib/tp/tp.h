@@ -111,8 +111,6 @@ public:
 
     bool isOnline = false;
     bool has_feature_friends() const { return m_feature_friends; };
-private:
-  QHash<QString /* token */, unsigned int /* event_id */> m_deliveryTokenCache = {};
 
 signals:
     void databaseAddition(QSharedPointer<ChatMessage> &msg);

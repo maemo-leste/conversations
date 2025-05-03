@@ -643,24 +643,27 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
         return;
       }
 
-      const auto token = details.originalToken();
-      if (!m_deliveryTokenCache.contains(token)) {
+      const auto token = details.originalToken().toStdString();
+
+      // ask rtcom db
+      const auto res = rtcom_qt::get_events_by_header("message-token", token);
+      if (res.empty()) {
         qWarning() << "the original message for this delivery report was not found";
         return;
       }
 
-      const unsigned int event_id = m_deliveryTokenCache[token];
+      const unsigned int event_id = res[0];
       Tp::DeliveryStatus status = details.status();
 
       if (status == Tp::DeliveryStatusTemporarilyFailed) {
-        return rtcom_qt::toggle_flag(event_id, rtcom_qt::RTCOM_EL_FLAG_SMS_TEMPORARY_ERROR);
+        return rtcom_qt::toggle_event_flags(event_id, rtcom_qt::RTCOM_EL_FLAG_SMS_TEMPORARY_ERROR);
       } else if (status == Tp::DeliveryStatusPermanentlyFailed) {
-        return rtcom_qt::toggle_flag(event_id, rtcom_qt::RTCOM_EL_FLAG_SMS_PERMANENT_ERROR);
+        return rtcom_qt::toggle_event_flags(event_id, rtcom_qt::RTCOM_EL_FLAG_SMS_PERMANENT_ERROR);
       } else if (status == Tp::DeliveryStatusDelivered || Tp::DeliveryStatusAccepted || Tp::DeliveryStatusRead) {
         constexpr unsigned int flags = rtcom_qt::RTCOM_EL_FLAG_SMS_PENDING |
                                        rtcom_qt::RTCOM_EL_FLAG_SMS_PERMANENT_ERROR |
                                        rtcom_qt::RTCOM_EL_FLAG_SMS_TEMPORARY_ERROR;
-        return rtcom_qt::toggle_flag(event_id, flags, true /* unset */);
+        return rtcom_qt::toggle_event_flags(event_id, flags, true /* unset */);
       }
 
       qWarning() << "delivery report; unhandled status:" << status;
@@ -726,7 +729,8 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
     if (result.isNull()) {
       qWarning() << "Failed to add a database event";
     } else {
-      m_deliveryTokenCache[message.messageToken()] = result->event_id();
+      if(auto message_token = message.messageToken().toStdString(); !message_token.empty())
+        rtcom_qt::set_event_header(result->event_id(), "message-token", message_token);
     }
 }
 

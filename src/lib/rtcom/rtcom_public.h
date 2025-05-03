@@ -1,5 +1,5 @@
 #pragma once
-//#include <QObject>
+#include <unordered_map>
 #include <vector>
 #include <string>
 
@@ -10,8 +10,12 @@ namespace rtcom_qt {
   std::string               get_room_name(std::string channel);
   void                      set_room_name(const std::string& group_uid, const std::string& title);
   void                      set_read(const unsigned int event_id, const bool read);
-  void                      toggle_flag(const unsigned int event_id, const unsigned int flags, bool unset = false);
+  void                      toggle_event_flags(const unsigned int event_id, const unsigned int flags, bool unset = false);
   bool                      delete_events(std::string group_uid);
+
+  bool                      set_event_header(unsigned int event_id, const std::string& key, const std::string& value);
+  std::vector<unsigned int> get_events_by_header(std::string key, std::string value);
+  std::unordered_map<std::string, std::string> get_event_headers(const unsigned int event_id);
 
   rtcom_qt::ChatMessageEntry* register_message(
       time_t start_time,

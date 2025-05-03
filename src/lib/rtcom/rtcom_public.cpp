@@ -22,8 +22,20 @@ namespace rtcom_qt {
     return qtrtcom::set_room_name(group_uid_str, title_str);
   }
 
-  void toggle_flag(const unsigned int event_id, const unsigned int flags, bool unset) {
-    return qtrtcom::toggle_flag(event_id, flags, unset);
+  bool set_event_header(const unsigned int event_id, const std::string& key, const std::string& value) {
+    return qtrtcom::set_event_header(event_id, key, value);
+  }
+
+  std::vector<unsigned int> get_events_by_header(std::string key, std::string value) {
+    return qtrtcom::get_events_by_header(key, value);
+  }
+
+  std::unordered_map<std::string, std::string> get_event_headers(const unsigned int event_id) {
+    return qtrtcom::get_event_headers(event_id);
+  }
+
+  void toggle_event_flags(const unsigned int event_id, const unsigned int flags, bool unset) {
+    return qtrtcom::toggle_event_flags(event_id, flags, unset);
   }
 
   void set_read(const unsigned int event_id, const bool read) {

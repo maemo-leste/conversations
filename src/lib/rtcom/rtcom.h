@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 #include <chrono>
 #include <rtcom-eventlogger/eventlogger.h>
@@ -58,7 +59,10 @@ namespace qtrtcom {
                         const char *protocol, const char *channel, const char *group_uid);
 
   void set_read(const unsigned int event_id, const gboolean read);
-  void toggle_flag(const unsigned int event_id, const unsigned int flags, bool unset = false);
+  bool set_event_header(unsigned int event_id, const std::string& key, const std::string& value);
+  std::vector<unsigned int> get_events_by_header(std::string key, std::string value);
+  std::unordered_map<std::string, std::string> get_event_headers(const unsigned int event_id);
+  void toggle_event_flags(const unsigned int event_id, const unsigned int flags, bool unset = false);
 
   std::string protocol_to_rtcom_service_id(const std::string& protocol);
 

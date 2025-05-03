@@ -217,7 +217,64 @@ namespace qtrtcom {
     return true;
   }
 
-  void toggle_flag(const unsigned int event_id, const unsigned int flags, bool unset) {
+  bool set_event_header(const unsigned int event_id, const std::string& key, const std::string& value) {
+    GError* err = nullptr;
+    gboolean ok = rtcom_el_add_header(el,
+        static_cast<gint>(event_id),
+        key.c_str(),
+        value.c_str(),
+        &err);
+
+    if (!ok) {
+      if (err) {
+        g_printerr("Error adding header: %s\n", err->message);
+        g_error_free(err);
+      } else
+        g_printerr("Unknown error occurred while adding header.\n");
+      return false;
+    }
+    return true;
+  }
+
+  std::vector<unsigned int> get_events_by_header(std::string key, std::string value) {
+    std::vector<unsigned int> result;
+
+    gint* ids = rtcom_el_get_events_by_header(el,
+        key.c_str(),
+        value.c_str());
+
+    if (!ids) {
+      return result;
+    }
+
+    for (int i = 0; ids[i] != -1; ++i) {
+      result.push_back(static_cast<unsigned int>(ids[i]));
+    }
+
+    g_free(ids);
+    return result;
+  }
+
+  std::unordered_map<std::string, std::string> get_event_headers(const unsigned int event_id) {
+    rtcom_log("get_event_headers, event_id " + std::to_string(event_id));
+    std::unordered_map<std::string, std::string> result;
+
+    auto headers = rtcom_el_fetch_event_headers(el, event_id);
+
+    g_hash_table_foreach(headers,
+        [](gpointer key, gpointer value, gpointer user_data) {
+            auto& map = *static_cast<std::unordered_map<std::string, std::string>*>(user_data);
+            const char* k = static_cast<const char*>(key);
+            const char* v = static_cast<const char*>(value);
+            map[k] = v;
+        },
+        &result
+    );
+
+    return result;
+  }
+
+  void toggle_event_flags(const unsigned int event_id, const unsigned int flags, bool unset) {
     rtcom_log("toggle_flag, event_id " + std::to_string(event_id) + " flags: " + std::to_string(flags), false);
 
     GError *err = NULL;
