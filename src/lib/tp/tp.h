@@ -232,6 +232,7 @@ public:
     TelepathyAccountPtr rtcomLocalUidToAccount(const QString &local_uid);
 
 signals:
+    void messageFlagsChanged(unsigned int event_id, unsigned int flag);
     void databaseAddition(QSharedPointer<ChatMessage> &msg);
     void openChannelWindow(const QString& local_uid, const QString &remote_uid, const QString &group_uid, const QString& service, const QString& channel);
     void accountManagerReady();

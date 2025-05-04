@@ -6,15 +6,10 @@
 #include "lib/rtcom/rtcom_models.h"
 
 #include "models/ChatModel.h"
-
+#include "conversations.h"
 
 ChatModel::ChatModel(QObject *parent)
     : QAbstractListModel(parent) {
-}
-
-void ChatModel::prependMessage(ChatMessage *message) {
-  QSharedPointer<ChatMessage> ptr(message);
-  this->prependMessage(ptr);
 }
 
 void ChatModel::prependMessage(const QSharedPointer<ChatMessage> &message) {
@@ -33,12 +28,8 @@ void ChatModel::prependMessage(const QSharedPointer<ChatMessage> &message) {
   this->countChanged();
 }
 
-void ChatModel::appendMessage(ChatMessage *message) {
-  QSharedPointer<ChatMessage> ptr(message);
-  return this->appendMessage(ptr);
-}
-
 void ChatModel::appendMessage(const QSharedPointer<ChatMessage> &message) {
+  connect(message.data(), &ChatMessage::messageFlagsChanged, this, &ChatModel::onMessageFlagsChanged);
   const int idx = rowCount();
   if(idx != 0 && !chats.isEmpty()) {
     auto prev = chats.at(idx - 1);
@@ -223,7 +214,7 @@ unsigned int ChatModel::searchMessages(const QString &search, const QString &gro
   auto results = rtcom_qt::search_messages(search.toStdString(), group_uid.toStdString());
 
   for(auto const &message: results) {
-    this->appendMessage(new ChatMessage(message));
+    this->appendMessage(QSharedPointer<ChatMessage>(new ChatMessage(message)));
   }
 
   return results.size();
@@ -238,11 +229,11 @@ unsigned int ChatModel::getMessages(const QString &service_id, const QString &gr
   bool prepend = offset != 0;
   if(prepend) {
     for(auto const &message: results) {
-      this->prependMessage(new ChatMessage(message));
+      this->prependMessage(QSharedPointer<ChatMessage>(new ChatMessage(message)));
     }
   } else {
     for (const auto entry: std::ranges::reverse_view(results)) {
-      this->appendMessage(new ChatMessage(entry));
+      this->appendMessage(QSharedPointer<ChatMessage>(new ChatMessage(entry)));
     }
   }
 
@@ -288,4 +279,13 @@ unsigned int ChatModel::getPage(int custom_limit) {
   }
 
   return count;
+}
+
+void ChatModel::onMessageFlagsChanged(const unsigned int event_id) {
+  for (int row = 0; row < chats.size(); ++row) {
+    if (const auto& chat = chats[row]; chat->event_id() == event_id) {
+      emit dataChanged(index(row, 0), index(row, 0));
+      break;
+    }
+  }
 }

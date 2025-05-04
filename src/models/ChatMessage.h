@@ -10,8 +10,7 @@
 #include "lib/abook/abook_public.h"
 #include "lib/abook/abook_roster.h"
 
-class ChatMessage : public QObject
-{
+class ChatMessage : public QObject {
 Q_OBJECT
 
 public:
@@ -89,6 +88,12 @@ public:
 
     QSharedPointer<ChatMessage> previous = nullptr;
     QSharedPointer<ChatMessage> next = nullptr;
+
+private slots:
+    void onMessageFlagsChanged(unsigned int event_id, unsigned int flag);
+
+signals:
+    void messageFlagsChanged(unsigned int event_id);
 
 private:
     rtcom_qt::ChatMessageEntry* m_raw = nullptr;

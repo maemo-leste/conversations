@@ -656,13 +656,16 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
       Tp::DeliveryStatus status = details.status();
 
       if (status == Tp::DeliveryStatusTemporarilyFailed) {
+        emit m_parent->messageFlagsChanged(event_id, Tp::DeliveryStatusTemporarilyFailed);
         return rtcom_qt::toggle_event_flags(event_id, rtcom_qt::RTCOM_EL_FLAG_SMS_TEMPORARY_ERROR);
       } else if (status == Tp::DeliveryStatusPermanentlyFailed) {
+        emit m_parent->messageFlagsChanged(event_id, Tp::DeliveryStatusPermanentlyFailed);
         return rtcom_qt::toggle_event_flags(event_id, rtcom_qt::RTCOM_EL_FLAG_SMS_PERMANENT_ERROR);
       } else if (status == Tp::DeliveryStatusDelivered || Tp::DeliveryStatusAccepted || Tp::DeliveryStatusRead) {
         constexpr unsigned int flags = rtcom_qt::RTCOM_EL_FLAG_SMS_PENDING |
                                        rtcom_qt::RTCOM_EL_FLAG_SMS_PERMANENT_ERROR |
                                        rtcom_qt::RTCOM_EL_FLAG_SMS_TEMPORARY_ERROR;
+        emit m_parent->messageFlagsChanged(event_id, 0);
         return rtcom_qt::toggle_event_flags(event_id, flags, true /* unset */);
       }
 

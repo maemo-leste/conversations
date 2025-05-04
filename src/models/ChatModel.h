@@ -16,9 +16,9 @@
 #include "lib/rtcom/rtcom_public.h"
 
 
-class ChatModel : public QAbstractListModel
-{
-    Q_OBJECT
+class ChatModel : public QAbstractListModel {
+Q_OBJECT
+
 public:
     enum ChatModelRoles {
         NameRole = Qt::UserRole + 1,
@@ -66,9 +66,7 @@ public:
     void setGroupUID(const QString &group_uid) { m_group_uid = group_uid; }
     void setServiceID(const QString &service_id) { m_service_id = service_id; }
 
-    void prependMessage(ChatMessage *message);
     void prependMessage(const QSharedPointer<ChatMessage> &message);
-    void appendMessage(ChatMessage *message);
     void appendMessage(const QSharedPointer<ChatMessage> &message);
     bool setMessagesRead();
     void setLimit(const int limit) { m_limit = limit; }
@@ -100,7 +98,8 @@ signals:
     void offsetChanged();
     void countChanged();
     void messageRead(unsigned int event_id);
-
+private slots:
+    void onMessageFlagsChanged(unsigned int event_id);
 protected:
     QHash<int, QByteArray> roleNames() const;
 

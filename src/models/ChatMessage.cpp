@@ -2,6 +2,7 @@
 #include <QDebug>
 
 #include "models/ChatMessage.h"
+#include "conversations.h"
 
 ChatMessage::ChatMessage(rtcom_qt::ChatMessageEntry* raw_msg, QObject *parent) :
     QObject(parent),
@@ -9,7 +10,16 @@ ChatMessage::ChatMessage(rtcom_qt::ChatMessageEntry* raw_msg, QObject *parent) :
   m_date = QDateTime::fromTime_t(raw_msg->timestamp);
   m_cid = QString("%1%2").arg(QString::number(raw_msg->outgoing), QString::fromStdString(raw_msg->remote_uid));
 
+  const auto ctx = Conversations::instance();
+  connect(ctx->telepathy, &Telepathy::messageFlagsChanged, this, &ChatMessage::onMessageFlagsChanged);
   m_persistent_uid = local_remote_uid();
+}
+
+void ChatMessage::onMessageFlagsChanged(unsigned int event_id, unsigned int flag) {
+  if (this->event_id() == event_id) {
+    this->m_raw->flags = flag;
+    emit messageFlagsChanged(event_id);
+  }
 }
 
 QString ChatMessage::text() const {
@@ -19,7 +29,16 @@ QString ChatMessage::text() const {
   if(leave_event())
     return QString(tr("%1 has left the groupchat")).arg(remote_uid());
 
-  return QString::fromStdString(m_raw->text);
+  QString text = "";
+  // if (m_raw->flags & rtcom_qt::RTCOM_EL_FLAG_SMS_PENDING)
+  //   text += "[Sending…] ";
+  // else if (m_raw->flags & rtcom_qt::RTCOM_EL_FLAG_SMS_TEMPORARY_ERROR)
+  //   text += "[Sending temporarily failed] ";
+  // else if (m_raw->flags & rtcom_qt::RTCOM_EL_FLAG_SMS_PERMANENT_ERROR)
+  //   text += "[Sending permanently failed] ";
+
+  text += QString::fromStdString(m_raw->text);
+  return text;
 }
 
 QString ChatMessage::textSnippet() const {

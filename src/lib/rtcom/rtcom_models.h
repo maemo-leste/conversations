@@ -29,7 +29,7 @@ namespace rtcom_qt {
     std::string event_type;
     bool outgoing = true;
     bool is_read = false;
-    unsigned int flags = -1;
+    unsigned int flags = 0;
 
     ChatMessageEntry(
       int event_id, const std::string& service, const std::string& group_uid,
