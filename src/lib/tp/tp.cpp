@@ -687,7 +687,7 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
     qDebug() << "isRescued" << message.isRescued();
 
     if(outgoing) {
-        remote_uid = channel->targetId();
+        remote_uid = channel->groupSelfContact()->id();
         remote_alias = nullptr;
     }
 
@@ -725,7 +725,7 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
     qDebug() << "onMessageSent" << message.text();
 
     const time_t epoch = message.sent().toTime_t();
-    const QString remote_uid = getRemoteUid(channel);
+    const QString remote_uid = channel->groupSelfContact()->id();
     const auto text = message.text().toLocal8Bit();
 
     const auto result = log_event(epoch, text, true, channel, remote_uid, nullptr, rtcom_qt::RTCOM_EL_FLAG_SMS_PENDING);
