@@ -30,6 +30,10 @@ QString ChatMessage::text() const {
     return QString(tr("%1 has left the groupchat")).arg(remote_uid());
 
   QString text = "";
+  // @TODO: uncomment this when we want to visually show delivery reports in the UI
+  // we cannot uncomment this, because connection managers, for example XMPP, do
+  // not work properly: they only send delivery reports whilst in groupchats,
+  // and not 1:1 chats.
   // if (m_raw->flags & rtcom_qt::RTCOM_EL_FLAG_SMS_PENDING)
   //   text += "[Sending…] ";
   // else if (m_raw->flags & rtcom_qt::RTCOM_EL_FLAG_SMS_TEMPORARY_ERROR)
