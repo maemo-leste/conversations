@@ -1,3 +1,11 @@
+conversations (0.7.40) unstable; urgency=medium
+
+  * models/ChatMessage: (partially) implement visual indication when messages fail to deliver
+  * lib/tp: always use channel->groupSelfContact()->id() when for messages that are ours
+  * chatWindow: fix deletion of chats
+
+ -- Sander <sander@sanderf.nl>  Tue, 4 May 2025 17:53:10 +0300
+
 conversations (0.7.39) unstable; urgency=medium
 
   * lib/tp: implement delivery status
