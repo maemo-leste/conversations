@@ -11,6 +11,7 @@
 #include <QFileDialog>
 #include <QTextEdit>
 
+#include "conversations.h"
 #include "chatwindow.h"
 #include "mainwindow.h"
 #include "config-conversations.h"
@@ -271,12 +272,16 @@ void ChatWindow::onChatRequestClear() {
 }
 
 void ChatWindow::onChatDelete() {
-  auto group_uid_str = group_uid.toStdString();
-  auto _group_uid = group_uid_str.c_str();
-  rtcom_qt::delete_events(_group_uid);
+  rtcom_qt::delete_events(group_uid.toStdString());
   this->chatModel->clear();
 
-  m_ctx->telepathy->deleteChannel(local_uid, channel);
+  const auto key = channel.isEmpty() ? remote_uid : channel;
+  if (!m_ctx->telepathy->deleteChannel(local_uid, key)) {
+    qWarning() << "Failed to find/delete Tp channel, perhaps wrong channel key";
+  }
+
+  configState->deleteItem(local_uid, key);
+  Conversations::instance()->overviewModel->onLoad();
   this->close();
 }
 

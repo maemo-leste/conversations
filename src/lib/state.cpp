@@ -1,3 +1,4 @@
+#include <ranges>
 #include <QCoreApplication>
 #include <QLocalSocket>
 #include <QLocalServer>
@@ -107,14 +108,20 @@ ConfigStateItemPtr ConfigState::addItem(const QString &local_uid, const QString 
   return item;
 }
 
-void ConfigState::deleteItem(const QString &local_uid, const QString &remote_id) {
-  qDebug() << "ConfigState::deleteItem()";
-  auto item = getItem(local_uid, remote_id);
-  if(!item)
-    return;
+bool ConfigState::deleteItem(const QString &local_uid, const QString &remote_id) {
+  qDebug() << "ConfigState::deleteItem()" << local_uid << remote_id;
+  if(const auto item = getItem(local_uid, remote_id); !item)
+    return false;
+
+  auto filtered = items | std::views::filter([remote_id](const ConfigStateItemPtr &_item) {
+      return _item->remote_uid != remote_id;
+  });
+
+  items = QList<ConfigStateItemPtr>(filtered.begin(), filtered.end());
 
   qDebug() << "ConfigState::deleteItem()" << local_uid << remote_id;
-  items.removeOne(item);
+  save();
+  return true;
 }
 
 bool ConfigState::setAutoJoin(const QString &local_uid, const QString &remote_id, bool auto_join) {

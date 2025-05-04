@@ -325,14 +325,15 @@ void Telepathy::leaveChannel(const QString &local_uid, const QString &remote_uid
     account->leaveChannel(remote_uid);
 }
 
-void Telepathy::deleteChannel(const QString &local_uid, const QString &remote_uid) {
+bool Telepathy::deleteChannel(const QString &local_uid, const QString &remote_uid) {
     auto account = rtcomLocalUidToAccount(local_uid);
     if(!account)
-        return;
+        return false;
     account->leaveChannel(remote_uid);
     account->channels.remove(remote_uid);
 
     emit channelDeleted(local_uid, remote_uid);
+    return true;
 }
 
 void Telepathy::sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message) {

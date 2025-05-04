@@ -50,7 +50,7 @@ public:
 public slots:
   ConfigStateItemPtr addItem(const QString &local_uid, const QString &remote_id, const QString &group_uid, ConfigStateItemType type);
   ConfigStateItemPtr getItem(const QString &local_uid, const QString &remote_id, ConfigStateItemType type = ConfigStateItemType::ConfigStateAny);
-  void deleteItem(const QString &local_uid, const QString &remote_id);
+bool deleteItem(const QString &local_uid, const QString &remote_id);
 
 private slots:
   void onSaveTimerTimeout();

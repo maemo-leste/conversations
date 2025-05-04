@@ -219,7 +219,7 @@ public:
     TelepathyChannelPtr channelByName(const QString &local_uid, const QString &remote_uid);
     void joinChannel(const QString &local_uid, const QString &remote_uid);
     void leaveChannel(const QString &local_uid, const QString &remote_uid);
-    void deleteChannel(const QString &local_uid, const QString &remote_uid);
+    bool deleteChannel(const QString &local_uid, const QString &remote_uid);
 
     void getContact(QString local_uid, QString remote_uid, std::function<void(Tp::ContactPtr)> cb);
     void authorizeContact(const QString &local_uid, const QString &remote_uid);
