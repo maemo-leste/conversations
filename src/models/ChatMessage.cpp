@@ -36,10 +36,10 @@ QString ChatMessage::text() const {
   // and not 1:1 chats.
   // if (m_raw->flags & rtcom_qt::RTCOM_EL_FLAG_SMS_PENDING)
   //   text += "[Sending…] ";
-  // else if (m_raw->flags & rtcom_qt::RTCOM_EL_FLAG_SMS_TEMPORARY_ERROR)
-  //   text += "[Sending temporarily failed] ";
-  // else if (m_raw->flags & rtcom_qt::RTCOM_EL_FLAG_SMS_PERMANENT_ERROR)
-  //   text += "[Sending permanently failed] ";
+  if (m_raw->flags & rtcom_qt::RTCOM_EL_FLAG_SMS_TEMPORARY_ERROR)
+    text += "[Sending temporarily failed] ";
+  else if (m_raw->flags & rtcom_qt::RTCOM_EL_FLAG_SMS_PERMANENT_ERROR)
+    text += "[Sending permanently failed] ";
 
   text += QString::fromStdString(m_raw->text);
   return text;
