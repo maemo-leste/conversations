@@ -76,7 +76,7 @@ JoinChannel::JoinChannel(Conversations *ctx, QWidget *parent) :
       return this->messageBox("account cannot be empty");
     }
 
-    // m_ctx->state->setAutoJoin(account_local_uid, channel, persistent);
+    m_ctx->state->setAutoJoin(account_local_uid, channel, persistent);
     emit joinChannel(account_local_uid, channel);
   });
 }
