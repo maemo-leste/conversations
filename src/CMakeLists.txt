@@ -110,6 +110,10 @@ foreach(target ${TARGETS})
             ${Qt5Xml_DEFINITIONS}
     )
 
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")  # amd64 is exclusively used @ VM
+        target_compile_definitions(${target} PRIVATE LESTE_VM=1)
+    endif()
+
     target_compile_options(${target}
             PUBLIC
             ${RTCOM-EVENTLOGGER_CFLAGS_OTHER}
