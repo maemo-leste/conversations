@@ -1,3 +1,9 @@
+conversations (0.7.41) unstable; urgency=medium
+
+  * lib/rtcom: timestamps are now int64
+
+ -- Sander <sander@sanderf.nl>  Tue, 4 May 2025 17:53:10 +0300
+
 conversations (0.7.40) unstable; urgency=medium
 
   * models/ChatMessage: (partially) implement visual indication when messages fail to deliver
