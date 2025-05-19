@@ -12,6 +12,7 @@
 #include "config-conversations.h"
 #include "lib/globals.h"
 
+#include "config-conversations.h"
 #include "ui_settings.h"
 
 Settings * Settings::pSettings = nullptr;
@@ -26,13 +27,7 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
 
-  QPixmap p_theme_whatsthat(":whatsthat/whatsthat.png");
-  QPixmap p_theme_chatty(":chatty/chatty.png");
-  QPixmap p_theme_irssi(":irssi/irssi.png");
-
-  ui->label_chatty_img->setPixmap(p_theme_chatty);
-  ui->label_whatsthat_img->setPixmap(p_theme_whatsthat);
-  ui->label_irssi_img->setPixmap(p_theme_irssi);
+  ui->label_version->setText(QString("Version: ") + CONVERSATIONS_VERSION);
 
   auto theme = config()->get(ConfigKeys::ChatTheme).toString();
   if(theme == "chatty")
