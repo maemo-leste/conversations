@@ -154,7 +154,7 @@ namespace qtrtcom {
           LOOKUP_STR("remote-ebook-uid"),
           LOOKUP_STR("content"),
           LOOKUP_STR("icon-name"),
-          LOOKUP_INT("start-time"),
+          LOOKUP_INT64("start-time"),
           LOOKUP_INT("event-count"),
           LOOKUP_STR("group-title"),
           LOOKUP_STR("channel"),

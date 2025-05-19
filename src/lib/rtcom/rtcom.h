@@ -21,6 +21,8 @@ extern "C" {
 
 #define LOOKUP_INT(x) \
 g_value_get_int((const GValue*)g_hash_table_lookup(values, x))
+#define LOOKUP_INT64(x) \
+g_value_get_int64((const GValue*)g_hash_table_lookup(values, x))
 #define LOOKUP_BOOL(x) \
 g_value_get_boolean((const GValue*)g_hash_table_lookup(values, x))
 // #define LOOKUP_STR(x) g_value_get_string((const GValue*)g_hash_table_lookup(values, x))
