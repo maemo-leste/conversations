@@ -1,3 +1,9 @@
+conversations (0.7.42) unstable; urgency=medium
+
+  * settings: settings page redesign with a tabwidget
+
+ -- Sander <sander@sanderf.nl>  Tue, 19 May 2025 17:53:10 +0300
+
 conversations (0.7.41) unstable; urgency=medium
 
   * lib/rtcom: timestamps are now int64

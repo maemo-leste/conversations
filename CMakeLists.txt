@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 project(conversations
-  VERSION "0.7.41"
+  VERSION "0.7.42"
   DESCRIPTION "conversations"
 )
 message(STATUS "Initiating compile using CMake ${CMAKE_VERSION}")
