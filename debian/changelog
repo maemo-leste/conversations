@@ -1,3 +1,16 @@
+conversations (0.7.43) unstable; urgency=medium
+
+  * windows/joinchannel: redesign
+  * pick account via a list dialog for better UX (instead of QComboBox)
+  * only list accounts that have groupchats (ignore 'tel' account)
+  * auto-append/suffix neccesary symbols (e.g: #, @, : for irc, xmpp, matrix, etc.) so its easier to join channels through the UI
+  * show sensible account names ($nickname - $local_uid)
+  * automatically set focus on the text input
+  * update UI when Telepathy accounts get added/removed at runtime
+  * compile def LESTE_VM=1, in VM we need to force redraw the overview table
+
+ -- Sander <sander@sanderf.nl>  Tue, 22 May 2025 03:07:10 +0300
+
 conversations (0.7.42) unstable; urgency=medium
 
   * settings: settings page redesign with a tabwidget

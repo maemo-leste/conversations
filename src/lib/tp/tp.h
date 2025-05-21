@@ -98,6 +98,8 @@ public:
     QMap<QString, TelepathyChannelPtr> channels;
 
     const QString local_uid;
+    QString server_host;
+    unsigned int server_port;
     QString name() const {  // human-readable from local_uid
       auto decoded = QUrl::fromPercentEncoding(QString(local_uid).replace("_", "%").toUtf8());
       if(decoded.endsWith("0"))
@@ -108,6 +110,8 @@ public:
     QString nickname() const { return m_nickname; }
     QString protocolName() const { return m_protocol_name; }
     QString getServiceName();
+    QString getServerHost();
+    unsigned int getServerPort();
 
     bool isOnline = false;
     bool has_feature_friends() const { return m_feature_friends; };

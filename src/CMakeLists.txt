@@ -112,6 +112,7 @@ foreach(target ${TARGETS})
 
     if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")  # amd64 is exclusively used @ VM
         target_compile_definitions(${target} PRIVATE LESTE_VM=1)
+        message(STATUS "LESTE_VM=1")
     endif()
 
     target_compile_options(${target}

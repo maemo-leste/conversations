@@ -31,8 +31,6 @@ inline void clion_debug_setup() {
       auto val = line.remove(0, pos + 1);
       if(key == "DISPLAY")
         val = ":0";
-      if(key.startsWith("QT"))  // we set Qt related variables manually later
-        continue;
 
       if(val.startsWith("\""))
         val = val.mid(1);
