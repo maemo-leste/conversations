@@ -914,7 +914,7 @@ void TelepathyAccount::joinSavedGroupChats() {
 
 QString TelepathyAccount::getServerHost() {
   QVariantMap connection_params = acc->parameters();
-  if (QStringList{"gabble"}.contains(m_protocol_name)) {
+  if (QStringList{"gabble", "jabber"}.contains(m_protocol_name)) {
     // parse host out of account username, 'server' or 'host' not available in params
     if (auto param_account = connection_params["account"].toString(); param_account.contains("@"))
       return param_account.section('@', 1);
@@ -927,7 +927,7 @@ QString TelepathyAccount::getServerHost() {
 unsigned int TelepathyAccount::getServerPort() {
   QVariantMap connection_params = acc->parameters();
   // @TODO: protocol enum please
-  if (QStringList{"gabble"}.contains(m_protocol_name)) {
+  if (QStringList{"gabble", "jabber"}.contains(m_protocol_name)) {
     return 0; // @TODO: hmm
   } else if (m_protocol_name == "irc") {
     return connection_params["port"].toInt();
