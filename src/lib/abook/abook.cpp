@@ -269,8 +269,15 @@ namespace abookqt {
   void contacts_removed_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer data) {
     while (*contacts) {
       OssoABookContact *contact = *contacts;
+      if (!contact) {
+        fprintf(stderr, "contacts_removed_cb: null contact\n");
+        break;
+      }
+
       std::string persistent_uid = osso_abook_contact_get_persistent_uid(contact);
-      ROSTER.erase(persistent_uid);
+      if (!persistent_uid.empty())
+        ROSTER.erase(persistent_uid);
+
       contacts++;
     }
   }
