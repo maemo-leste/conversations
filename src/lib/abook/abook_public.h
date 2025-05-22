@@ -16,4 +16,5 @@ namespace abook_qt {
   void abook_set_func_contact_updated(const std::function<void(std::map<std::string, std::shared_ptr<AbookContact>>)> &func);
   AbookContactAvatar* abook_get_avatar(const std::string& local_uid, const std::string& remote_uid);
   std::string get_avatar_token(const std::string& local_uid, const std::string& remote_uid);
+  std::string get_display_name(const std::string& local_uid, const std::string& remote_uid, std::string& group_uid);
 }

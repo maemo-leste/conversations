@@ -37,13 +37,13 @@ namespace rtcom_qt {
       const std::string& remote_uid, const std::string& remote_name,
       const std::string& remote_ebook_uid, const std::string& text,
       const std::string& icon_name, time_t timestamp, unsigned int count,
-      const std::string& group_title, const std::string& channel,
-      const std::string& event_type, bool outgoing, bool is_read,
+      const std::string& channel, const std::string& event_type,
+      bool outgoing, bool is_read,
       unsigned int flags) : event_id(event_id), service(service), group_uid(group_uid),
         local_uid(local_uid), protocol(_protocol), remote_uid(remote_uid),
         remote_name(remote_name), remote_ebook_uid(remote_ebook_uid), text(text),
         icon_name(icon_name), timestamp(timestamp), count(count),
-        group_title(group_title), channel(channel), event_type(event_type),
+        channel(channel), event_type(event_type),
         outgoing(outgoing), is_read(is_read), flags(flags) {
 
       // parse protocol

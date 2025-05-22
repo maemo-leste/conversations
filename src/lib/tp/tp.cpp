@@ -440,13 +440,10 @@ void TelepathyHandler::handleChannels(const Tp::MethodInvocationContextPtr<> &co
       tcPtr->isRoom = isRoom;
       if (!room_name.isEmpty()) {
         // register room name in rtcom
-        auto remote_uid_str = remote_uid.toStdString();
-        const auto _remote_uid = remote_uid_str.c_str();
-
+        auto group_uid_str = accountPtr->getGroupUid(tcPtr).toStdString();
         auto room_name_str = room_name.toStdString();
-        const auto _room_name = room_name_str.c_str();
 
-        rtcom_qt::set_room_name(_remote_uid, _room_name);
+        rtcom_qt::set_room_name(group_uid_str, room_name_str);
         tcPtr->room_name = room_name;
       }
 

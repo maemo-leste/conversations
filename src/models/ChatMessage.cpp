@@ -54,23 +54,40 @@ QString ChatMessage::textSnippet() const {
   return QString::fromStdString(m_raw->text);
 }
 QString ChatMessage::name() const {
-  auto remote_name = QString::fromStdString(m_raw->remote_name);
-  if(!m_raw->remote_name.empty()) return remote_name;
+  // 1. ask abook
+  if (auto result = abook_qt::get_display_name(m_raw->local_uid, m_raw->remote_uid, m_raw->group_uid); !result.empty())
+    return QString::fromStdString(result);
+  // 2. rtcom db remote name
+  if(!m_raw->remote_name.empty()) return QString::fromStdString(m_raw->remote_name);
+  // 3. fallback; remote_uid
   return QString::fromStdString(m_raw->remote_uid);
 }
-QString ChatMessage::overview_name() const {
-  if(!m_raw->channel.empty()) {
-    const auto channel_str = m_raw->channel;
-    const auto _channel_str = channel_str.c_str();
-    auto room_name = rtcom_qt::get_room_name(_channel_str);
-    if(!room_name.empty())
-      return QString::fromStdString(room_name);
-    return QString::fromStdString(m_raw->channel);
+
+QString ChatMessage::name_counterparty() const {
+  // This chatmessage maybe us (self), but we need the counterparty name of this conversation
+  // 1. ask abook
+  if (const auto group_uid_str = QString::fromStdString(m_raw->group_uid); group_uid_str.contains("-")) {
+    const auto _remote_uid = group_uid_str.split("-").at(1);
+    auto _remote_uid_str = _remote_uid.toStdString();
+    if (auto result = abook_qt::get_display_name(m_raw->local_uid, _remote_uid_str, m_raw->group_uid); !result.empty())
+      return QString::fromStdString(result);
   }
 
-  if(!m_raw->remote_name.empty()) return QString::fromStdString(m_raw->remote_name);
-  return QString::fromStdString(m_raw->remote_uid);
+  // fallback
+  return name();
 }
+
+QString ChatMessage::name_channel() const {
+  if(m_raw->channel.empty())
+    return {};
+
+  const auto group_uid_str = m_raw->group_uid;
+  const auto _group_uid_str = group_uid_str.c_str();
+  if(auto room_name = rtcom_qt::get_room_name(_group_uid_str); !room_name.empty())
+    return QString::fromStdString(room_name);
+  return QString::fromStdString(m_raw->channel);
+}
+
 bool ChatMessage::isHead() const {
   if(previous == nullptr) return true;
   if(previous->cid() == m_cid) return false;
@@ -132,13 +149,14 @@ bool ChatMessage::shouldHardWordWrap() const {
 }
 
 void ChatMessage::generateOverviewItemDelegateRichText(){
-  const auto overview_name = this->overview_name();
+  const auto overview_name = this->name_channel();
+  QString richtext;
   // Stylesheet: overview/overviewRichDelegate.css
-  auto richtext = QString("<span class=\"header\">%1</b>").arg(this->overview_name());
+  richtext += QString("<span class=\"header\">%1</b>").arg(!m_raw->channel.empty() ? this->name_channel() : this->name_counterparty());
   richtext += QString("<span class=\"small\">&nbsp;&nbsp;%1</span>").arg(QString::fromStdString(this->m_raw->protocol));
   richtext += QString("<span class=\"small text-muted\">&nbsp;&nbsp;%1 %2</span>").arg(this->datestr(), this->hourstr());
   richtext += "<br>";
-  
+
   // do not allow messages to provide their own tags as they end up in QTextDocument @ lib/QRichItemDelegate.cpp
   auto textSnippet = this->textSnippet();
   textSnippet = textSnippet.replace("<", "");

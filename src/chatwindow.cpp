@@ -449,9 +449,8 @@ void ChatWindow::onSetWindowTitle() {
   parts << acc->protocolName();
 
   if (!channel.isEmpty()) {
-    auto channel_str = channel.toStdString();
-    auto _channel_str = channel_str.c_str();
-    if(auto room_name = rtcom_qt::get_room_name(_channel_str); !room_name.empty()) {
+    auto group_uid_str = group_uid.toStdString();
+    if(auto room_name = rtcom_qt::get_room_name(group_uid_str); !room_name.empty()) {
       parts << QString::fromStdString(room_name);
     } else {
       parts << channel;

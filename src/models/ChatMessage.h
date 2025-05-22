@@ -40,7 +40,8 @@ public:
     QString textSnippet() const;
 
     QString name() const;
-    QString overview_name() const;
+    QString name_counterparty() const;
+    QString name_channel() const;
     QString overviewItemDelegateRichText;
     void generateOverviewItemDelegateRichText();
 

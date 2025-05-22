@@ -1,4 +1,5 @@
 #include "rtcom.h"
+#include "rtcom_public.h"
 
 namespace qtrtcom {
   RTComEl *el = NULL;
@@ -135,7 +136,6 @@ namespace qtrtcom {
             "icon-name",
             "start-time",
             "event-count",
-            "group-title",
             "channel",
             "event-type",
             "outgoing",
@@ -156,13 +156,23 @@ namespace qtrtcom {
           LOOKUP_STR("icon-name"),
           LOOKUP_INT64("start-time"),
           LOOKUP_INT("event-count"),
-          LOOKUP_STR("group-title"),
           LOOKUP_STR("channel"),
           LOOKUP_STR("event-type"),
           LOOKUP_BOOL("outgoing"),
           LOOKUP_BOOL("is-read"),
           LOOKUP_INT("flags")
         );
+
+        // warning: when doing "LOOKUP_STR("group-title")"
+        // it will issue a separate `rtcom_el_plugin_chat_get_group_title`
+        // call for *each* message in the set, which likely is doing
+        // a SQL query.... use the cache instead.
+        if (!item->channel.empty()) {
+          auto it_room_name = rtcom_qt::cache_room_name.find(item->group_uid);
+          if (it_room_name != rtcom_qt::cache_room_name.end()) {
+            item->group_title = it_room_name->second;
+          }
+        }
 
         g_hash_table_destroy(values);
         results.emplace_back(item);

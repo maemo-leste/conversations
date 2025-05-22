@@ -35,6 +35,7 @@ namespace abookqt {
   OssoABookContact* get_im_contact(const char* local_uid, const char* userid);
 
   std::string get_avatar_token(const std::string& local_uid, const std::string& remote_uid);
+  std::string get_display_name(const std::string& local_uid, const std::string& remote_uid);
   AbookContactAvatar* get_avatar(const std::string& local_uid, const std::string& remote_uid);
   void contacts_changed_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer user_data);
   void contacts_added_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer data);

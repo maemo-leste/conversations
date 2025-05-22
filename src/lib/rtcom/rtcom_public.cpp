@@ -3,6 +3,8 @@
 #include "rtcom.h"
 
 namespace rtcom_qt {
+  std::unordered_map<std::string, std::string> cache_room_name;
+
   std::vector<rtcom_qt::ChatMessageEntry*> search_messages(std::string search, std::string group_uid, unsigned int limit, unsigned int offset) {
 	return qtrtcom::search_messages(search, group_uid);
   }
@@ -11,15 +13,30 @@ namespace rtcom_qt {
     return qtrtcom::get_service_accounts();
   }
 
-  std::string get_room_name(std::string channel) {
-    auto _channel = channel.c_str();
-    return qtrtcom::get_room_name(_channel);
+  std::string get_room_name(std::string group_uid) {
+    auto it = cache_room_name.find(group_uid);
+    if (it != cache_room_name.end()) {
+      return it->second;
+    }
+
+    auto _group_uid = group_uid.c_str();
+    std::string result = qtrtcom::get_room_name(_group_uid);
+    if (!result.empty())
+      cache_room_name[group_uid] = result;
+
+    return result;
   }
 
   void set_room_name(const std::string& group_uid, const std::string& title) {
+    auto it = cache_room_name.find(group_uid);
+    if (it != cache_room_name.end())
+      if (title == it->second)
+        return;  // already in cache
+
     const auto group_uid_str = group_uid.c_str();
     const auto title_str = title.c_str();
-    return qtrtcom::set_room_name(group_uid_str, title_str);
+    qtrtcom::set_room_name(group_uid_str, title_str);
+    cache_room_name[group_uid] = title;
   }
 
   bool set_event_header(const unsigned int event_id, const std::string& key, const std::string& value) {

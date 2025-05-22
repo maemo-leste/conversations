@@ -6,8 +6,10 @@
 #include "rtcom_models.h"
 
 namespace rtcom_qt {
+  extern std::unordered_map<std::string, std::string> cache_room_name;
+
   std::vector<std::string>  get_service_accounts();
-  std::string               get_room_name(std::string channel);
+  std::string               get_room_name(std::string group_uid);
   void                      set_room_name(const std::string& group_uid, const std::string& title);
   void                      set_read(const unsigned int event_id, const bool read);
   void                      toggle_event_flags(const unsigned int event_id, const unsigned int flags, bool unset = false);

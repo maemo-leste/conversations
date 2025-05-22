@@ -96,12 +96,22 @@ namespace abookqt {
     return res;
   }
 
+  std::string get_display_name(const std::string& local_uid, const std::string& remote_uid) {
+    OssoABookContact* contact = get_im_contact(local_uid.c_str(), remote_uid.c_str());
+    if (contact == NULL)
+      return {};
+
+    const char* name_cstr = osso_abook_contact_get_name(contact);
+    return name_cstr ? std::string(name_cstr) : std::string();
+  }
+
   std::string get_avatar_token(const std::string& local_uid, const std::string& remote_uid) {
     OssoABookContact* contact = get_im_contact(local_uid.c_str(), remote_uid.c_str());
     if (contact == NULL)
       return {};
 
-    std::string persistent_uid = osso_abook_contact_get_persistent_uid(contact);
+    const char* uid_cstr = osso_abook_contact_get_persistent_uid(contact);
+    std::string persistent_uid = uid_cstr ? std::string(uid_cstr) : std::string();
 
     const auto avatar = OSSO_ABOOK_AVATAR(contact);
     if (avatar == NULL)
@@ -157,9 +167,16 @@ namespace abookqt {
         const TpConnectionPresenceType presenceType = osso_abook_presence_get_presence_type(abook_presence);
         const OssoABookPresenceState published = osso_abook_presence_get_published(abook_presence);
         const OssoABookPresenceState subscribed = osso_abook_presence_get_subscribed(abook_presence);
+        const char* display_name_cstr = osso_abook_contact_get_name(contact);
+        std::string display_name = display_name_cstr ? std::string(display_name_cstr) : std::string();
 
         if (!ROSTER.contains(persistent_uid))
           ROSTER[persistent_uid] = std::make_shared<AbookContact>(persistent_uid);
+
+        if (ROSTER[persistent_uid]->display_name != display_name) {
+          ROSTER[persistent_uid]->display_name = display_name;
+          updated = true;
+        }
 
         if (ROSTER[persistent_uid]->published != presence_to_string(published)) {
           ROSTER[persistent_uid]->published = presence_to_string(published);
@@ -331,6 +348,10 @@ namespace abookqt {
     if (!ROSTER.contains(persistent_uid))
       ROSTER[persistent_uid] = std::make_shared<AbookContact>(persistent_uid);
 
+    const char* display_name_cstr = osso_abook_contact_get_name(contact);
+    std::string display_name = display_name_cstr ? std::string(display_name_cstr) : std::string();
+
+    ROSTER[persistent_uid]->display_name = display_name;
     ROSTER[persistent_uid]->published = published;
     ROSTER[persistent_uid]->subscribed = subscribed;
     ROSTER[persistent_uid]->presence = presence;
