@@ -45,7 +45,18 @@ void ServiceAccount::setName(const QString &protocol) {
   this->title = this->title.left(1).toUpper() + this->title.mid(1);
 }
 
-OverviewProxyModel::OverviewProxyModel(QObject *parent) : QSortFilterProxyModel(parent) {}
+OverviewProxyModel::OverviewProxyModel(QObject *parent) : QSortFilterProxyModel(parent) {
+  // @TODO: table wont update, not sure
+  // connect(Conversations::instance()->overviewModel, &OverviewModel::dataChanged, this, [=](const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) {
+  //   // Map the source indexes to proxy indexes
+  //   QModelIndex proxyTopLeft = mapFromSource(topLeft);
+  //   QModelIndex proxyBottomRight = mapFromSource(bottomRight);
+  //
+  //   if (proxyTopLeft.isValid() && proxyBottomRight.isValid()) {
+  //     emit dataChanged(proxyTopLeft, proxyBottomRight, roles);
+  //   }
+  // });
+}
 
 void OverviewProxyModel::setNameFilter(QString name) {
   if(name.toLower() == m_nameFilter) return;
