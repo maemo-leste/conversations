@@ -1,3 +1,19 @@
+conversations (0.7.44) unstable; urgency=medium
+
+  * abook: more safety for contacts_removed_cb
+  * overviewmodel: update specific rows on abook signals instead of the whole table
+  * tools: fix el-v1.db
+  * tp: fix jabber protocol matching
+  * tp: use getRemoteUid() to set the correct remote_uid
+  * abook: get_display_name()
+  * rtcom: dont use 'group-title' while iterating rtcom results - it introduces unneeded (sub)queries
+  * rtcom: cache room_name
+  * ChatMessage: fix name(), name_counterparty(), name_channel() - fixes erroneous overview item names
+  * chatwindow: setWindowTitle, fix erroneous window titles
+  * lib/tp: indent
+
+ -- Sander <sander@sanderf.nl>  Tue, 23 May 2025 00:13:10 +0300
+
 conversations (0.7.43) unstable; urgency=medium
 
   * windows/joinchannel: redesign
