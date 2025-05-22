@@ -54,11 +54,15 @@ QString ChatMessage::textSnippet() const {
   return QString::fromStdString(m_raw->text);
 }
 QString ChatMessage::name() const {
+  if (m_raw->outgoing) // self
+    return "me";
+
   // 1. ask abook
   if (auto result = abook_qt::get_display_name(m_raw->local_uid, m_raw->remote_uid, m_raw->group_uid); !result.empty())
     return QString::fromStdString(result);
   // 2. rtcom db remote name
-  if(!m_raw->remote_name.empty()) return QString::fromStdString(m_raw->remote_name);
+  if(!m_raw->remote_name.empty())
+    return QString::fromStdString(m_raw->remote_name);
   // 3. fallback; remote_uid
   return QString::fromStdString(m_raw->remote_uid);
 }
@@ -73,7 +77,7 @@ QString ChatMessage::name_counterparty() const {
       return QString::fromStdString(result);
   }
 
-  // fallback
+  // 2. fallback
   return name();
 }
 
