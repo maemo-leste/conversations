@@ -442,37 +442,34 @@ void ChatWindow::onChannelJoinedOrLeft(const QString &_local_uid, const QString 
 }
 
 void ChatWindow::onSetWindowTitle() {
-  QString protocol = "Unknown";
-  QString windowTitle;
+  QStringList parts;
 
-  QString remote_name;
-  if(!this->chatModel->chats.isEmpty())
-    remote_name = this->chatModel->chats.last()->remote_name();
+  const auto tp = Conversations::instance()->telepathy;
+  const TelepathyAccountPtr acc = tp->accountByName(local_uid);
+  parts << acc->protocolName();
 
-  if(local_uid.count('/') == 2)
-    windowTitle += local_uid.split("/").at(1);
-  else
-    windowTitle += protocol.toUpper();
-
-  if(groupchat) {
-      auto channel_str = channel.toStdString();
-      auto _channel_str = channel_str.c_str();
-      auto room_name = rtcom_qt::get_room_name(_channel_str);
-      if(room_name.empty())
-        windowTitle +=  " - " + channel;
-      else
-        windowTitle +=  " - " + QString::fromStdString(room_name);
+  if (!channel.isEmpty()) {
+    auto channel_str = channel.toStdString();
+    auto _channel_str = channel_str.c_str();
+    if(auto room_name = rtcom_qt::get_room_name(_channel_str); !room_name.empty()) {
+      parts << QString::fromStdString(room_name);
+    } else {
+      parts << channel;
+    }
   } else {
-    if(!remote_name.isEmpty())
-      windowTitle += " - " + remote_name;
-    else
-      windowTitle += " - " + remote_uid;
+    if(local_uid.count('/') == 2) {
+      auto _group_uid = local_uid.split("/").at(2);
+      if (_group_uid.contains("-"))
+        parts << _group_uid.split("-").at(1);
+      else
+        parts << remote_uid;
+    }
   }
 
   if(!m_active && groupchat)
-    windowTitle += " (not joined)";
+    parts << QString(" (not joined)");
 
-  this->setWindowTitle(windowTitle);
+  this->setWindowTitle(parts.join(" - "));
 }
 
 void ChatWindow::detectActiveChannel() {
