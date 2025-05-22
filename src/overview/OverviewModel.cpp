@@ -122,6 +122,7 @@ OverviewModel::OverviewModel(Telepathy *tp, ConfigState *state, QObject *parent)
   this->preloadPixmaps();
 
   connect(Conversations::instance(), &Conversations::contactsChanged, this, &OverviewModel::onContacsChanged);
+  connect(Conversations::instance(), &Conversations::avatarChanged, this, &OverviewModel::onAvatarChanged);
 }
 
 int OverviewModel::rowCount(const QModelIndex & parent) const {
@@ -168,6 +169,40 @@ void OverviewModel::onDatabaseAddition(QSharedPointer<ChatMessage> &msg) {
 
   if (!found) {
     this->onLoad();
+  }
+}
+
+// slot: abook contact avatar changed, update table row entry
+void OverviewModel::onAvatarChanged(std::string local_uid_str, std::string remote_uid_str) {
+  for (size_t row = 0; row < messages.size(); ++row) {
+    auto &m = messages[row];
+    auto row_remote_uid = m->remote_uid().toStdString();
+    auto row_local_uid = m->local_uid().toStdString();
+    auto abook_local_uid = local_uid_str;
+    auto abook_remote_uid = remote_uid_str;
+
+    if (row_local_uid == abook_local_uid && row_remote_uid == abook_remote_uid) {
+      QModelIndex index = this->index(row);
+      emit dataChanged(index, index);
+    }
+  }
+}
+
+// slot: abook contact attributes changed, update table row entry
+void OverviewModel::onContacsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts) {
+  for (const auto &contact: contacts) {
+    for (size_t row = 0; row < messages.size(); ++row) {
+      auto &m = messages[row];
+      auto row_remote_uid = m->remote_uid().toStdString();
+      auto row_local_uid = m->local_uid().toStdString();
+      auto abook_remote_uid = contact.second->remote_uid;
+      auto abook_local_uid = contact.second->local_uid;
+
+      if (row_local_uid == abook_local_uid && row_remote_uid == abook_remote_uid) {
+        QModelIndex index = this->index(row);
+        emit dataChanged(index, index);
+      }
+    }
   }
 }
 
@@ -461,10 +496,6 @@ void OverviewModel::preloadPixmaps() {
     } else {
     }
   }
-}
-
-void OverviewModel::onContacsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts) {
-  onLoad();
 }
 
 void OverviewModel::onClear() {

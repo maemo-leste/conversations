@@ -10,7 +10,6 @@ OverviewWidget::OverviewWidget(Conversations *ctx, QWidget *parent) :
   this->setupUITable();
 
   // avatars
-  connect(m_ctx, &Conversations::avatarChanged, this, &OverviewWidget::onAvatarChanged);
   connect(m_ctx, &Conversations::displayAvatarsChanged, this, &OverviewWidget::onAvatarDisplayChanged);
 }
 
@@ -59,10 +58,6 @@ void OverviewWidget::setupUITable() {
   });
 
   onAvatarDisplayChanged();
-}
-
-void OverviewWidget::onAvatarChanged(std::string local_uid_str, std::string remote_uid_str) {
-  m_ctx->overviewModel->onLoad();
 }
 
 void OverviewWidget::onAvatarDisplayChanged() {

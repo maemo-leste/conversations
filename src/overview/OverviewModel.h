@@ -93,6 +93,7 @@ public slots:
   void onClear();
   void onDatabaseAddition(QSharedPointer<ChatMessage> &msg);
   void onContacsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts);
+  void onAvatarChanged(std::string local_uid_str, std::string remote_uid_str);
 
 signals:
   void overviewRowClicked(const QSharedPointer<ChatMessage> &ptr);
