@@ -137,6 +137,7 @@
     <addaction name="actionAuto_join_groupchat"/>
     <addaction name="actionClear_chat"/>
     <addaction name="actionDelete_chat"/>
+    <addaction name="actionIgnore_notifications"/>
    </widget>
    <addaction name="menuChatWindow"/>
   </widget>
@@ -204,6 +205,11 @@
   <action name="actionRejectFriendRequest">
    <property name="text">
     <string>Reject friend request</string>
+   </property>
+  </action>
+  <action name="actionIgnore_notifications">
+   <property name="text">
+    <string>Ignore notifications</string>
    </property>
   </action>
  </widget>

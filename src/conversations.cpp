@@ -131,6 +131,11 @@ void Conversations::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
     if (chatWindow && chatWindow->isActiveWindow())
       return;
 
+    // Check if this sender is ignored
+    if (this->state->getNotificationsIgnore(msg->local_uid(), !msg->channel().isEmpty() ? msg->channel() : msg->remote_uid())) {
+      return;
+    }
+
     // A message from a specific sender may only notify once per 30 sec
     if (!notificationMap.contains(uid)) {
       notificationMap[uid] = static_cast<uint64_t>(QDateTime::currentSecsSinceEpoch());

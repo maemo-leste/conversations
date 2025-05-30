@@ -22,6 +22,7 @@ public:
   QString group_uid;
   ConfigStateItemType type;
   bool auto_join = false;
+  bool ignore_notifications = false;
   qint64 date_created;           // in msecs since epoch
   qint64 date_last_message = 0;  // in msecs since epoch
 
@@ -43,6 +44,9 @@ public:
 public:
   bool setAutoJoin(const QString &local_uid, const QString &remote_id, bool auto_join);
   bool getAutoJoin(const QString &local_uid, const QString &remote_id);
+
+  bool setNotificationsIgnore(const QString &local_uid, const QString &remote_id, bool ignore);
+  bool getNotificationsIgnore(const QString &local_uid, const QString &remote_id);
 
   void setLastMessageTimestamp(const QString &local_uid, const QString &remote_id, qint64 timestamp);
   qint64 getLastMessageTimestamp(const QString &local_uid, const QString &remote_id);

@@ -46,6 +46,9 @@ void ConfigState::load() {
     item->local_uid = blob["local_uid"].toString();
     item->group_uid = blob["group_uid"].toString();
     item->auto_join = blob["auto_join"].toBool();
+    if (blob.contains("ignore_notifications"))
+      item->ignore_notifications = blob["ignore_notifications"].toBool();
+
     item->type = (ConfigStateItemType) blob["type"].toInt();
 
     qint64 date_created = 0;
@@ -124,6 +127,25 @@ bool ConfigState::deleteItem(const QString &local_uid, const QString &remote_id)
   return true;
 }
 
+bool ConfigState::setNotificationsIgnore(const QString &local_uid, const QString &remote_id, bool ignore) {
+  const auto item = getItem(local_uid, remote_id);
+  if(!item)
+    return false;
+
+  item->ignore_notifications = ignore;
+
+  save(false);
+  m_dirty = true;
+  return true;
+}
+
+bool ConfigState::getNotificationsIgnore(const QString &local_uid, const QString &remote_id) {
+  const auto item = getItem(local_uid, remote_id);
+  if(!item)
+    return false;
+  return item->ignore_notifications;
+}
+
 bool ConfigState::setAutoJoin(const QString &local_uid, const QString &remote_id, bool auto_join) {
   auto item = getItem(local_uid, remote_id);
   if(!item)
@@ -179,6 +201,7 @@ void ConfigState::save(const bool emit_update_signal) {
     obj["local_uid"] = item->local_uid;
     obj["group_uid"] = item->group_uid;
     obj["auto_join"] = item->auto_join;
+    obj["ignore_notifications"] = item->ignore_notifications;
     obj["type"] = double(item->type);
 
     // @TODO: unfortunately we need to use QString to represent a qint64, but Qt6 has QJsonValue::toInteger()

@@ -77,6 +77,7 @@ private slots:
     void onGroupchatJoinLeaveRequested();
     void onChannelJoinedOrLeft(const QString &_local_uid, const QString &_channel);
     void onEnterKeySendsChatToggled(bool enabled);
+    void onIgnoreNotificationsToggled();
     void onSetupGroupchat();
     void onAutoJoinToggled();
     void onSetWindowTitle();
@@ -109,6 +110,7 @@ private:
     static ChatWindow *pChatWindow;
     SearchWindow *m_searchWindow = nullptr;
     bool m_auto_join = false;
+    bool m_ignore_notifications = false;
     QSharedPointer<ContactItem> m_abook_contact;
 
 private:

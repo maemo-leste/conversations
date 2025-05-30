@@ -131,6 +131,7 @@ ChatWindow::ChatWindow(
   connect(ui->actionLeave_channel, &QAction::triggered, this, &ChatWindow::onGroupchatJoinLeaveRequested);
   connect(ui->actionClear_chat, &QAction::triggered, this, &ChatWindow::onChatRequestClear);
   connect(ui->actionDelete_chat, &QAction::triggered, this, &ChatWindow::onChatRequestDelete);
+  connect(ui->actionIgnore_notifications, &QAction::triggered, this, &ChatWindow::onIgnoreNotificationsToggled);
   connect(m_ctx->telepathy, &Telepathy::channelJoined, this, &ChatWindow::onChannelJoinedOrLeft);
   connect(m_ctx->telepathy, &Telepathy::channelLeft, this, &ChatWindow::onChannelJoinedOrLeft);
 
@@ -158,6 +159,14 @@ ChatWindow::ChatWindow(
 
   connect(m_ctx, &Conversations::avatarChanged, this, &ChatWindow::onAvatarChanged);
   connect(m_ctx, &Conversations::contactsChanged, this, &ChatWindow::onContactsChanged);
+
+  // ignore notifications
+  m_ignore_notifications = m_ctx->state->getNotificationsIgnore(local_uid, !channel.isEmpty() ? channel : remote_uid);
+  if(m_ignore_notifications) {
+    ui->actionIgnore_notifications->setText("Enable notifications");
+  } else {
+    ui->actionIgnore_notifications->setText("Ignore notifications");
+  }
 
 #ifndef QUICK
   setupChatWidget();
@@ -243,6 +252,19 @@ void ChatWindow::onAvatarChanged(std::string local_uid_str, std::string remote_u
   QString _remote_uid = QString::fromStdString(remote_uid_str);
   if (_local_uid == local_uid && _remote_uid == remote_uid) {
     emit avatarChanged();  // @TODO: emit local/remote too, for groupchats
+  }
+}
+
+void ChatWindow::onIgnoreNotificationsToggled() {
+  m_ignore_notifications = !m_ignore_notifications;
+  if(auto result = m_ctx->state->setNotificationsIgnore(local_uid, channel, m_ignore_notifications); !result)
+    return;
+
+  // ui text
+  if(m_ignore_notifications) {
+    ui->actionIgnore_notifications->setText("Enable notifications");
+  } else {
+    ui->actionIgnore_notifications->setText("Ignore notifications");
   }
 }
 
