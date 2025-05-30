@@ -5,6 +5,7 @@
 
 #include "config.h"
 #include "lib/utils.h"
+#include "utils.h"
 
 #define QS QStringLiteral
 
@@ -14,7 +15,7 @@ struct ConfigDirective
     QVariant defaultValue;
 };
 
-static const QHash<ConfigKeys::ConfigKey, ConfigDirective> configStrings = {
+static QHash<ConfigKeys::ConfigKey, ConfigDirective> configStrings = {
   {ConfigKeys::MaemoTest,{QS("MaemoTest"), ""}},
   {ConfigKeys::ChatTheme,{QS("ChatTheme"), "whatsthat"}},
   {ConfigKeys::TextScaling,{QS("TextScaling"), 1.0}},
@@ -85,6 +86,13 @@ Config::Config(const QString& fileName, QObject* parent)
 Config::Config(QObject* parent)
         : QObject(parent) {
     QString configPath;
+
+    Utils::init_device_type();
+
+    auto gpu = true;
+    if(DEVICE_TYPE == DeviceType::PINEPHONE)
+      gpu = false;  // @TODO: software rendering is faster on the Pinephone - enable GPU later
+    configStrings[ConfigKeys::EnableGPUAccel] = {QS("EnableGPUAccel"), gpu};
 
     configPath = QDir::homePath();
     configPath += QString("/.config/%1/settings.json").arg(QCoreApplication::applicationName());

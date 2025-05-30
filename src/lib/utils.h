@@ -32,12 +32,22 @@
 using namespace std;
 using std::runtime_error;
 
+enum DeviceType {
+    DEFAULT,
+    N900,
+    DROID4,
+    PINEPHONE
+};
+
+extern DeviceType DEVICE_TYPE;
+
 class Utils {
 public:
   static bool fileExists(const QString &path);
   static QByteArray fileOpen(const QString &path);
   static QByteArray fileOpenQRC(const QString &path);
   static qint64 fileModifiedAge(const QString &path);
+  static void init_device_type();
   static bool fileWrite(const QString &path, const QString &data);
   static bool validateJSON(const QByteArray &blob);
   static bool readJsonFile(QIODevice &device, QSettings::SettingsMap &map);

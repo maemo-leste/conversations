@@ -7,6 +7,8 @@
 #include "lib/config.h"
 #include "models/ChatMessage.h"
 
+DeviceType DEVICE_TYPE = DeviceType::DEFAULT;
+
 bool Utils::fileExists(const QString &path) {
     QFileInfo check_file(path);
     return check_file.exists() && check_file.isFile();
@@ -189,3 +191,26 @@ QStringList Utils::extractWebLinks(const QString &content) {
 
   return rtn;
 }
+
+void Utils::init_device_type() {
+    QFile file("/etc/hostname");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+      qWarning() << "Could not open /etc/hostname";
+      DEVICE_TYPE = DEFAULT;
+      return;
+    }
+
+    QTextStream in(&file);
+    QString hostname = in.readLine().trimmed().toLower();
+
+    if (hostname.contains("n900")) {
+      DEVICE_TYPE = N900;
+    } else if (hostname.contains("droid4")) {
+      DEVICE_TYPE = DROID4;
+    } else if (hostname.contains("pinephone")) {
+      DEVICE_TYPE = PINEPHONE;
+    } else {
+      DEVICE_TYPE = DEFAULT;
+    }
+}
+

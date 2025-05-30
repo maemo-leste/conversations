@@ -207,6 +207,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="checkBox_enableGPUAccel">
+          <property name="text">
+           <string>GPU acceleration (requires application restart)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QLabel" name="label">
           <property name="text">
            <string>in-development:</string>

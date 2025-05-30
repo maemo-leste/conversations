@@ -81,6 +81,13 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
     emit enableDisplayGroupchatJoinLeaveToggled(toggled);
   });
 
+  // GPU acceleration
+  ui->checkBox_enableGPUAccel->setChecked(config()->get(ConfigKeys::EnableGPUAccel).toBool());
+  connect(ui->checkBox_enableGPUAccel, &QCheckBox::toggled, [this](bool toggled){
+    config()->set(ConfigKeys::EnableGPUAccel, toggled);
+    emit enableGPUAccel(toggled);
+  });
+
   // chat avatars
   ui->checkBox_enableDisplayAvatars->setChecked(config()->get(ConfigKeys::EnableDisplayAvatars).toBool());
   connect(ui->checkBox_enableDisplayAvatars, &QCheckBox::toggled, [this](bool toggled){

@@ -1,3 +1,10 @@
+conversations (0.7.45) unstable; urgency=medium
+  * settings: option to enable/disable GPU acceleration for QtQuick scenes
+  * mainwindow: add menu option to quit conversations
+  * pinephone: disable GPU accel on pinephone (optional)
+
+ -- Sander <sander@sanderf.nl>  Tue, 30 May 2025 14:13:10 +0300
+
 conversations (0.7.44) unstable; urgency=medium
 
   * abook: more safety for contacts_removed_cb

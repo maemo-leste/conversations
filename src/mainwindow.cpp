@@ -67,6 +67,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx, &Conversations::hideApplication, this, &MainWindow::onHideApplication);
   connect(m_ctx, &Conversations::notificationClicked, this, &MainWindow::onNotificationClicked);
   connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::onOpenSettingsWindow);
+  connect(ui->actionQuit_application, &QAction::triggered, this, &MainWindow::onAskQuitApplication);
   connect(ui->actionCompose, &QAction::triggered, this, &MainWindow::onOpenComposeWindow);
   connect(ui->actionJoinChatRoom, &QAction::triggered, this, &MainWindow::onOpenJoinChatWindow);
   connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::onOpenSearchWindow);
@@ -174,6 +175,11 @@ void MainWindow::onOpenChatWindowWithHighlight(const QSharedPointer<ChatMessage>
 void MainWindow::onQuitApplication() {
   m_autoHideWindow = false;
   this->close();
+}
+
+void MainWindow::onAskQuitApplication() {
+  if (QMessageBox::question(nullptr, "Confirm", "Quit conversations?", QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+    QApplication::quit();
 }
 
 void MainWindow::onOpenSearchWindow() {

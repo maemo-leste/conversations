@@ -951,6 +951,7 @@ QPlainTextEdit { background: transparent; }</string>
     <addaction name="separator"/>
     <addaction name="actionSettings"/>
     <addaction name="actionAbout"/>
+    <addaction name="actionQuit_application"/>
    </widget>
    <addaction name="menu"/>
   </widget>
@@ -1012,6 +1013,11 @@ QPlainTextEdit { background: transparent; }</string>
    </property>
    <property name="text">
     <string>New contact</string>
+   </property>
+  </action>
+  <action name="actionQuit_application">
+   <property name="text">
+    <string>Quit application</string>
    </property>
   </action>
  </widget>

@@ -21,7 +21,8 @@ namespace ConfigKeys {
         EnableDisplayGroupchatJoinLeave,
         EnableDisplayAvatars,
         EnableDisplayChatGradient,
-        GroupChatChannels
+        GroupChatChannels,
+        EnableGPUAccel
     };
     Q_ENUM_NS(ConfigKey)
 }

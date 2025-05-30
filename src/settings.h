@@ -34,6 +34,7 @@ signals:
     void inheritSystemThemeToggled(bool enabled);
     void enableDisplayGroupchatJoinLeaveToggled(bool enabled);
     void enableDisplayAvatarsToggled(bool enabled);
+    void enableGPUAccel(bool enabled);
     void enableDisplayChatGradientToggled(bool enabled);
     void enterKeySendsChatToggled(bool enabled);
 

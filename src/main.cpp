@@ -10,6 +10,7 @@
 #include "conversations.h"
 #include "lib/globals.h"
 #include "lib/ipc.h"
+#include "lib/config.h"
 #include "lib/rtcom/rtcom_public.h"
 #include "conv-intl.h"
 #include "config-conversations.h"
@@ -59,6 +60,9 @@ int main(int argc, char *argv[]) {
 #ifdef DEBUG
   clion_debug_setup();
 #endif
+
+  if(auto gpu = config()->get(ConfigKeys::EnableGPUAccel).toBool(); !gpu)
+    qputenv("QT_QUICK_BACKEND", "software");
 
   intl("conversations-ui");
 
