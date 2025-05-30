@@ -35,6 +35,7 @@ class Conversations : public QObject {
     Q_PROPERTY(float isMaemo MEMBER isMaemo NOTIFY isMaemoChanged);
     Q_PROPERTY(float scaleFactor MEMBER textScaling NOTIFY textScalingChanged);
     Q_PROPERTY(bool inheritSystemTheme MEMBER inheritSystemTheme NOTIFY inheritSystemThemeChanged);
+    Q_PROPERTY(bool displayChatGradient MEMBER displayChatGradient NOTIFY displayChatGradientChanged);
     Q_PROPERTY(bool displayGroupchatJoinLeave MEMBER displayGroupchatJoinLeave NOTIFY displayGroupchatJoinLeaveChanged);
     Q_PROPERTY(bool displayAvatars MEMBER displayAvatars NOTIFY displayAvatarsChanged);
 
@@ -65,6 +66,7 @@ public:
     bool inheritSystemTheme;
     float textScaling = 1.0;
     bool displayGroupchatJoinLeave;
+    bool displayChatGradient;
     bool displayAvatars;
 
     static void createConfigDirectory(const QString &dir) ;

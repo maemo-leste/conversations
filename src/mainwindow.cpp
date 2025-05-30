@@ -260,18 +260,19 @@ void MainWindow::onOpenSettingsWindow() {
   connect(m_settings, &Settings::autoCloseChatWindowsChanged, this->m_ctx, &Conversations::autoCloseChatWindowsChanged);
   connect(m_settings, &Settings::inheritSystemThemeToggled, this, [this](bool toggled){
     m_ctx->inheritSystemTheme = toggled;
-    m_ctx->inheritSystemThemeChanged(toggled);
+    emit m_ctx->inheritSystemThemeChanged(toggled);
   });
   connect(m_settings, &Settings::enableDisplayGroupchatJoinLeaveToggled, this, [this](bool toggled){
     m_ctx->displayGroupchatJoinLeave = toggled;
-    m_ctx->displayGroupchatJoinLeaveChanged(toggled);
+    emit m_ctx->displayGroupchatJoinLeaveChanged(toggled);
   });
   connect(m_settings, &Settings::enableDisplayAvatarsToggled, this, [this](bool toggled){
     m_ctx->displayAvatars = toggled;
-    m_ctx->displayAvatarsChanged(toggled);
+    emit m_ctx->displayAvatarsChanged(toggled);
   });
   connect(m_settings, &Settings::enableDisplayChatGradientToggled, this, [this](bool toggled){
-    m_ctx->displayChatGradientChanged(toggled);
+    m_ctx->displayChatGradient = toggled;
+    emit m_ctx->displayChatGradientChanged(toggled);
   });
   connect(m_settings, &Settings::enterKeySendsChatToggled, m_ctx, &Conversations::enterKeySendsChatToggled);
 }

@@ -30,7 +30,7 @@ Components.ChatRoot {
     historyPopupTextColor: "white"
 
     signal showMessageContextMenu(int event_id, var point);
-    // signal chatBgShaderUpdate();
+    signal chatBgShaderUpdate();
 
     Image {
         // background
@@ -63,30 +63,34 @@ Components.ChatRoot {
     Connections {
         target: root
         function onScrollToBottomFinished() {
-            // root.chatBgShaderUpdate();
+            if(ctx.displayChatGradient)
+                root.chatBgShaderUpdate();
         }
     }
 
     Connections {
         target: chatListView
         function onCountChanged() {
-            // root.chatBgShaderUpdate();
+            if(ctx.displayChatGradient)
+              root.chatBgShaderUpdate();
         }
     }
 
     Connections {
         target: chatWindow
         function onChatPostReady() {
-            // root.chatBgShaderUpdate();
+            if(ctx.displayChatGradient)
+                root.chatBgShaderUpdate();
         }
     }
 
     Timer {
         interval: 100
-        running: chatListView.moving && chatWindow.displayChatGradient
+        running: chatListView.moving && ctx.displayChatGradient
         repeat: true
         onTriggered: {
-            // root.chatBgShaderUpdate();
+            if(ctx.displayChatGradient)
+                root.chatBgShaderUpdate();
         }
     }
 }

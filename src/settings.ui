@@ -40,7 +40,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_general">
        <attribute name="title">
@@ -69,8 +69,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1199</width>
-             <height>952</height>
+             <width>256</width>
+             <height>231</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -214,19 +214,16 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label">
+         <widget class="QCheckBox" name="checkBox_enableDisplayChatGradient">
           <property name="text">
-           <string>in-development:</string>
+           <string>Chat gradient (requires GPU acceleration)</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox_enableDisplayChatGradient">
+         <widget class="QLabel" name="label">
           <property name="text">
-           <string>Chat gradient</string>
-          </property>
-          <property name="checkable">
-           <bool>false</bool>
+           <string>in-development:</string>
           </property>
          </widget>
         </item>

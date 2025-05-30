@@ -79,6 +79,9 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   inheritSystemTheme = config()->get(ConfigKeys::EnableInheritSystemTheme).toBool();
   emit inheritSystemThemeChanged(inheritSystemTheme);
 
+  displayChatGradient = config()->get(ConfigKeys::EnableDisplayChatGradient).toBool();
+  emit displayChatGradientChanged(displayChatGradient);
+
   displayGroupchatJoinLeave = config()->get(ConfigKeys::EnableDisplayGroupchatJoinLeave).toBool();
   emit displayGroupchatJoinLeaveChanged(displayGroupchatJoinLeave);
 

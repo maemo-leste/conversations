@@ -116,12 +116,6 @@ ChatWindow::ChatWindow(
   auto autoCloseChatWindowsEnabled = config()->get(ConfigKeys::EnableAutoCloseChatWindows).toBool();
   this->onAutoCloseChatWindowsChanged(autoCloseChatWindowsEnabled);
 
-  displayChatGradient = config()->get(ConfigKeys::EnableDisplayChatGradient).toBool();
-  connect(m_ctx, &Conversations::displayChatGradientChanged, [this](bool enabled) {
-    displayChatGradient = enabled;
-    emit displayChatGradientChanged();
-  });
-
   connect(this->ui->btnSend, &QPushButton::clicked, this, &ChatWindow::onGatherMessage);
   connect(m_ctx->telepathy, &Telepathy::databaseAddition, this, &ChatWindow::onDatabaseAddition);
 
