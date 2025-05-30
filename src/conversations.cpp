@@ -89,6 +89,9 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
     std::bind(&Conversations::onContactsChanged, this, std::placeholders::_1);
   abook_qt::func_avatarChangedSignal =
     std::bind(&Conversations::onAvatarChanged, this, std::placeholders::_1, std::placeholders::_2);
+
+  // save config whilst quiting
+  connect(qApp, &QCoreApplication::aboutToQuit, config(), &Config::sync);
 }
 
 // get a list of 'service accounts' (AKA protocols) from both TP and rtcom

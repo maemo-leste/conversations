@@ -25,7 +25,7 @@ static QHash<ConfigKeys::ConfigKey, ConfigDirective> configStrings = {
   {ConfigKeys::EnableDisplayGroupchatJoinLeave,{QS("EnableDisplayGroupchatJoinLeave"), true}},
   {ConfigKeys::EnableDisplayAvatars,{QS("EnableDisplayAvatars"), true}},
   {ConfigKeys::EnableDisplayChatGradient,{QS("EnableDisplayChatGradient"), true}},
-  {ConfigKeys::EnterKeySendsChat,{QS("EnterKeySendsChat"), false}},
+  {ConfigKeys::EnterKeySendsChat,{QS("EnterKeySendsChat"), true}},
   {ConfigKeys::GroupChatChannels, {QS("GroupChatChannels"), "{}"}}
 };
 
@@ -109,8 +109,6 @@ void Config::init(const QString& configFileName) {
     const QSettings::Format jsonFormat = QSettings::registerFormat("json", Utils::readJsonFile, Utils::writeJsonFile);
     QSettings::setDefaultFormat(jsonFormat);
     m_settings.reset(new QSettings(configFileName, jsonFormat));
-
-    connect(qApp, &QCoreApplication::aboutToQuit, this, &Config::sync);
 }
 
 Config* Config::instance() {
