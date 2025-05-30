@@ -62,7 +62,17 @@
        <number>14</number>
       </property>
       <item>
-       <widget class="QTextEdit" name="chatBox">
+       <widget class="QLineEdit" name="chatBox_line">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="placeholderText">
+         <string>Message</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTextEdit" name="chatBox_multi">
         <property name="acceptRichText">
          <bool>false</bool>
         </property>

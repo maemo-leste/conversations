@@ -45,6 +45,8 @@ ChatWindow::ChatWindow(
   pChatWindow = this;
   ui->setupUi(this);
   ui->menuBar->hide();
+  m_enterKeySendsChat = config()->get(ConfigKeys::EnterKeySendsChat).toBool();
+  onDisplayChatBox();
 
    qDebug() << "ChatWindow()";
    qDebug() << "local_uid:" << local_uid;
@@ -59,15 +61,14 @@ ChatWindow::ChatWindow(
    setProperty("X-Maemo-StackedWindow", 0);
 
    // [chatBox]
-   ui->chatBox->setFocus();
-   // force chatEdit widget to 1 line (visually)
-   QFontMetrics metrics(ui->chatBox->font());
-   int lineHeight = metrics.lineSpacing();
-   int margins = 25;  // ew, hardcoded.
-   ui->chatBox->setFixedHeight(lineHeight + (margins*2));
-   // catch Enter/RETURN
-   ui->chatBox->installEventFilter(this);
-   m_enterKeySendsChat = config()->get(ConfigKeys::EnterKeySendsChat).toBool();
+  for (QWidget *chatBox : {static_cast<QWidget*>(ui->chatBox_line), static_cast<QWidget*>(ui->chatBox_multi)}) {
+    chatBox->setFocus();
+    QFontMetrics metrics(chatBox->font());
+    int lineHeight = metrics.lineSpacing();
+    int margins = 25;  // ew, hardcoded.
+    chatBox->setFixedHeight(lineHeight + (margins*2));
+    chatBox->installEventFilter(this);
+  }
 
    this->chatModel = new ChatModel(this);
 #ifndef QUICK
@@ -328,6 +329,7 @@ void ChatWindow::onAutoCloseChatWindowsChanged(bool enabled) {
 
 void ChatWindow::onEnterKeySendsChatToggled(bool enabled) {
   m_enterKeySendsChat = enabled;
+  onDisplayChatBox();
 }
 
 void ChatWindow::onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg) {
@@ -393,16 +395,22 @@ QString ChatWindow::remoteId() const {
 
 void ChatWindow::onGatherMessage() {
   emit avatarChanged();
+  QString msg;
 
-  QString _msg = this->ui->chatBox->toPlainText();
-  _msg = _msg.trimmed();
-  if(_msg.isEmpty())
+  if (const auto chatBox_line = qobject_cast<QLineEdit*>(m_chatBox)) {
+    msg = this->ui->chatBox_line->text();
+    chatBox_line->clear();
+  } else if (const auto chatBox_multi = qobject_cast<QTextEdit*>(m_chatBox)) {
+    msg = this->ui->chatBox_multi->toPlainText();
+    chatBox_multi->clear();
+  }
+
+  msg = msg.trimmed();
+  if(msg.isEmpty())
     return;
 
-  emit sendMessage(local_uid, remoteId(), _msg);
-
-  this->ui->chatBox->clear();
-  this->ui->chatBox->setFocus();
+  emit sendMessage(local_uid, remoteId(), msg);
+  m_chatBox->setFocus();
 }
 
 void ChatWindow::onGroupchatJoinLeaveRequested() {
@@ -519,6 +527,19 @@ void ChatWindow::closeEvent(QCloseEvent *event) {
   QWidget::closeEvent(event);
 }
 
+void ChatWindow::onDisplayChatBox() {
+  ui->chatBox_line->hide();
+  ui->chatBox_multi->hide();
+
+  if (m_enterKeySendsChat) {
+    ui->chatBox_line->show();
+    m_chatBox = ui->chatBox_line;
+  } else {
+    ui->chatBox_multi->show();
+    m_chatBox = ui->chatBox_multi;
+  }
+}
+
 void ChatWindow::showMessageContextMenu(const unsigned int event_id, const QPoint point) {
   QMenu contextMenu("Context menu", this);
 
@@ -535,16 +556,18 @@ void ChatWindow::showMessageContextMenu(const unsigned int event_id, const QPoin
   }
 
   QAction actionNew("Reply", this);
-  connect(&actionNew, &QAction::triggered, [this, msg]{
-    this->ui->chatBox->setText(
-      QString("> %1\n").arg(msg->text())
-    );
-
-    QTextCursor cursor = this->ui->chatBox->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    this->ui->chatBox->setTextCursor(cursor);
-
-    this->ui->chatBox->setFocus();
+  connect(&actionNew, &QAction::triggered, [this, msg] {
+    const auto text_reply = QString("> %1\n").arg(msg->text());
+    if (const auto chatBox_line = qobject_cast<QLineEdit*>(m_chatBox)) {
+      chatBox_line->setText(text_reply);
+      chatBox_line->setFocus();
+    } else if (const auto chatBox_multi = qobject_cast<QTextEdit*>(m_chatBox)) {
+      chatBox_multi->setText(text_reply);
+      QTextCursor cursor = chatBox_multi->textCursor();
+      cursor.movePosition(QTextCursor::End);
+      chatBox_multi->setTextCursor(cursor);
+      chatBox_multi->setFocus();
+    }
   });
   contextMenu.addAction(&actionNew);
 

@@ -10,6 +10,8 @@
 #include <QtCore>
 #include <QtGui>
 #include <QFileInfo>
+#include <QLineEdit>
+#include <QTextEdit>
 
 #ifdef QUICK
 #include <QQuickImageProvider>
@@ -90,6 +92,7 @@ private slots:
     void onRemoveFriend();
     void onAcceptFriend();
     void onRejectFriend();
+    void onDisplayChatBox();
 
 signals:
     void closed(const QString &remote_uid);
@@ -118,6 +121,7 @@ private:
     unsigned int m_windowFocus = 0; // seconds
     bool m_active = false;  // do we have an active Tp connection?
     bool m_windowActive = false;
+    QWidget* m_chatBox = nullptr;
 private:
     QString remoteId() const;
     void detectActiveChannel();
