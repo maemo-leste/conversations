@@ -1,4 +1,13 @@
+conversations (0.7.46) unstable; urgency=medium
+
+  * chatwindow: follow the setting "Enter sends chat" when using him (virtual keyboard)
+  * chatwindow: the ability to ignore notifications for individual contacts and/or groups
+  * chatwindow: reintroduce chat background gradient shader, default off
+
+ -- Sander <sander@sanderf.nl>  Tue, 30 May 2025 20:11:10 +0300
+
 conversations (0.7.45) unstable; urgency=medium
+
   * settings: option to enable/disable GPU acceleration for QtQuick scenes
   * mainwindow: add menu option to quit conversations
   * pinephone: disable GPU accel on pinephone (optional)
