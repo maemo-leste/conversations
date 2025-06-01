@@ -5,6 +5,8 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <errno.h>
 
 // small C binary to launch Conversations
@@ -14,8 +16,8 @@
 //   - check config directory for the presence of
 //     a file to determine to launch the slim or qml version
 
-#define PATH_CONV "/usr/bin/conversations"
-#define PATH_CONV_SLIM "/usr/bin/conversations-slim"
+#define PATH_CONV "/usr/bin/conversations_qml"
+#define PATH_CONV_SLIM "/usr/bin/conversations_slim"
 
 int file_exists(const char *path) {
   struct stat st;
@@ -77,12 +79,27 @@ int main(int argc, char *argv[]) {
   char slim_config_path[512];
   snprintf(slim_config_path, sizeof(slim_config_path), "%s/.config/conversations/slim", home);
 
-  if (file_exists(slim_config_path)) {
-    execl(PATH_CONV_SLIM, PATH_CONV_SLIM, (char *)NULL);
-  } else {
-    execl(PATH_CONV, PATH_CONV, (char *)NULL);
+  const pid_t pid = fork();
+  if (pid < 0) {
+    perror("fork");
+    return 1;
   }
 
-  perror("execl");
-  return 1;
+  if (pid == 0) {
+    if (file_exists(slim_config_path)) {
+      execl(PATH_CONV_SLIM, PATH_CONV_SLIM, (char *)NULL);
+    } else {
+      execl(PATH_CONV, PATH_CONV, (char *)NULL);
+    }
+    perror("execl");
+    _exit(1);
+  }
+
+  int status;
+  if (waitpid(pid, &status, 0) < 0) {
+    perror("waitpid");
+    return 1;
+  }
+
+  return 0;
 }
