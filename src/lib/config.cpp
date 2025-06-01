@@ -26,7 +26,8 @@ static QHash<ConfigKeys::ConfigKey, ConfigDirective> configStrings = {
   {ConfigKeys::EnableDisplayAvatars,{QS("EnableDisplayAvatars"), true}},
   {ConfigKeys::EnableDisplayChatGradient,{QS("EnableDisplayChatGradient"), false}},
   {ConfigKeys::EnterKeySendsChat,{QS("EnterKeySendsChat"), true}},
-  {ConfigKeys::GroupChatChannels, {QS("GroupChatChannels"), "{}"}}
+  {ConfigKeys::GroupChatChannels, {QS("GroupChatChannels"), "{}"}},
+  {ConfigKeys::EnableSlim, {QS("EnableSlim"), false}}
 };
 
 QPointer<Config> Config::m_instance(nullptr);

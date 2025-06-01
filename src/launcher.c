@@ -1,0 +1,88 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <sys/stat.h>
+#include <errno.h>
+
+// small C binary to launch Conversations
+// - if its already running, bring it up via IPC
+//   - and forward passed argv arg
+// - if it's not running, launch Conversations
+//   - check config directory for the presence of
+//     a file to determine to launch the slim or qml version
+
+#define PATH_CONV "/usr/bin/conversations"
+#define PATH_CONV_SLIM "/usr/bin/conversations-slim"
+
+int file_exists(const char *path) {
+  struct stat st;
+  return stat(path, &st) == 0;
+}
+
+int try_socket(const char *path, const char *message) {
+  struct sockaddr_un addr;
+
+  int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+  if (sockfd == -1) {
+    perror("socket");
+    return -1;
+  }
+
+  memset(&addr, 0, sizeof(struct sockaddr_un));
+  addr.sun_family = AF_UNIX;
+  strncpy(addr.sun_path, path, sizeof(addr.sun_path) - 1);
+
+  if (connect(sockfd, (struct sockaddr *)&addr, sizeof(struct sockaddr_un)) == -1) {
+    perror("connect");
+    close(sockfd);
+    return -1;
+  }
+
+  if (write(sockfd, message, strlen(message)) == -1) {
+    perror("write");
+    close(sockfd);
+    return -1;
+  }
+
+  close(sockfd);
+  return 0;
+}
+
+int main(int argc, char *argv[]) {
+  const char *message = argc > 1 ? argv[1] : "makeActive";
+
+  const char *user = getenv("USER");
+  if (!user) {
+    fprintf(stderr, "could not determine user.\n");
+    return 1;
+  }
+
+  char socket_path[256];
+  snprintf(socket_path, sizeof(socket_path), "/tmp/conversations-%s.sock", user);
+
+  if (file_exists(socket_path)) {
+    if (try_socket(socket_path, message) == 0)
+      return 0;
+  }
+
+  const char *home = getenv("HOME");
+  if (!home) {
+    fprintf(stderr, "could not determine home directory.\n");
+    return 1;
+  }
+
+  char slim_config_path[512];
+  snprintf(slim_config_path, sizeof(slim_config_path), "%s/.config/conversations/slim", home);
+
+  if (file_exists(slim_config_path)) {
+    execl(PATH_CONV_SLIM, PATH_CONV_SLIM, (char *)NULL);
+  } else {
+    execl(PATH_CONV, PATH_CONV, (char *)NULL);
+  }
+
+  perror("execl");
+  return 1;
+}

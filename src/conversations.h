@@ -101,7 +101,7 @@ signals:
     void isMaemoChanged();
     void showApplication();
     void hideApplication();
-    void openChatWindow(const QString &remote_uid);
+    void openChatWindow(QString remote_uid);
     void reloadOverview();
     void contactsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts);
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);

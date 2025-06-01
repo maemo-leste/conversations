@@ -85,6 +85,10 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
   ui->checkBox_enableGPUAccel->setChecked(config()->get(ConfigKeys::EnableGPUAccel).toBool());
   connect(ui->checkBox_enableGPUAccel, &QCheckBox::toggled, [this](bool toggled){
     config()->set(ConfigKeys::EnableGPUAccel, toggled);
+    if (toggled) {
+      if(const auto reply = QMessageBox::question(this, "Quit", "Quit application now?", QMessageBox::Yes | QMessageBox::No); reply == QMessageBox::Yes)
+        QApplication::quit();
+    }
     emit enableGPUAccel(toggled);
   });
 
@@ -100,6 +104,29 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
   connect(ui->checkBox_enableDisplayChatGradient, &QCheckBox::toggled, [this](bool toggled){
     config()->set(ConfigKeys::EnableDisplayChatGradient, toggled);
     emit enableDisplayChatGradientToggled(toggled);
+  });
+
+  ui->checkBox_enableSlim->setChecked(config()->get(ConfigKeys::EnableSlim).toBool());
+  connect(ui->checkBox_enableSlim, &QCheckBox::toggled, [this](const bool toggled){
+    config()->set(ConfigKeys::EnableSlim, toggled);
+
+    const QString path = m_ctx->configDirectory + "slim";
+    if (toggled) {
+      if (!QFile::exists(path)) {
+          QFile file(path);
+          file.open(QIODevice::WriteOnly);
+          file.close();
+      }
+    } else {
+      if (QFile::exists(path)) {
+          QFile::remove(path);
+      }
+    }
+
+    if(const auto reply = QMessageBox::question(this, "Quit", "Quit application now?", QMessageBox::Yes | QMessageBox::No); reply == QMessageBox::Yes)
+      QApplication::quit();
+
+    emit enableSlimToggled(toggled);
   });
 
   // text scaling

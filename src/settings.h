@@ -36,6 +36,7 @@ signals:
     void enableDisplayAvatarsToggled(bool enabled);
     void enableGPUAccel(bool enabled);
     void enableDisplayChatGradientToggled(bool enabled);
+    void enableSlimToggled(bool enabled);
     void enterKeySendsChatToggled(bool enabled);
 
 private slots:

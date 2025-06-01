@@ -66,6 +66,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx, &Conversations::showApplication, this, &MainWindow::onShowApplication);
   connect(m_ctx, &Conversations::hideApplication, this, &MainWindow::onHideApplication);
   connect(m_ctx, &Conversations::notificationClicked, this, &MainWindow::onNotificationClicked);
+  connect(m_ctx, &Conversations::openChatWindow, this, QOverload<QString>::of(&MainWindow::onOpenChatWindow));
   connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::onOpenSettingsWindow);
   connect(ui->actionQuit_application, &QAction::triggered, this, &MainWindow::onAskQuitApplication);
   connect(ui->actionCompose, &QAction::triggered, this, &MainWindow::onOpenComposeWindow);
@@ -141,6 +142,26 @@ void MainWindow::onShowWelcomePage() const {
 void MainWindow::onOpenChatWindow(int idx) {
   auto msg = m_ctx->chatOverviewModel->chats.at(idx);
   this->onOpenChatWindow(msg);
+}
+
+void MainWindow::onOpenChatWindow(QString remote_uid) {
+  // already have a window?
+  for (const auto& window: m_chatWindows) {
+    if (window->remote_uid == remote_uid) {
+      window->setFocus();
+      window->activateWindow();
+      return;
+    }
+  }
+
+  // remote_uid perhaps known to us?
+  for (const auto& msg: m_ctx->overviewModel->messages) {
+    if (msg->remote_uid() == remote_uid) {
+      return onOpenChatWindow(msg);
+    }
+  }
+
+  qWarning() << "onOpenChatWindow:" << remote_uid << "not found";
 }
 
 void MainWindow::onOpenChatWindow(QString local_uid, QString remote_uid, QString group_uid, QString channel, QString service) {

@@ -55,6 +55,7 @@ public:
 
 public slots:
     void onOpenChatWindow(int idx);
+    void onOpenChatWindow(QString remote_uid);
     void onOpenChatWindow(QString local_uid, QString remote_uid, QString group_uid, QString channel, QString service);
     void onOpenChatWindow(const QSharedPointer<ChatMessage> &msg);
     void onOpenChatWindowWithHighlight(const QSharedPointer<ChatMessage> &msg);

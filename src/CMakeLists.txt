@@ -1,4 +1,13 @@
-set(TARGETS "conversations" "conversations_slim")
+# launcher
+add_executable(conversations launcher.c)
+set_target_properties(conversations PROPERTIES
+        LINKER_LANGUAGE C
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
+install(TARGETS conversations DESTINATION bin)
+
+# conversations
+set(TARGETS "conversations_qml" "conversations_slim")
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
@@ -47,7 +56,7 @@ qtquick_compiler_add_resources(QUICK_RESOURCES
 )
 
 # conversations
-add_executable(conversations ${EXECUTABLE_FLAG} main.cpp
+add_executable(conversations_qml ${EXECUTABLE_FLAG} main.cpp
         ${SOURCE_FILES}
         assets.qrc
         ${QUICK_RESOURCES}
@@ -61,11 +70,11 @@ add_executable(conversations_slim ${EXECUTABLE_FLAG} main.cpp
 
 if(DISABLE_QML_DISK_CACHE)
   message(STATUS "QML disk cache: off")
-  target_compile_definitions(conversations PRIVATE DISABLE_QML_DISK_CACHE=1)
+  target_compile_definitions(conversations_qml PRIVATE DISABLE_QML_DISK_CACHE=1)
 endif()
 
 if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
-    target_compile_definitions(conversations PRIVATE DEBUG=1)
+    target_compile_definitions(conversations_qml PRIVATE DEBUG=1)
     target_compile_definitions(conversations_slim PRIVATE DEBUG=1)
 endif()
 
@@ -156,8 +165,8 @@ set(CMAKE_CXX_FLAGS
         ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}
         )
 
-target_compile_definitions(conversations PRIVATE QUICK=1)
-target_link_libraries(conversations PUBLIC
+target_compile_definitions(conversations_qml PRIVATE QUICK=1)
+target_link_libraries(conversations_qml PUBLIC
     Qt5::Quick
     Qt5::QuickWidgets
     Qt5::Qml

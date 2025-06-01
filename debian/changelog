@@ -1,3 +1,17 @@
+conversations (0.7.47) unstable; urgency=medium
+
+  * cmake: rename conversations binary to conversations_qml
+  * launcher.c: small C binary to launch Conversations
+   - if its already running, bring it up via IPC
+     - and forward passed argv arg
+   - if it's not running, launch Conversations
+     - check config directory for the presence of
+       a file to determine to launch the slim or qml version
+  * settings: introduce option to switch between slim/qml versions
+  * chatwindow: fix the handling of an IPC arg, it did not launch any window
+
+ -- Sander <sander@sanderf.nl>  Sat, 01 Jun 2025 15:16:10 +0300
+
 conversations (0.7.46) unstable; urgency=medium
 
   * chatwindow: follow the setting "Enter sends chat" when using him (virtual keyboard)

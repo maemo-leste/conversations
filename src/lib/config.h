@@ -22,7 +22,8 @@ namespace ConfigKeys {
         EnableDisplayAvatars,
         EnableDisplayChatGradient,
         GroupChatChannels,
-        EnableGPUAccel
+        EnableGPUAccel,
+        EnableSlim
     };
     Q_ENUM_NS(ConfigKey)
 }

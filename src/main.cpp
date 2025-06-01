@@ -27,19 +27,6 @@
 #include "lib/logger.h"
 
 int main(int argc, char *argv[]) {
-  // are we already running?
-  if(const int ipc_sock = Utils::IPCOpen("/tmp/conversations-user.sock"); ipc_sock >= 0) {
-    while(*argv != nullptr) {  // remote-uid via args?
-      if(auto arg = QString::fromUtf8(*argv, strlen(*argv)); arg.contains(globals::reRemoteUID)) {
-        return Utils::IPCSend(ipc_sock, arg);
-      }
-      argv++;
-    }
-
-    qInfo() << "an instance of conversations is already active, sending `makeActive` and exiting the current process";
-    return Utils::IPCSend(ipc_sock, "makeActive");
-  }
-
 #ifdef QUICK
   Q_INIT_RESOURCE(assets);
   Q_INIT_RESOURCE(whatsthat);
@@ -157,10 +144,8 @@ int main(int argc, char *argv[]) {
 
   // handle positional startup arguments
   for (const auto &arg: args) {
-    if(arg.contains(globals::reRemoteUID)) {
-      ctx->onIPCReceived(arg);
-      break;
-    }
+    ctx->onIPCReceived(arg);
+    break;
   }
 
   // load Telepathy last, ensures the app is

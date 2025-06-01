@@ -160,12 +160,9 @@ void Conversations::onNotificationClicked(const QSharedPointer<ChatMessage> &msg
 }
 
 void Conversations::onIPCReceived(const QString &cmd) {
-  if(cmd.contains(globals::reRemoteUID)) {
-    emit showApplication();
+  emit showApplication();
+  if (!cmd.isEmpty())
     emit openChatWindow(cmd);
-  } else if(cmd == "makeActive") {
-    emit showApplication();
-  }
 }
 
 void Conversations::onAvatarChanged(std::string local_uid, std::string remote_uid) {

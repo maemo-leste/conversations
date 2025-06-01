@@ -40,7 +40,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_general">
        <attribute name="title">
@@ -203,6 +203,13 @@
          <widget class="QCheckBox" name="checkBox_enableDisplayAvatars">
           <property name="text">
            <string>Avatars</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBox_enableSlim">
+          <property name="text">
+           <string>Slim mode (requires application restart)</string>
           </property>
          </widget>
         </item>
