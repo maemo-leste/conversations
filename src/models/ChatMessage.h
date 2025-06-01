@@ -42,8 +42,7 @@ public:
     QString name() const;
     QString name_counterparty() const;
     QString name_channel() const;
-    QString overviewItemDelegateRichText;
-    void generateOverviewItemDelegateRichText();
+    QString generateOverviewItemDelegateRichText();
 
     QString fulldate() const { return m_date.toString("yyyy-MM-dd hh:mm:ss"); }
     QString partialdate() const { return m_date.toString("MM-dd hh:mm:ss"); }

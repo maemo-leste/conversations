@@ -152,7 +152,7 @@ bool ChatMessage::shouldHardWordWrap() const {
   return false;
 }
 
-void ChatMessage::generateOverviewItemDelegateRichText(){
+QString ChatMessage::generateOverviewItemDelegateRichText(){
   const auto overview_name = this->name_channel();
   QString richtext;
   // Stylesheet: overview/overviewRichDelegate.css
@@ -166,7 +166,7 @@ void ChatMessage::generateOverviewItemDelegateRichText(){
   textSnippet = textSnippet.replace("<", "");
 
   richtext += QString("<span class=\"text-muted\">%1</span>").arg(textSnippet);
-  overviewItemDelegateRichText = richtext;
+  return richtext;
 }
 
 ChatMessage::~ChatMessage() {

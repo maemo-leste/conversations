@@ -225,13 +225,6 @@ void MainWindow::onOpenJoinChatWindow() {
 
   connect(m_joinchannel, &JoinChannel::joinChannel, [this](QString account, QString channel) {
     m_ctx->telepathy->joinChannel(account, channel);
-
-    // hack: if we close this window immediately, then the QML overview model will not get
-    // updated properly with new changes. The data is updated but the screen wont
-    // refresh, only after touch. Dont know why, maybe maemo-qt or Hildon related.
-    QTimer::singleShot(300, [this]{
-        m_joinchannel->close();
-    });
   });
 }
 

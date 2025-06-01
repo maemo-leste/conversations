@@ -162,17 +162,11 @@ void OverviewModel::onDatabaseAddition(QSharedPointer<ChatMessage> &msg) {
       QVector<int> roles;
       roles << ContentRole << MsgStatusIcon << OverviewNameRole;
 
-      emit dataChanged(index, index, roles);
+      const int lastColumn = this->columnCount() - 1;
+      const QModelIndex topLeft = this->index(row, 0);
+      const QModelIndex bottomRight = this->index(row, lastColumn);
+      emit dataChanged(topLeft, bottomRight);
 
-      // @TODO: layoutChanged() is hack to force repainting of the table. For some reason,
-      // the table is not updated (visually) when we modify a row. For example, changing a
-      // row, then moving to a new window in Hildon, then moving back to the overview
-      // window, ONLY THEN do we see a change in the data. This is a rendering bug
-      // somewhere. `MainWindow::onOpenJoinChatWindow()` suffers from the same quirk.
-      // edit: only happens in VM
-#ifdef LESTE_VM
-      emit layoutChanged();
-#endif
       found = true;
       break;
     }
@@ -236,9 +230,7 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
   if(role == Qt::DisplayRole) {
     switch(index.column()) {
       case OverviewModel::ContentRole: {
-        if(message->overviewItemDelegateRichText.isEmpty())
-          message->generateOverviewItemDelegateRichText();
-        return message->overviewItemDelegateRichText;
+        return message->generateOverviewItemDelegateRichText();
       }
       case OverviewModel::ProtocolRole: {
         return message->protocol();
