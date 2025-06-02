@@ -16,6 +16,7 @@ target_link_libraries(rtcom_qt PRIVATE
         ${GTK_LIBRARIES}
         PkgConfig::RTCOM-EVENTLOGGER
         PkgConfig::RTCOM-EVENTLOGGER-PLUGINS
+        logger_std
 )
 
 target_compile_options(rtcom_qt PUBLIC

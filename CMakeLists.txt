@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 project(conversations
-  VERSION "0.7.50"
+  VERSION "0.7.51"
   DESCRIPTION "conversations"
 )
 message(STATUS "Initiating compile using CMake ${CMAKE_VERSION}")
@@ -15,6 +15,7 @@ set(CMAKE_SKIP_RPATH ON)
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake")
 
 option(DISABLE_QML_DISK_CACHE "Disables the disk cache and forces QML/JS re-compilation. Should be ON during QML development." OFF)
+option(ENABLE_DEBUG_TIMINGS "Write time measurements to /tmp/conversations.timings to e.g. debug boot times." OFF)
 
 set(CONVERSATIONS_DESKTOP_DIR /usr/share/applications/hildon)
 set(TELEPATHY_CLIENTS_DIR /usr/share/telepathy/clients)

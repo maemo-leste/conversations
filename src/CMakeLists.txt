@@ -78,6 +78,7 @@ if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
     target_compile_definitions(conversations_slim PRIVATE DEBUG=1)
 endif()
 
+add_subdirectory(lib/logger_std/)
 add_subdirectory(lib/abook/)
 add_subdirectory(lib/rtcom/)
 
@@ -119,6 +120,13 @@ foreach(target ${TARGETS})
             ${Qt5Xml_DEFINITIONS}
     )
 
+    if(ENABLE_DEBUG_TIMINGS)
+        target_compile_definitions(${target}
+            PUBLIC
+            ENABLE_DEBUG_TIMINGS=1
+        )
+    endif()
+
     if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")  # amd64 is exclusively used @ VM
         target_compile_definitions(${target} PRIVATE LESTE_VM=1)
         message(STATUS "LESTE_VM=1")
@@ -150,6 +158,7 @@ foreach(target ${TARGETS})
             Qt5::Xml
             Qt5::Maemo5
             Threads::Threads
+            logger_std
             abook_qt
             rtcom_qt
             ${TELEPATHY_QT5_LIBRARIES}
@@ -190,4 +199,9 @@ if(GTK)
     message(STATUS "gtk: ${GTK_VERSION}")
 else()
     message(STATUS "gtk: off")
+endif()
+if(ENABLE_DEBUG_TIMINGS)
+    message(STATUS "debug timings: on")
+else()
+    message(STATUS "debug timings: off")
 endif()

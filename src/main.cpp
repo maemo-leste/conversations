@@ -25,8 +25,14 @@
 
 #include <hildon/hildon-main.h>
 #include "lib/logger.h"
+#include "lib/logger_std/logger_std.h"
 
 int main(int argc, char *argv[]) {
+#ifdef ENABLE_DEBUG_TIMINGS
+  globals::logger_std_init();
+#endif
+  CLOCK_MEASURE_START(start_total);
+  CLOCK_MEASURE_START(start_pre);
 #ifdef QUICK
   Q_INIT_RESOURCE(assets);
   Q_INIT_RESOURCE(whatsthat);
@@ -108,10 +114,6 @@ int main(int argc, char *argv[]) {
   QMap<QString, QString> info;
   info["Qt"] = QT_VERSION_STR;
   info["Conversations"] = CONVERSATIONS_VERSION;
-#ifndef QT_NO_SSL
-  info["SSL"] = QSslSocket::sslLibraryVersionString();
-  info["SSL build"] = QSslSocket::sslLibraryBuildVersionString();
-#endif
 
   for (const auto &k: info.keys())
     qWarning().nospace().noquote() << QString("%1: %2").arg(k, info[k]);
@@ -122,25 +124,34 @@ int main(int argc, char *argv[]) {
   // Listen on IPC
   auto *ipc = new IPC();
   QTimer::singleShot(0, ipc, [ipc]{ ipc->bind(); });
+  CLOCK_MEASURE_END(start_pre, "main::pre");
 
   // init hildon (is this required?)
+  CLOCK_MEASURE_START(start_hildon_init);
   hildon_init();
+  CLOCK_MEASURE_END(start_hildon_init, "main::hildon_init");
 
   // init abook
+  CLOCK_MEASURE_START(start_abook_init);
   if (!abook_qt::abook_init())
     throw std::runtime_error("cannot initialize abook");
   abook_qt::abook_init_contact_roster();
+  CLOCK_MEASURE_END(start_abook_init, "main::abook_init");
 
   // initialize application
+  CLOCK_MEASURE_START(start_ctx);
   auto *ctx = new Conversations(&parser, ipc);
   logger_ctx = ctx;
   ctx->applicationPath = argv_.at(0);
   ctx->isDebug = debugMode;
   ctx->isMaemo = true;  // @TODO: remove
+  CLOCK_MEASURE_END(start_ctx, "main::ctx_init");
 
+  CLOCK_MEASURE_START(start_mainwindow);
   auto *mainWindow = new MainWindow(ctx);
   if(!parser.isSet(backgroundModeOption))
     mainWindow->onShowApplication();
+  CLOCK_MEASURE_END(start_mainwindow, "main::ctx_init");
 
   // handle positional startup arguments
   for (const auto &arg: args) {
@@ -148,9 +159,11 @@ int main(int argc, char *argv[]) {
     break;
   }
 
-  // load Telepathy last, ensures the app is
-  // setup so we can act on all signals
+  // load Telepathy last, ensures the app is setup so we can act on all signals
+  CLOCK_MEASURE_START(start_tp_init);
   ctx->telepathy->init();
+  CLOCK_MEASURE_END(start_tp_init, "main::telepathy_init");
 
+  CLOCK_MEASURE_END(start_total, "main::done");
   return QApplication::exec();
 }

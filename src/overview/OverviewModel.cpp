@@ -3,6 +3,7 @@
 
 #include "lib/abook/abook_public.h"
 #include "lib/abook/abook_roster.h"
+#include "lib/logger_std/logger_std.h"
 #include "overview/OverviewModel.h"
 #include "conversations.h"
 
@@ -345,6 +346,7 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
 }
 
 void OverviewModel::onLoad() {
+  CLOCK_MEASURE_START(start_total);
   // The overview screen has 3 sources:
   // 1. rtcom-db
   // - all messages are registered in rtcom, we group by
@@ -367,6 +369,7 @@ void OverviewModel::onLoad() {
   // =====
   // rtcom
   // =====
+  CLOCK_MEASURE_START(start_rtcom);
   constexpr unsigned int limit = 50000;
   constexpr unsigned int offset = 0;
 
@@ -374,6 +377,9 @@ void OverviewModel::onLoad() {
     group_uids << QString::fromStdString(msg->group_uid);
     results << new ChatMessage(msg);
   }
+
+  CLOCK_MEASURE_END(start_rtcom, "OverviewModel::onLoad rtcom");
+  CLOCK_MEASURE_START(start_tp);
 
   // ==
   // tp
@@ -410,6 +416,9 @@ void OverviewModel::onLoad() {
       group_uids << group_uid;
     }
   }
+
+  CLOCK_MEASURE_END(start_tp, "OverviewModel::onLoad TP");
+  CLOCK_MEASURE_START(start_config_state);
 
   // ===========
   // ConfigState
@@ -450,10 +459,13 @@ void OverviewModel::onLoad() {
     group_uids << configItem->group_uid;
   }
 
+  CLOCK_MEASURE_END(start_config_state, "OverviewModel::onLoad ConfigState");
+
   beginInsertRows(QModelIndex(), 0, results.size());
   for (const auto &message: results)
     messages << QSharedPointer<ChatMessage>(message);
   endInsertRows();
+  CLOCK_MEASURE_END(start_total, "OverviewModel::onLoad total");
 }
 
 QHash<int, QByteArray> OverviewModel::roleNames() const {

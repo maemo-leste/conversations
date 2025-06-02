@@ -9,13 +9,17 @@
 #include "conversations.h"
 #include "lib/utils.h"
 #include "lib/globals.h"
+#include "lib/logger_std/logger_std.h"
 #include "mainwindow.h"
 
 Conversations* CTX = nullptr;
 
 Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
+  CLOCK_MEASURE_START(start_total);
+  CLOCK_MEASURE_START(start_notif_init);
   CTX = this;
   Notification::init(QApplication::applicationName());
+  CLOCK_MEASURE_END(start_notif_init, "Notification::init");
 
   // Paths
   pathGenericData = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
@@ -40,6 +44,7 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   connect(ipc, &IPC::commandReceived, this, &Conversations::onIPCReceived);
 
   // chat overview models
+  CLOCK_MEASURE_START(start_models);
   overviewModel = new OverviewModel(this->telepathy, this->state, this);
   overviewModel->onLoad();
   connect(this->telepathy, &Telepathy::accountManagerReady, this->overviewModel, &OverviewModel::onLoad);
@@ -65,6 +70,7 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   overviewProxyModel->setSortRole(OverviewModel::TimeRole);
   overviewProxyModel->sort(OverviewModel::TimeRole, Qt::DescendingOrder);
   overviewProxyModel->setDynamicSortFilter(true);
+  CLOCK_MEASURE_END(start_models, "Conversations::models");
 
   textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
 
@@ -95,6 +101,7 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
 
   // save config whilst quiting
   connect(qApp, &QCoreApplication::aboutToQuit, config(), &Config::sync);
+  CLOCK_MEASURE_END(start_total, "Conversations::constructor total");
 }
 
 // get a list of 'service accounts' (AKA protocols) from both TP and rtcom

@@ -1,3 +1,9 @@
+conversations (0.7.51) unstable; urgency=medium
+
+  * logger_std: instrument function calls, log their timing(s)
+
+ -- Sander <sander@sanderf.nl>  Sat, 02 Jun 2025 22:52:10 +0300
+
 conversations (0.7.50) unstable; urgency=medium
 
   * ipc: honour --background
