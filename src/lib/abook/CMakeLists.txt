@@ -27,3 +27,7 @@ target_compile_options(abook_qt PUBLIC
     ${OSSO_ABOOK_CFLAGS_OTHER}
     ${GTK_CFLAGS_OTHER}
 )
+
+if(ENABLE_DEBUG_TIMINGS)
+    target_compile_definitions(abook_qt PRIVATE ENABLE_DEBUG_TIMINGS=1)
+endif()

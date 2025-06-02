@@ -24,5 +24,9 @@ target_compile_options(rtcom_qt PUBLIC
         ${GTK_CFLAGS_OTHER}
 )
 
+if(ENABLE_DEBUG_TIMINGS)
+    target_compile_definitions(rtcom_qt PRIVATE ENABLE_DEBUG_TIMINGS=1)
+endif()
+
 message(STATUS "rtcom-eventlogger: ${RTCOM-EVENTLOGGER_VERSION}")
 message(STATUS "rtcom-eventlogger-plugins: ${RTCOM-EVENTLOGGER-PLUGINS_VERSION}")
