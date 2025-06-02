@@ -5,7 +5,7 @@ namespace globals {
 
   void logger_std_init() {
     const char* filePath = "/tmp/conversations.timings";
-    CLOCK_FILE = fopen(filePath, "a");
+    CLOCK_FILE = fopen(filePath, "w");
     if (!CLOCK_FILE) {
       fprintf(stderr, "Failed to open %s for writing\n", filePath);
     } else {

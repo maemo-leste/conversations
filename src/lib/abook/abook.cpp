@@ -15,7 +15,7 @@ namespace abookqt {
 
       CLOCK_MEASURE_START(start_aggregator_get);
       CONV_ABOOK_ROSTER = osso_abook_aggregator_get_default(&err);
-      CLOCK_MEASURE_END(start_aggregator_get, "abookqt::init osso_abook_aggregator_get_default()");
+      CLOCK_MEASURE_END(start_aggregator_get, "abookqt::init() osso_abook_aggregator_get_default()");
 
       if (err != nullptr) {
         fprintf(stderr, "Failed to get a default aggregator\n");
@@ -23,11 +23,13 @@ namespace abookqt {
         return false;
       }
 
-      CLOCK_MEASURE_START(start_wait_aggr);
+      CLOCK_MEASURE_START(start_get_aggr);
       CONV_ABOOK_AGGREGATOR = OSSO_ABOOK_AGGREGATOR(CONV_ABOOK_ROSTER);
+      CLOCK_MEASURE_END(start_get_aggr, "abookqt::init() OSSO_ABOOK_AGGREGATOR(CONV_ABOOK_ROSTER)");
+      CLOCK_MEASURE_START(start_wait_aggr);
       osso_abook_waitable_run(OSSO_ABOOK_WAITABLE(CONV_ABOOK_AGGREGATOR),
                               g_main_context_default(), &err);
-      CLOCK_MEASURE_END(start_wait_aggr, "abookqt::INIT osso_abook_waitable_run()");
+      CLOCK_MEASURE_END(start_wait_aggr, "abookqt::init() osso_abook_waitable_run(aggr)");
 
       if (err != nullptr) {
         fprintf(stderr, "Failed to wait for the aggregator\n");
@@ -36,17 +38,19 @@ namespace abookqt {
         return false;
       }
 
+      CLOCK_MEASURE_START(start_add_signals);
       g_signal_connect(CONV_ABOOK_ROSTER, "contacts-added", G_CALLBACK(contacts_added_cb), nullptr);
       g_signal_connect(CONV_ABOOK_ROSTER, "contacts-removed", G_CALLBACK(contacts_removed_cb), nullptr);
       g_signal_connect(CONV_ABOOK_ROSTER, "contacts-changed", G_CALLBACK(contacts_changed_cb), nullptr);
       g_signal_connect(CONV_ABOOK_AGGREGATOR, "contacts-added", G_CALLBACK(contacts_added_cb), nullptr);
       g_signal_connect(CONV_ABOOK_AGGREGATOR, "contacts-removed", G_CALLBACK(contacts_removed_cb), nullptr);
       g_signal_connect(CONV_ABOOK_AGGREGATOR, "contacts-changed", G_CALLBACK(contacts_changed_cb), nullptr);
+      CLOCK_MEASURE_END(start_add_signals, "abookqt::init() added signals");
 
       CONV_ABOOK_INITED = true;
     }
 
-    CLOCK_MEASURE_END(start_total, "abookqt::INIT done");
+    CLOCK_MEASURE_END(start_total, "abookqt::init() done");
     return true;
   }
 
@@ -334,7 +338,7 @@ namespace abookqt {
     CLOCK_MEASURE_START(start_list_roster_contacts);
     GError *err = NULL;
     GList *contacts = osso_abook_aggregator_list_roster_contacts(CONV_ABOOK_AGGREGATOR);
-    CLOCK_MEASURE_END(start_list_roster_contacts, "abookqt: osso_abook_aggregator_list_roster_contacts()");
+    CLOCK_MEASURE_END(start_list_roster_contacts, "abookqt::init_contact_roster(): osso_abook_aggregator_list_roster_contacts");
 
     if (!contacts) {
       return;
@@ -343,7 +347,7 @@ namespace abookqt {
     CLOCK_MEASURE_START(start_await_aggr);
     osso_abook_waitable_run(OSSO_ABOOK_WAITABLE(CONV_ABOOK_AGGREGATOR),
                             g_main_context_default(), &err);
-    CLOCK_MEASURE_END(start_await_aggr, "abookqt: osso_abook_waitable_run(OSSO_ABOOK_WAITABLE(CONV_ABOOK_AGGREGATOR)()");
+    CLOCK_MEASURE_END(start_await_aggr, "abookqt::init_contact_roster(): osso_abook_waitable_run(OSSO_ABOOK_WAITABLE(CONV_ABOOK_AGGREGATOR)()");
 
     if (err != NULL) {
       fprintf(stderr, "Failed to wait for the aggregator\n");
@@ -369,7 +373,7 @@ namespace abookqt {
     }
     CLOCK_MEASURE_END(start_loop, "abookqt: loop done");
 
-    CLOCK_MEASURE_END(start_total, "abookqt: loop done");
+    CLOCK_MEASURE_END(start_total, "abookqt: total done");
     g_list_free(contacts);
 
     // if (dirty)
