@@ -223,122 +223,102 @@ void OverviewModel::updateMessage(int row, QSharedPointer<ChatMessage> &msg) {
 }
 
 QVariant OverviewModel::data(const QModelIndex &index, int role) const {
-  const auto row = index.row();
+  const int row = index.row();
   if (row < 0 || row >= messages.count())
-    return QVariant();
-  const auto message = messages[row];
+    return {};
 
-  if(role == Qt::DisplayRole) {
-    switch(index.column()) {
-      case OverviewModel::ContentRole: {
+  const auto &message = messages[row];
+
+  if (role == Qt::DisplayRole) {
+    switch (index.column()) {
+      case OverviewModel::ContentRole:
         return message->generateOverviewItemDelegateRichText();
-      }
-      case OverviewModel::ProtocolRole: {
+      case OverviewModel::ProtocolRole:
         return message->protocol();
-      }
-      case OverviewModel::TimeRole: {
+      case OverviewModel::TimeRole:
         return message->date();
-      }
       default:
-        return QVariant();
+        return {};
     }
   }
-  else if(role == Qt::DecorationRole) {
+
+  if (role == Qt::DecorationRole) {
     switch (index.column()) {
       case OverviewModel::MsgStatusIcon: {
-        const auto icon_default = "general_chat";
-        const auto icon = message->icon_name();
-        if(!icon.isEmpty()) {
-          if(m_pixmaps.contains(icon))
+        const QString icon = message->icon_name();
+        const QString fallback = "general_chat";
+        if (!icon.isEmpty()) {
+          if (m_pixmaps.contains(icon))
             return m_pixmaps[icon];
 
           qWarning() << "icon" << icon << "does not exist";
-          return m_pixmaps[icon_default];
         }
-
-        return m_pixmaps[icon_default];
+        return m_pixmaps.value(fallback, {});
       }
       case OverviewModel::PresenceIcon: {
-        const auto uid = message->local_remote_uid();
-        if(abook_qt::ROSTER.contains(uid.toStdString())) {
-          const auto contact = abook_qt::ROSTER[uid.toStdString()];
+        const QString uid = message->local_remote_uid();
+        const auto &roster = abook_qt::ROSTER;
+        auto it = roster.find(uid.toStdString());
 
-          static std::map<std::string, QString> presence_to_pixmap{
+        if (it != roster.end()) {
+          static const std::map<std::string, QString> presenceToPixmap{
             {"Available", "presence_online"},
-            {"Unset", "presence_unset"},
-            {"Offline", "presence_offline"},
+            {"Unset",     "presence_unset"},
+            {"Offline",   "presence_offline"},
           };
 
-          if (presence_to_pixmap.contains(contact->presence))
-            return m_pixmaps[presence_to_pixmap[contact->presence]];
-          return m_pixmaps["presence_unset"];
+          const std::string &presence = it->second->presence;
+          const auto presence_pixmap = presenceToPixmap.find(presence);
+          return presence_pixmap != presenceToPixmap.end()
+                     ? m_pixmaps.value(presence_pixmap->second, {})
+                     : m_pixmaps.value("presence_unset", {});
         }
         return {};
       }
       case OverviewModel::AvatarIcon: {
-        const auto uid = message->local_remote_uid();
         const auto local_uid = message->local_uid().toStdString();
         const auto remote_uid = message->remote_uid().toStdString();
-
         const std::string avatar_token = abook_qt::get_avatar_token(local_uid, remote_uid);
+
         if (!avatar_token.empty() && avatar_token != "0") {
           QPixmap pixmap;
-          auto result = Utils::get_avatar(local_uid, remote_uid, avatar_token, pixmap);
-
-          if (!result)
-            return {};
-
-          return pixmap;
+          if (Utils::get_avatar(local_uid, remote_uid, avatar_token, pixmap))
+            return pixmap;
         }
-
         return {};
       }
       case OverviewModel::ChatTypeIcon: {
-        const auto icon_default = "general_default_avatar";
-        const auto icon_conference = "general_conference_avatar";
-
-        if(message->channel().isEmpty()) {
-          if(m_pixmaps.contains(icon_default)) {
-            return m_pixmaps[icon_default];
-          }
-        } else {
-          if(m_pixmaps.contains(icon_conference)) {
-            return m_pixmaps[icon_conference];
-          }
-        }
+        const QString icon = message->channel().isEmpty()
+                                 ? "general_default_avatar"
+                                 : "general_conference_avatar";
+        return m_pixmaps.value(icon, {});
       }
-      default: {
+      default:
         return {};
-      }
     }
   }
-  else if(role == Qt::SizeHintRole) {
+
+  // @TODO: regular Qt tables do not support one column have varying widths
+  // over multiple rows. This means e.g. the avatar column always takes
+  // space, visible or not. This then leads to truncated text for column 'content'.
+  // the solution is to do custom painting
+  if (role == Qt::SizeHintRole) {
     switch (index.column()) {
-      case OverviewModel::MsgStatusIcon: {
+      case OverviewModel::MsgStatusIcon:
+      case OverviewModel::AvatarIcon:
+      case OverviewModel::ChatTypeIcon:
         return QSize(58, 54);
-      }
-      case OverviewModel::AvatarIcon: {
-        return QSize(58, 54);
-        // if(message->hasAvatar())
-        //   return QSize(58, 54);
-        // else
-        //   return QSize(0, 54);
-      }
-      case OverviewModel::AvatarPadding: {
-        return QSize(4, 54);
-      }
-      case OverviewModel::PresenceIcon: {
+      case OverviewModel::PresenceIcon:
         return QSize(18, 54);
-      }
-      case OverviewModel::ChatTypeIcon: {
-        return QSize(58, 54);
-      }
-      default: {
-        return QVariant();
-      }
+      case OverviewModel::AvatarPadding:
+        return QSize(4, 54);
+      default:
+        return {};
     }
   }
-  else if(role == OverviewModel::TimeRole) {  // for sort
+
+  // Custom role for sorting
+  if (role == OverviewModel::TimeRole) {
     return message->date();
   }
 
