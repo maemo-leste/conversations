@@ -160,6 +160,9 @@ void Conversations::onNotificationClicked(const QSharedPointer<ChatMessage> &msg
 }
 
 void Conversations::onIPCReceived(const QString &cmd) {
+  if (cmd == "--background")
+    return;
+
   emit showApplication();
   if (!cmd.isEmpty())
     emit openChatWindow(cmd);
