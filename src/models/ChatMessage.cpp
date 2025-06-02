@@ -76,9 +76,11 @@ QString ChatMessage::name_counterparty() const {
     if (auto result = abook_qt::get_display_name(m_raw->local_uid, _remote_uid_str, m_raw->group_uid); !result.empty())
       return QString::fromStdString(result);
   }
-
-  // 2. fallback
-  return name();
+  // 2. rtcom db remote name
+  if(!m_raw->remote_name.empty())
+    return QString::fromStdString(m_raw->remote_name);
+  // 3. fallback; remote_uid
+  return QString::fromStdString(m_raw->remote_uid);
 }
 
 QString ChatMessage::name_channel() const {
