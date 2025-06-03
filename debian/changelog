@@ -1,3 +1,11 @@
+conversations (0.7.61) unstable; urgency=medium
+
+  * mainwindow: move 'quit conversations' to the top of the qmenu
+  * launcher: pass argc/argv to execv
+  * tools: increment_and_tag.py; current_tag->next_tag
+
+ -- Sander <sander@sanderf.nl>  Tue, 03 Jun 2025 22:38:04 +0300
+
 conversations (0.7.60) unstable; urgency=medium
 
   * debian/rules: tmp enable -DENABLE_DEBUG_TIMINGS=1 for arno11
