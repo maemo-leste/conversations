@@ -4,6 +4,10 @@ set_target_properties(conversations PROPERTIES
         LINKER_LANGUAGE C
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
+check_include_file("sys/prctl.h" HAVE_SYS_PRCTL_H)
+if(HAVE_SYS_PRCTL_H)
+    target_compile_definitions(conversations PRIVATE HAVE_SYS_PRCTL_H=1)
+endif()
 install(TARGETS conversations DESTINATION bin)
 
 # conversations

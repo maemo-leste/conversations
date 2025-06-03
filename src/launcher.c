@@ -9,6 +9,11 @@
 #include <sys/wait.h>
 #include <errno.h>
 
+#ifdef HAVE_SYS_PRCTL_H
+#include <sys/prctl.h>
+#include <signal.h>
+#endif
+
 // small C binary to launch Conversations
 // - if its already running, bring it up via IPC
 //   - and forward passed argv arg
@@ -86,6 +91,13 @@ int main(int argc, char *argv[]) {
   }
 
   if (pid == 0) {
+#ifdef HAVE_SYS_PRCTL_H
+    // kill child when parent dies  ▄︻̷̿┻̿═━一
+    if (prctl(PR_SET_PDEATHSIG, SIGKILL) == -1) {
+      perror("prctl");
+      _exit(1);
+    }
+#endif
     if (file_exists(slim_config_path)) {
       execl(PATH_CONV_SLIM, PATH_CONV_SLIM, (char *)NULL);
     } else {

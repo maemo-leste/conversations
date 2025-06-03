@@ -30,6 +30,7 @@ string(REPLACE "\"" "\\\"" DEBIAN_CHANGELOG "${DEBIAN_CHANGELOG}")
 configure_file("cmake/changelog.h.cmake" "${CMAKE_CURRENT_SOURCE_DIR}/src/changelog.h")
 
 include(CheckIncludeFiles)
+include(CheckIncludeFile)
 include(CheckFunctionExists)
 
 find_package(Threads REQUIRED)
