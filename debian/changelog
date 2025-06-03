@@ -1,3 +1,9 @@
+conversations (0.7.58) unstable; urgency=medium
+
+  * main: more timing logs to debug boot time
+
+ -- Sander <sander@sanderf.nl>  Tue, 03 Jun 2025 17:33:49 +0300
+
 conversations (0.7.57) unstable; urgency=medium
 
   * abook: await aggregator instead of blocking, and emit abook ready signal
