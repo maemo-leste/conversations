@@ -54,20 +54,20 @@ int main(int argc, char *argv[]) {
   clion_debug_setup();
 #endif
 
-  if(auto gpu = config()->get(ConfigKeys::EnableGPUAccel).toBool(); !gpu)
-    qputenv("QT_QUICK_BACKEND", "software");
-
   intl("conversations-ui");
-
-#ifdef DISABLE_QML_DISK_CACHE
-  qputenv("QML_DISABLE_DISK_CACHE", "1");
-#endif
 
   QApplication::setApplicationName("conversations");
   QApplication::setOrganizationDomain("https://maemo-leste.github.io/");
   QApplication::setOrganizationName("Maemo Leste");
   QApplication::setQuitOnLastWindowClosed(false);  // allow conversations to operate in the background
   QApplication::setApplicationVersion(CONVERSATIONS_VERSION);
+
+  if(auto gpu = config()->get(ConfigKeys::EnableGPUAccel).toBool(); !gpu)
+    qputenv("QT_QUICK_BACKEND", "software");
+
+#ifdef DISABLE_QML_DISK_CACHE
+  qputenv("QML_DISABLE_DISK_CACHE", "1");
+#endif
 
   const QApplication app(argc, argv);
 
