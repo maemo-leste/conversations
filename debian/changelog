@@ -1,3 +1,13 @@
+conversations (0.7.57) unstable; urgency=medium
+
+  * abook: await aggregator instead of blocking, and emit abook ready signal
+  * cmake: pass compile def DEBUG to our abookqt/rtcomqt libs too
+  * tools: increment_and_tag.py: add shebang
+  * tools: chmod +x increment_and_tag.py
+  * tools: add script to aid adding a new git tag, and updating the relevant branches
+
+ -- Sander <sander@sanderf.nl>  Tue, 03 Jun 2025 17:19:46 +0300
+
 conversations (0.7.56) unstable; urgency=medium
 
   * cmake: add changelog.h.cmake
