@@ -1,3 +1,14 @@
+// small C binary to launch conversations
+// - if its already running, bring it up via IPC
+//   - and forward passed argv[1] arg
+// - if it's not running, launch conversations
+//   - check config directory for the presence of
+//     a file to determine to launch the slim or qml version
+//   - refuses to execv when /usr/bin/conversations (this launcher)
+//     is already running (checks /proc) to prevent race condition
+//     conversations itself (slim/qml) has a similar check
+//   - when this launcher dies, child also dies to prevent orphans
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,72 +19,24 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <dirent.h>
+#include <limits.h>
+#include <ctype.h>
 
 #ifdef HAVE_SYS_PRCTL_H
 #include <sys/prctl.h>
 #include <signal.h>
 #endif
 
-// small C binary to launch Conversations
-// - if its already running, bring it up via IPC
-//   - and forward passed argv arg
-// - if it's not running, launch Conversations
-//   - check config directory for the presence of
-//     a file to determine to launch the slim or qml version
+#include "lib/utils_c.h"
 
-#define PATH_CONV "/usr/bin/conversations_qml"
-#define PATH_CONV_SLIM "/usr/bin/conversations_slim"
-
-int file_exists(const char *path) {
-  struct stat st;
-  return stat(path, &st) == 0;
-}
-
-int try_socket(const char *path, const char *message) {
-  struct sockaddr_un addr;
-
-  int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
-  if (sockfd == -1) {
-    perror("socket");
-    return -1;
-  }
-
-  memset(&addr, 0, sizeof(struct sockaddr_un));
-  addr.sun_family = AF_UNIX;
-  strncpy(addr.sun_path, path, sizeof(addr.sun_path) - 1);
-
-  if (connect(sockfd, (struct sockaddr *)&addr, sizeof(struct sockaddr_un)) == -1) {
-    perror("connect");
-    close(sockfd);
-    return -1;
-  }
-
-  if (write(sockfd, message, strlen(message)) == -1) {
-    perror("write");
-    close(sockfd);
-    return -1;
-  }
-
-  close(sockfd);
-  return 0;
-}
+#define PATH_CONV INSTALL_PREFIX_QUOTED "/bin/conversations_qml"
+#define PATH_CONV_SLIM INSTALL_PREFIX_QUOTED "/bin/conversations_slim"
 
 int main(int argc, char *argv[]) {
-  const char *message = argc > 1 ? argv[1] : "makeActive";
-
-  const char *user = getenv("USER");
-  if (!user) {
-    fprintf(stderr, "could not determine user.\n");
-    return 1;
-  }
-
-  char socket_path[256];
-  snprintf(socket_path, sizeof(socket_path), "/tmp/conversations-%s.sock", user);
-
-  if (file_exists(socket_path)) {
-    if (try_socket(socket_path, message) == 0)
-      return 0;
-  }
+  const char *ipc_message = argc > 1 ? argv[1] : "makeActive";
+  if (ipc_try_wakeup(ipc_message) == 0)
+    return 0;
 
   const char *home = getenv("HOME");
   if (!home) {
@@ -81,8 +44,30 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  // the presence of this file determines what version of conversations we'll launch
   char slim_config_path[512];
   snprintf(slim_config_path, sizeof(slim_config_path), "%s/.config/conversations/slim", home);
+
+  // enforce not running twice
+  const int instances_count = active_proc_count_self();
+  if (instances_count <= 0) {
+    fprintf(stderr, "error detecting running instance(s).\n");
+    return 1;
+  } else if (instances_count != 1) {
+    fprintf(stderr, "we are already running.\n");
+    return 1;
+  }
+
+  // ensure paths exist
+  if (access(PATH_CONV_SLIM, X_OK) != 0) {
+    fprintf(stderr, "error: %s is not accessible, or not executable.\n", PATH_CONV_SLIM);
+    exit(EXIT_FAILURE);
+  }
+
+  if (access(PATH_CONV, X_OK) != 0) {
+    fprintf(stderr, "error: %s is not accessible, or not executable.\n", PATH_CONV);
+    exit(EXIT_FAILURE);
+  }
 
   const pid_t pid = fork();
   if (pid < 0) {
@@ -98,9 +83,12 @@ int main(int argc, char *argv[]) {
       _exit(1);
     }
 #endif
+    // pass correct argv[0] to this fork
     if (file_exists(slim_config_path)) {
+      argv[0] = PATH_CONV_SLIM;
       execv(PATH_CONV_SLIM, argv);
     } else {
+      argv[0] = PATH_CONV;
       execv(PATH_CONV, argv);
     }
     perror("execl");

@@ -28,8 +28,22 @@
 #include <hildon/hildon-main.h>
 #include "lib/logger.h"
 #include "lib/logger_std/logger_std.h"
+#include "lib/utils_c.h"
+
+#define PATH_CONV INSTALL_PREFIX_QUOTED "/bin/conversations_qml"
+#define PATH_CONV_SLIM INSTALL_PREFIX_QUOTED "/bin/conversations_slim"
 
 int main(int argc, char *argv[]) {
+  // do not run twice
+  const int qml_count = active_proc_count_by_path(PATH_CONV);
+  const int slim_count = active_proc_count_by_path(PATH_CONV_SLIM);
+
+  if (qml_count + slim_count != 1 || qml_count > 1 || slim_count > 1) {
+    printf("already running? trying wakeup\n");
+    const char *ipc_message = argc > 1 ? argv[1] : "makeActive";
+    return ipc_try_wakeup(ipc_message);  // regardless, exit and refuse to run twice
+  }
+
 #ifdef ENABLE_DEBUG_TIMINGS
   globals::logger_std_init();
 #endif

@@ -1,5 +1,6 @@
 # launcher
-add_executable(conversations launcher.c)
+add_executable(conversations launcher.c lib/utils_c.c lib/utils_c.h)
+target_include_directories(conversations PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(conversations PROPERTIES
         LINKER_LANGUAGE C
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
@@ -8,6 +9,7 @@ check_include_file("sys/prctl.h" HAVE_SYS_PRCTL_H)
 if(HAVE_SYS_PRCTL_H)
     target_compile_definitions(conversations PRIVATE HAVE_SYS_PRCTL_H=1)
 endif()
+target_compile_definitions(conversations PRIVATE INSTALL_PREFIX_QUOTED=\"${CMAKE_INSTALL_PREFIX}\")
 install(TARGETS conversations DESTINATION bin)
 
 # conversations
@@ -31,6 +33,7 @@ file(GLOB SOURCE_FILES
         "*.cpp"
         "lib/*.h"
         "lib/*.cpp"
+        "lib/utils_c.c"
         "lib/tp/*.h"
         "lib/tp/*.cpp"
         "models/*.h"
@@ -92,6 +95,7 @@ foreach(target ${TARGETS})
     target_compile_definitions(${target} PRIVATE OSSO_ABOOK_DEBUG=1)
     target_compile_definitions(${target} PRIVATE MAEMO=1)
     target_compile_definitions(${target} PRIVATE TP_QT_ENABLE_LOWLEVEL_API=1)
+    target_compile_definitions(${target} PRIVATE INSTALL_PREFIX_QUOTED=\"${CMAKE_INSTALL_PREFIX}\")
     target_include_directories(${target} PUBLIC
             ${CMAKE_SOURCE_DIR}/src
             ${CMAKE_SOURCE_DIR}/src/lib/
