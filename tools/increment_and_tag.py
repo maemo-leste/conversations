@@ -117,7 +117,7 @@ def update_repo_main():
     log("updating main repo; rebase")
     os.popen(f"git rebase master").read()
     log("updating main repo; force pushing")
-    os.popen(f"git push origin {BRANCH_DEVEL} -f --tags").read()
+    os.popen(f"git push origin {BRANCH_MAIN} -f --tags").read()
 
 def update_repo_devel():
     log("updating devel repo; checkout")
