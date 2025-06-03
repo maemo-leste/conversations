@@ -45,7 +45,7 @@ else:
     log(f"unknown increment/argv: {increment}")
     sys.exit(1)
 
-log(f"current tag: {tag_next}")
+log(f"next tag: {tag_next}")
 
 log("editing new changelog")
 f = open(PATH_CHANGELOG, "r")
