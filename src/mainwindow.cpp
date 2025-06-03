@@ -9,6 +9,7 @@
 #include "mainwindow.h"
 #include "config-conversations.h"
 #include "lib/globals.h"
+#include "logger_std/logger_std.h"
 
 #include "ui_mainwindow.h"
 
@@ -24,22 +25,28 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
 
+  CLOCK_MEASURE_START(start_add_fonts);
   QFontDatabase::addApplicationFont(":/assets/fonts/Roboto-Regular.ttf");
   QFontDatabase::addApplicationFont(":/assets/fonts/Roboto-Bold.ttf");
+  CLOCK_MEASURE_END(start_add_fonts, "mainwindow::add_fonts");
 
   m_filters = new QActionGroup(this);
   m_filters->setExclusive(true);
 
+  CLOCK_MEASURE_START(start_get_dimensions);
   this->screenDpiPhysical = QGuiApplication::primaryScreen()->physicalDotsPerInch();
   this->screenRatio = this->screenDpiPhysical / this->screenDpiRef;
   qDebug() << QString("%1x%2 (%3 DPI)").arg(
       this->screenRect.width()).arg(this->screenRect.height()).arg(this->screenDpi);
+  CLOCK_MEASURE_END(start_get_dimensions, "mainwindow::start_get_dimensions");
 
   // messages overview widget
+  CLOCK_MEASURE_START(start_overviewwidget);
   m_widgetOverview = new OverviewWidget(ctx, this);
   ui->mainLayout->addWidget(m_widgetOverview);
   connect(m_ctx, &Conversations::textScalingChanged, m_widgetOverview, &OverviewWidget::onSetColumnStyleDelegate);
   connect(m_ctx, &Conversations::textScalingChanged, m_widgetOverview, &OverviewWidget::onSetTableHeight);
+  CLOCK_MEASURE_END(start_overviewwidget, "mainwindow::start_overviewwidget");
 
   // error messages from Telepathy
   connect(m_ctx->telepathy, &Telepathy::errorMessage, [this](const QString& msg){
@@ -49,10 +56,13 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   });
 
   // Setup filter protocol menu items
+  CLOCK_MEASURE_START(start_setup_ui_accounts);
   this->onSetupUIAccounts();
+  CLOCK_MEASURE_END(start_setup_ui_accounts, "mainwindow::setup_ui_accounts");
 
   // js: cfg.get(Config.MaemoTest);  |  cfg.set(Config.MaemoTest , "foo");
 #ifdef QUICK
+  CLOCK_MEASURE_START(start_register_qml_type);
   qmlRegisterUncreatableMetaObject(
       ConfigKeys::staticMetaObject,
       "MaemoConfig",
@@ -60,6 +70,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
       "Config",
       "Error: only enums"
   );
+  CLOCK_MEASURE_END(start_register_qml_type, "mainwindow::register_qml_type");
 #endif
 
   connect(m_ctx, &Conversations::setTitle, this, &QMainWindow::setWindowTitle);

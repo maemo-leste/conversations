@@ -19,27 +19,39 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   CLOCK_MEASURE_START(start_notif_init);
   CTX = this;
   Notification::init(QApplication::applicationName());
-  CLOCK_MEASURE_END(start_notif_init, "Notification::init");
+  CLOCK_MEASURE_END(start_notif_init, "ctx::notif_init");
 
   // init abook
+  CLOCK_MEASURE_START(start_init_abook);
   connect(this, &Conversations::abookReady, this, &Conversations::onAbookReady);
   abook_qt::func_initReadySignal = [this] { emit this->abookReady(); };
   if (!abook_qt::abook_init())
     throw std::runtime_error("cannot initialize abook");
+  CLOCK_MEASURE_END(start_init_abook, "ctx::abook_init");
 
   // Paths
+  CLOCK_MEASURE_START(start_create_dirs);
   pathGenericData = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
   configRoot = QDir::homePath();
   accountName = qgetenv("USER");
   homeDir = QDir::homePath();
   configDirectory = QString("%1/.config/%2/").arg(configRoot, QCoreApplication::applicationName());
   createConfigDirectory(configDirectory);
+  CLOCK_MEASURE_END(start_create_dirs, "ctx::create_dirs");
 
+  CLOCK_MEASURE_START(start_avatar_provider);
   this->avatarProvider = new AvatarImageProvider;
+  CLOCK_MEASURE_END(start_avatar_provider, "ctx::avatar_provider");
+
+  CLOCK_MEASURE_START(start_tp_constructor);
   this->telepathy = new Telepathy(this);
+  CLOCK_MEASURE_END(start_tp_constructor, "ctx::tp constructor");
+
+  CLOCK_MEASURE_START(start_configstate);
   this->state = new ConfigState(QString("%1state.json").arg(configDirectory));
   configState = this->state;
   connect(this->state, &ConfigState::autoJoinChanged, this->telepathy, &Telepathy::onSetAutoJoin);
+  CLOCK_MEASURE_END(start_configstate, "ctx::configstate");
 
   this->displayAvatars = config()->get(ConfigKeys::EnableDisplayAvatars).toBool();
   this->displayGroupchatJoinLeave = config()->get(ConfigKeys::EnableDisplayGroupchatJoinLeave).toBool();
@@ -76,15 +88,22 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   overviewProxyModel->setSortRole(OverviewModel::TimeRole);
   overviewProxyModel->sort(OverviewModel::TimeRole, Qt::DescendingOrder);
   overviewProxyModel->setDynamicSortFilter(true);
-  CLOCK_MEASURE_END(start_models, "Conversations::models");
+  CLOCK_MEASURE_END(start_models, "ctx::models");
 
   textScaling = config()->get(ConfigKeys::TextScaling).toFloat();
 
+  CLOCK_MEASURE_START(start_tp_register_types);
   Tp::registerTypes();
+  CLOCK_MEASURE_END(start_tp_register_types, "ctx::tp_register_types");
 
+  CLOCK_MEASURE_START(start_hildon_theme);
   theme= new HildonTheme();
   qDebug() << "THEME: " << theme->name;
+  CLOCK_MEASURE_END(start_hildon_theme, "ctx::hildon_theme");
+
+  CLOCK_MEASURE_START(start_chatmodel);
   chatOverviewModel = new ChatModel();
+  CLOCK_MEASURE_END(start_chatmodel, "ctx::chatmodel");
 
   connect(telepathy, &Telepathy::databaseAddition, this, &Conversations::onDatabaseAddition);
 
@@ -97,7 +116,9 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   displayGroupchatJoinLeave = config()->get(ConfigKeys::EnableDisplayGroupchatJoinLeave).toBool();
   emit displayGroupchatJoinLeaveChanged(displayGroupchatJoinLeave);
 
+  CLOCK_MEASURE_START(start_get_serviceaccounts);
   this->onGetAvailableServiceAccounts();
+  CLOCK_MEASURE_END(start_get_serviceaccounts, "ctx::get_serviceaccounts");
 
   // abook signals -> qt signals
   abook_qt::func_contactsChangedSignal =
