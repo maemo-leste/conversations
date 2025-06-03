@@ -1,3 +1,10 @@
+conversations (0.7.63) unstable; urgency=medium
+
+  * ctx: add a comment regarding abook_init timings during boot
+  * debian/rules: remove -DENABLE_DEBUG_TIMINGS=1
+
+ -- Sander <sander@sanderf.nl>  Tue, 03 Jun 2025 23:54:48 +0300
+
 conversations (0.7.62) unstable; urgency=medium
 
   * ctx & mainwindow: more timing logs to debug boot time
