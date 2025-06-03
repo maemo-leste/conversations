@@ -8,8 +8,9 @@
 #include "abook_contact.h"
 
 namespace abook_qt {
-  inline std::function<void(std::string, std::string)> func_avatarChangedSignal = nullptr;
-  inline std::function<void(std::map<std::string, std::shared_ptr<AbookContact>>)> func_contactsChangedSignal = nullptr;
+  extern std::function<void(std::string, std::string)> func_avatarChangedSignal;
+  extern std::function<void(std::map<std::string, std::shared_ptr<AbookContact>>)> func_contactsChangedSignal;
+  extern std::function<void()> func_initReadySignal;
 
   bool abook_init();
   void abook_init_contact_roster();

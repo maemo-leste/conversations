@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import re,sys,os,shutil,time
 from datetime import datetime
 from packaging.version import Version

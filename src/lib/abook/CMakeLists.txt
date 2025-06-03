@@ -31,3 +31,7 @@ target_compile_options(abook_qt PUBLIC
 if(ENABLE_DEBUG_TIMINGS)
     target_compile_definitions(abook_qt PRIVATE ENABLE_DEBUG_TIMINGS=1)
 endif()
+
+if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
+    target_compile_definitions(abook_qt PRIVATE DEBUG=1)
+endif()

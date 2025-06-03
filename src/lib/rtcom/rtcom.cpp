@@ -187,9 +187,6 @@ namespace qtrtcom {
   }
 
   void set_room_name(const char* group_uid, const char* title) {
-#ifdef DEBUG
-    rtcom_log(group_uid + " set_room_name: " + title, false);
-#endif
     const auto el = rtcomel();
     rtcom_el_plugin_chat_set_group_title(el, g_strdup(group_uid), g_strdup(title));
   }

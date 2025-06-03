@@ -28,5 +28,9 @@ if(ENABLE_DEBUG_TIMINGS)
     target_compile_definitions(rtcom_qt PRIVATE ENABLE_DEBUG_TIMINGS=1)
 endif()
 
+if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
+    target_compile_definitions(rtcom_qt PRIVATE DEBUG=1)
+endif()
+
 message(STATUS "rtcom-eventlogger: ${RTCOM-EVENTLOGGER_VERSION}")
 message(STATUS "rtcom-eventlogger-plugins: ${RTCOM-EVENTLOGGER-PLUGINS_VERSION}")

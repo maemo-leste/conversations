@@ -3,6 +3,10 @@
 #include "abook.h"
 
 namespace abook_qt {
+  std::function<void(std::string, std::string)> func_avatarChangedSignal = nullptr;
+  std::function<void(std::map<std::string, std::shared_ptr<AbookContact>>)> func_contactsChangedSignal = nullptr;
+  std::function<void()> func_initReadySignal = nullptr;
+
   bool abook_init() {
     return abookqt::init();
   }

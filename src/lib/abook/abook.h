@@ -29,6 +29,7 @@ namespace abookqt {
 
   // methods
   bool init();
+  void init_cb(OssoABookWaitable *waitable, const GError *error, gpointer data);
 
   OssoABookContact* get_tel_contact(const char* telno);
   OssoABookContact* get_sip_contact(const char* sipno);
@@ -51,4 +52,17 @@ namespace abookqt {
   std::string presence_type_to_string(TpConnectionPresenceType presenceType);
   std::shared_ptr<AbookContact> upsert_abook_roster_cache(OssoABookContact *contact, bool &dirty);
   bool upsert_abook_roster_avatar(OssoABookContact* contact);
+
+  static inline bool ensure_aggregator_rdy(const char* func_name) {
+    if (!CONV_ABOOK_INITED) {
+#ifdef DEBUG
+      const char* caller = func_name ? func_name : "unknown";
+      fputs("abookqt: ", stderr);
+      fputs(caller, stderr);
+      fputs("(): error, aggregator not ready\n", stderr);
+#endif
+      return false;
+    }
+    return true;
+  }
 }

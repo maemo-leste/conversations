@@ -131,13 +131,6 @@ int main(int argc, char *argv[]) {
   hildon_init();
   CLOCK_MEASURE_END(start_hildon_init, "main::hildon_init");
 
-  // init abook
-  CLOCK_MEASURE_START(start_abook_init);
-  if (!abook_qt::abook_init())
-    throw std::runtime_error("cannot initialize abook");
-  abook_qt::abook_init_contact_roster();
-  CLOCK_MEASURE_END(start_abook_init, "main::abook_init");
-
   // initialize application
   CLOCK_MEASURE_START(start_ctx);
   auto *ctx = new Conversations(&parser, ipc);

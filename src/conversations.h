@@ -114,6 +114,7 @@ signals:
     void enterKeySendsChatToggled(bool enabled);
     void hildonThemeChanged();
     void avatarChanged(std::string local_uid, std::string remote_uid);
+    void abookReady();
 
 public slots:
     void onContactsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts);
@@ -124,6 +125,7 @@ public slots:
     void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
     void onNotificationClicked(const QSharedPointer<ChatMessage> &msg);
     void onGetAvailableServiceAccounts();
+    void onAbookReady() const;
 
 private slots:
     void onApplicationLog(QString msg);

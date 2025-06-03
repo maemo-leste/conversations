@@ -21,6 +21,12 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   Notification::init(QApplication::applicationName());
   CLOCK_MEASURE_END(start_notif_init, "Notification::init");
 
+  // init abook
+  connect(this, &Conversations::abookReady, this, &Conversations::onAbookReady);
+  abook_qt::func_initReadySignal = [this] { emit this->abookReady(); };
+  if (!abook_qt::abook_init())
+    throw std::runtime_error("cannot initialize abook");
+
   // Paths
   pathGenericData = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
   configRoot = QDir::homePath();
@@ -234,6 +240,11 @@ void Conversations::createConfigDirectory(const QString &dir) {
         throw std::runtime_error("Could not create directory " + d.toStdString());
     }
   }
+}
+
+void Conversations::onAbookReady() const {
+  abook_qt::abook_init_contact_roster();
+  this->overviewModel->onLoad();
 }
 
 void Conversations::onApplicationLog(QString msg) {}

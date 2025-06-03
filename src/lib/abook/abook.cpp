@@ -23,38 +23,29 @@ namespace abookqt {
         return false;
       }
 
-      CLOCK_MEASURE_START(start_get_aggr);
+      // await our aggregator
       CONV_ABOOK_AGGREGATOR = OSSO_ABOOK_AGGREGATOR(CONV_ABOOK_ROSTER);
-      CLOCK_MEASURE_END(start_get_aggr, "abookqt::init() OSSO_ABOOK_AGGREGATOR(CONV_ABOOK_ROSTER)");
-      CLOCK_MEASURE_START(start_wait_aggr);
-      osso_abook_waitable_run(OSSO_ABOOK_WAITABLE(CONV_ABOOK_AGGREGATOR),
-                              g_main_context_default(), &err);
-      CLOCK_MEASURE_END(start_wait_aggr, "abookqt::init() osso_abook_waitable_run(aggr)");
-
-      if (err != nullptr) {
-        fprintf(stderr, "Failed to wait for the aggregator\n");
-        /* Free roster (not aggregator I think) */
-        g_error_free(err);
-        return false;
-      }
-
-      CLOCK_MEASURE_START(start_add_signals);
-      g_signal_connect(CONV_ABOOK_ROSTER, "contacts-added", G_CALLBACK(contacts_added_cb), nullptr);
-      g_signal_connect(CONV_ABOOK_ROSTER, "contacts-removed", G_CALLBACK(contacts_removed_cb), nullptr);
-      g_signal_connect(CONV_ABOOK_ROSTER, "contacts-changed", G_CALLBACK(contacts_changed_cb), nullptr);
-      g_signal_connect(CONV_ABOOK_AGGREGATOR, "contacts-added", G_CALLBACK(contacts_added_cb), nullptr);
-      g_signal_connect(CONV_ABOOK_AGGREGATOR, "contacts-removed", G_CALLBACK(contacts_removed_cb), nullptr);
-      g_signal_connect(CONV_ABOOK_AGGREGATOR, "contacts-changed", G_CALLBACK(contacts_changed_cb), nullptr);
-      CLOCK_MEASURE_END(start_add_signals, "abookqt::init() added signals");
-
-      CONV_ABOOK_INITED = true;
+      osso_abook_waitable_call_when_ready(OSSO_ABOOK_WAITABLE(CONV_ABOOK_AGGREGATOR), init_cb, g_main_context_default(), NULL);
     }
 
-    CLOCK_MEASURE_END(start_total, "abookqt::init() done");
     return true;
   }
 
+  void init_cb(OssoABookWaitable *waitable, const GError *error, gpointer data) {
+    g_signal_connect(CONV_ABOOK_ROSTER, "contacts-added", G_CALLBACK(contacts_added_cb), nullptr);
+    g_signal_connect(CONV_ABOOK_ROSTER, "contacts-removed", G_CALLBACK(contacts_removed_cb), nullptr);
+    g_signal_connect(CONV_ABOOK_ROSTER, "contacts-changed", G_CALLBACK(contacts_changed_cb), nullptr);
+    g_signal_connect(CONV_ABOOK_AGGREGATOR, "contacts-added", G_CALLBACK(contacts_added_cb), nullptr);
+    g_signal_connect(CONV_ABOOK_AGGREGATOR, "contacts-removed", G_CALLBACK(contacts_removed_cb), nullptr);
+    g_signal_connect(CONV_ABOOK_AGGREGATOR, "contacts-changed", G_CALLBACK(contacts_changed_cb), nullptr);
+    CONV_ABOOK_INITED = true;
+    if (func_initReadySignal != nullptr)
+      func_initReadySignal();  // let Qt know
+  }
+
   OssoABookContact* get_sip_contact(const char *address) {
+    if (!ensure_aggregator_rdy(__func__)) return nullptr;
+
     CLOCK_MEASURE_START(start);
     OssoABookContact *res = NULL;
     GList *l = NULL;
@@ -73,6 +64,8 @@ namespace abookqt {
   }
 
   OssoABookContact* get_im_contact(const char* local_uid, const char* userid) {
+    if (!ensure_aggregator_rdy(__func__)) return nullptr;
+
     CLOCK_MEASURE_START(start);
     OssoABookContact *res = NULL;
     GList *l = NULL;
@@ -97,6 +90,8 @@ namespace abookqt {
   }
 
   OssoABookContact* get_tel_contact(const char *telno) {
+    if (!ensure_aggregator_rdy(__func__)) return nullptr;
+
     CLOCK_MEASURE_START(start);
     OssoABookContact *res = NULL;
     GList *l = NULL;
@@ -116,6 +111,8 @@ namespace abookqt {
   }
 
   std::string get_display_name(const std::string& local_uid, const std::string& remote_uid) {
+    if (!ensure_aggregator_rdy(__func__)) return {};
+
     CLOCK_MEASURE_START(start);
     OssoABookContact* contact = get_im_contact(local_uid.c_str(), remote_uid.c_str());
     if (contact == NULL)
@@ -127,6 +124,8 @@ namespace abookqt {
   }
 
   std::string get_avatar_token(const std::string& local_uid, const std::string& remote_uid) {
+    if (!ensure_aggregator_rdy(__func__)) return {};
+
     CLOCK_MEASURE_START(start);
     OssoABookContact* contact = get_im_contact(local_uid.c_str(), remote_uid.c_str());
     if (contact == NULL) {
@@ -153,6 +152,8 @@ namespace abookqt {
   }
 
   AbookContactAvatar* get_avatar(const std::string& local_uid, const std::string &remote_uid) {
+    if (!ensure_aggregator_rdy(__func__)) return nullptr;
+
     CLOCK_MEASURE_START(start);
     OssoABookContact* contact = get_im_contact(local_uid.c_str(), remote_uid.c_str());
     if (contact == NULL) {
@@ -185,6 +186,8 @@ namespace abookqt {
   }
 
   void contacts_changed_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer user_data) {
+    if (!ensure_aggregator_rdy(__func__)) return;
+
     // CLOCK_MEASURE_START(start);
     std::map<std::string, std::shared_ptr<AbookContact>> updated_contacts;
 
@@ -245,6 +248,8 @@ namespace abookqt {
   }
 
   void contacts_added_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer data) {
+    if (!ensure_aggregator_rdy(__func__)) return;
+
     bool dirty = false;
     while (*contacts) {
       OssoABookContact *contact = *contacts;
@@ -254,6 +259,8 @@ namespace abookqt {
   }
 
   void parse_vcard(OssoABookContact *contact) {
+    if (!ensure_aggregator_rdy(__func__)) return;
+
     CLOCK_MEASURE_START(start);
     GList* _l;
     GList* vcard_attrs = e_vcard_get_attributes(E_VCARD(contact));
@@ -304,6 +311,8 @@ namespace abookqt {
   }
 
   void contacts_removed_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer data) {
+    if (!ensure_aggregator_rdy(__func__)) return;
+
     while (*contacts) {
       OssoABookContact *contact = *contacts;
       if (!contact) {
@@ -320,6 +329,8 @@ namespace abookqt {
   }
 
   void notify_avatar_image_cb(GObject *gobject, GParamSpec *pspec, gpointer user_data) {
+    if (!ensure_aggregator_rdy(__func__)) return;
+
     OssoABookContact *contact = OSSO_ABOOK_CONTACT(gobject);
     if (!contact)
       return;
@@ -334,6 +345,8 @@ namespace abookqt {
   }
 
   void init_contact_roster() {
+    if (!ensure_aggregator_rdy(__func__)) return;
+
     CLOCK_MEASURE_START(start_total);
     CLOCK_MEASURE_START(start_list_roster_contacts);
     GError *err = NULL;
@@ -381,6 +394,8 @@ namespace abookqt {
   }
 
   std::shared_ptr<AbookContact> upsert_abook_roster_cache(OssoABookContact *contact, bool &dirty) {
+    if (!ensure_aggregator_rdy(__func__)) return nullptr;
+
     std::string persistent_uid = osso_abook_contact_get_persistent_uid(contact);
 
     const bool is_blocked = osso_abook_contact_get_blocked(contact);
@@ -411,9 +426,6 @@ namespace abookqt {
     ROSTER[persistent_uid]->is_blocked = is_blocked;
     ROSTER[persistent_uid]->can_block = can_block;
     ROSTER[persistent_uid]->can_auth = can_auth;
-#ifdef DEBUG
-    ROSTER[persistent_uid]->print();
-#endif
     return ROSTER[persistent_uid];
   }
 
