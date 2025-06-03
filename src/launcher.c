@@ -99,9 +99,9 @@ int main(int argc, char *argv[]) {
     }
 #endif
     if (file_exists(slim_config_path)) {
-      execl(PATH_CONV_SLIM, PATH_CONV_SLIM, (char *)NULL);
+      execv(PATH_CONV_SLIM, argv);
     } else {
-      execl(PATH_CONV, PATH_CONV, (char *)NULL);
+      execv(PATH_CONV, argv);
     }
     perror("execl");
     _exit(1);
