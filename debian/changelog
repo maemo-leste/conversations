@@ -1,3 +1,10 @@
+conversations (0.7.59) unstable; urgency=medium
+
+  * launcher: kill child when parent dies via PR_SET_PDEATHSIG
+  * utils: do not include Jenkins entries from debian/changelog for settings/about
+
+ -- Sander <sander@sanderf.nl>  Tue, 03 Jun 2025 18:01:01 +0300
+
 conversations (0.7.58) unstable; urgency=medium
 
   * main: more timing logs to debug boot time
