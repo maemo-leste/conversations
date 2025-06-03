@@ -227,7 +227,9 @@ QList<QMap<QString, QString>> Utils::parseDebianChangelog(const QString &text) {
     if (!body.startsWith("  "))
       body = "  " + body;
     entry["body"] = body;
-    result.append(entry);
+
+    if (!entry["meta"].contains("Jenkins Auto"))
+      result.append(entry);
   }
 
   return result;
