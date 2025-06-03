@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 project(conversations
-  VERSION "0.7.53"
+  VERSION "0.7.55"
   DESCRIPTION "conversations"
 )
 message(STATUS "Initiating compile using CMake ${CMAKE_VERSION}")
@@ -24,7 +24,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 # generate .h dynamically for version and changelog
 configure_file("cmake/config-conversations.h.cmake" "${CMAKE_CURRENT_SOURCE_DIR}/src/config-conversations.h")
 
-file(READ "${CMAKE_SOURCE_DIR}/debian/changelog" DEBIAN_CHANGELOG)
+file(READ "debian/changelog" DEBIAN_CHANGELOG)
 string(REPLACE "\\" "\\\\" DEBIAN_CHANGELOG "${DEBIAN_CHANGELOG}")
 string(REPLACE "\"" "\\\"" DEBIAN_CHANGELOG "${DEBIAN_CHANGELOG}")
 configure_file("cmake/changelog.h.cmake" "${CMAKE_CURRENT_SOURCE_DIR}/src/changelog.h")

@@ -1,3 +1,9 @@
+conversations (0.7.55) unstable; urgency=medium
+
+  * cmake: attempt to fix the buildbot
+
+ -- Sander <sander@sanderf.nl>  Sat, 02 Jun 2025 04:39:10 +0300
+
 conversations (0.7.54) unstable; urgency=medium
 
   * settings: show last X items of debian/changelog on the About page
