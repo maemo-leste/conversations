@@ -1,3 +1,14 @@
+conversations (0.7.54) unstable; urgency=medium
+
+  * settings: show last X items of debian/changelog on the About page
+  * main/chatwindow: Enable text scaling via the physical volume keys. mainwindow/chatwindow now both inherit from lib/QConversationMainWindow
+  * config: we need QApplication::setApplicationName before interacting with config
+  * OverviewModel: refactor data()
+  * ChatMessage: name_counterparty() should always be the counterparty
+  * debian/rules: disable logging timings as default
+
+ -- Sander <sander@sanderf.nl>  Sat, 02 Jun 2025 04:39:10 +0300
+
 conversations (0.7.53) unstable; urgency=medium
 
   * abook: extra logging for logger_std
