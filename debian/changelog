@@ -1,3 +1,9 @@
+conversations (0.7.60) unstable; urgency=medium
+
+  * debian/rules: tmp enable -DENABLE_DEBUG_TIMINGS=1 for arno11
+
+ -- Sander <sander@sanderf.nl>  Tue, 03 Jun 2025 21:22:51 +0300
+
 conversations (0.7.59) unstable; urgency=medium
 
   * launcher: kill child when parent dies via PR_SET_PDEATHSIG
