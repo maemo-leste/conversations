@@ -23,6 +23,8 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
 
   // init abook
   CLOCK_MEASURE_START(start_init_abook);
+  // note: abook_init during boot is SLOW, specifically osso_abook_aggregator_get_default()
+  // 7sec on the pinephone
   connect(this, &Conversations::abookReady, this, &Conversations::onAbookReady);
   abook_qt::func_initReadySignal = [this] { emit this->abookReady(); };
   if (!abook_qt::abook_init())
