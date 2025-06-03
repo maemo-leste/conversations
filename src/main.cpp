@@ -16,7 +16,9 @@
 #include "config-conversations.h"
 #include "mainwindow.h"
 #include "lib/utils.h"
+#ifdef DEBUG
 #include "lib/clion_debug.h"
+#endif
 
 #ifdef Q_WS_MAEMO_5
 #include <QDBusInterface>
@@ -33,11 +35,13 @@ int main(int argc, char *argv[]) {
 #endif
   CLOCK_MEASURE_START(start_total);
   CLOCK_MEASURE_START(start_pre);
-#ifdef QUICK
   Q_INIT_RESOURCE(assets);
+#ifdef QUICK
+  CLOCK_MEASURE_START(start_init_qrc);
   Q_INIT_RESOURCE(whatsthat);
   Q_INIT_RESOURCE(chatty);
   Q_INIT_RESOURCE(irssi);
+  CLOCK_MEASURE_END(start_init_qrc, "main::Q_INIT_RESOURCE");
 #endif
 
 #ifdef DEBUG
@@ -54,7 +58,9 @@ int main(int argc, char *argv[]) {
   clion_debug_setup();
 #endif
 
+  CLOCK_MEASURE_START(start_osso_intl);
   intl("conversations-ui");
+  CLOCK_MEASURE_END(start_osso_intl, "main::osso-intl.h init");
 
   QApplication::setApplicationName("conversations");
   QApplication::setOrganizationDomain("https://maemo-leste.github.io/");
@@ -62,27 +68,36 @@ int main(int argc, char *argv[]) {
   QApplication::setQuitOnLastWindowClosed(false);  // allow conversations to operate in the background
   QApplication::setApplicationVersion(CONVERSATIONS_VERSION);
 
+  CLOCK_MEASURE_START(start_cfg);
   if(auto gpu = config()->get(ConfigKeys::EnableGPUAccel).toBool(); !gpu)
     qputenv("QT_QUICK_BACKEND", "software");
+  CLOCK_MEASURE_END(start_cfg, "main::config init");
 
 #ifdef DISABLE_QML_DISK_CACHE
   qputenv("QML_DISABLE_DISK_CACHE", "1");
 #endif
 
+  CLOCK_MEASURE_START(start_create_app);
   const QApplication app(argc, argv);
+  CLOCK_MEASURE_END(start_create_app, "main::create app");
 
   // logging
+  CLOCK_MEASURE_START(start_tmp_logging);
   const QString logPath = "/tmp/conversations.log";
   logFile = new QFile(logPath);
   if(!logFile->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
     qWarning() << QString("could not open logfile: %1").arg(logPath);
+  CLOCK_MEASURE_END(start_tmp_logging, "main::start_tmp_logging");
 
+  CLOCK_MEASURE_START(start_log_handler);
   qInstallMessageHandler(conversationsMessageHandler);
   app.setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
   app.setAttribute(Qt::AA_CompressTabletEvents);
   app.setAttribute(Qt::AA_CompressHighFrequencyEvents);
+  CLOCK_MEASURE_END(start_log_handler, "main::start_log_handler");
 
   // handle program arguments
+  CLOCK_MEASURE_START(start_arg_parse);
   QCommandLineParser parser;
   parser.addHelpOption();
   parser.setApplicationDescription("Communications");
@@ -120,10 +135,13 @@ int main(int argc, char *argv[]) {
 
   const bool debugMode = parser.isSet(debugModeOption);
   parser.process(app);
+  CLOCK_MEASURE_END(start_arg_parse, "main::arg parse");
 
   // Listen on IPC
+  CLOCK_MEASURE_START(start_ipc_bind);
   auto *ipc = new IPC();
   QTimer::singleShot(0, ipc, [ipc]{ ipc->bind(); });
+  CLOCK_MEASURE_END(start_ipc_bind, "main::ipc bind");
   CLOCK_MEASURE_END(start_pre, "main::pre");
 
   // init hildon (is this required?)
@@ -144,7 +162,7 @@ int main(int argc, char *argv[]) {
   auto *mainWindow = new MainWindow(ctx);
   if(!parser.isSet(backgroundModeOption))
     mainWindow->onShowApplication();
-  CLOCK_MEASURE_END(start_mainwindow, "main::ctx_init");
+  CLOCK_MEASURE_END(start_mainwindow, "main::new mainwindow()");
 
   // handle positional startup arguments
   for (const auto &arg: args) {
