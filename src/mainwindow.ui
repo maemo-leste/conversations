@@ -942,6 +942,7 @@ QPlainTextEdit { background: transparent; }</string>
      <string>menu</string>
     </property>
     <addaction name="actionSendTo"/>
+    <addaction name="actionQuit_application"/>
     <addaction name="actionCompose"/>
     <addaction name="actionJoinChatRoom"/>
     <addaction name="actionSearch"/>
@@ -951,7 +952,6 @@ QPlainTextEdit { background: transparent; }</string>
     <addaction name="separator"/>
     <addaction name="actionSettings"/>
     <addaction name="actionAbout"/>
-    <addaction name="actionQuit_application"/>
    </widget>
    <addaction name="menu"/>
   </widget>
@@ -1017,7 +1017,7 @@ QPlainTextEdit { background: transparent; }</string>
   </action>
   <action name="actionQuit_application">
    <property name="text">
-    <string>Quit application</string>
+    <string>Quit conversations</string>
    </property>
   </action>
  </widget>
