@@ -32,7 +32,7 @@ ChatWindow::ChatWindow(
   const QString &channel,     // e.g ##maemotest
   const QString &service_uid, // e.g RTCOM_EL_SERVICE_SMS
   QWidget *parent) :
-    QMainWindow(parent),
+    QConversationsMainWindow(ctx, parent),
     ui(new Ui::ChatWindow),
     local_uid(local_uid),
     remote_uid(remote_uid),

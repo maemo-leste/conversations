@@ -9,12 +9,14 @@
 #include <QtCore>
 #include <QLabel>
 #include <QtGui>
+#include <QKeyEvent>
 #include <QFileInfo>
 #include <QPalette>
 
 #include <malloc.h>
 #include <iostream>
 
+#include "lib/mainwindow.h"
 #include "conversations.h"
 #include "chatwindow.h"
 #include "searchwindow.h"
@@ -35,7 +37,7 @@ struct FilterProtocolItem {
     QAction *action;
 };
 
-class MainWindow : public QMainWindow {
+class MainWindow : public QConversationsMainWindow {
 Q_OBJECT
 
 public:

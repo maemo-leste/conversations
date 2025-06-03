@@ -15,7 +15,7 @@
 MainWindow * MainWindow::pMainWindow = nullptr;
 
 MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
-    QMainWindow(parent),
+    QConversationsMainWindow(ctx, parent),
     ui(new Ui::MainWindow),
     m_ctx(ctx) {
   pMainWindow = this;

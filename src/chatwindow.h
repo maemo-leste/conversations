@@ -26,6 +26,7 @@
 #include "lib/abook/abook_public.h"
 #include "lib/abook/abook_roster.h"
 #include "lib/rtcom/rtcom_public.h"
+#include "lib/mainwindow.h"
 #include "searchwindow.h"
 #include "models/ChatModel.h"
 #include "models/ChatMessage.h"
@@ -34,7 +35,7 @@ namespace Ui {
     class ChatWindow;
 }
 
-class ChatWindow : public QMainWindow {
+class ChatWindow : public QConversationsMainWindow {
 Q_OBJECT
 Q_PROPERTY(QString local_uid MEMBER local_uid);
 Q_PROPERTY(QString remote_uid MEMBER remote_uid);
