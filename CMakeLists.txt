@@ -21,7 +21,13 @@ set(CONVERSATIONS_DESKTOP_DIR /usr/share/applications/hildon)
 set(TELEPATHY_CLIENTS_DIR /usr/share/telepathy/clients)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
+# generate .h dynamically for version and changelog
 configure_file("cmake/config-conversations.h.cmake" "${CMAKE_CURRENT_SOURCE_DIR}/src/config-conversations.h")
+
+file(READ "${CMAKE_SOURCE_DIR}/debian/changelog" DEBIAN_CHANGELOG)
+string(REPLACE "\\" "\\\\" DEBIAN_CHANGELOG "${DEBIAN_CHANGELOG}")
+string(REPLACE "\"" "\\\"" DEBIAN_CHANGELOG "${DEBIAN_CHANGELOG}")
+configure_file("cmake/changelog.h.cmake" "${CMAKE_CURRENT_SOURCE_DIR}/src/changelog.h")
 
 include(CheckIncludeFiles)
 include(CheckFunctionExists)

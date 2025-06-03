@@ -40,7 +40,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_general">
        <attribute name="title">
@@ -367,22 +367,53 @@
         <item>
          <widget class="QLabel" name="label_version">
           <property name="text">
-           <string>Conversations version: 0.7.40</string>
+           <string>Conversations version: -</string>
           </property>
          </widget>
         </item>
         <item>
-         <spacer name="verticalSpacer_3">
+         <widget class="Line" name="line">
           <property name="orientation">
-           <enum>Qt::Vertical</enum>
+           <enum>Qt::Horizontal</enum>
           </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
+         </widget>
+        </item>
+        <item>
+         <widget class="QScrollArea" name="scroll">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
           </property>
-         </spacer>
+          <property name="frameShadow">
+           <enum>QFrame::Plain</enum>
+          </property>
+          <property name="lineWidth">
+           <number>0</number>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="widget_changelog">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>1183</width>
+             <height>904</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_8">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+           </layout>
+          </widget>
+         </widget>
         </item>
        </layout>
       </widget>

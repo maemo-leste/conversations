@@ -192,6 +192,47 @@ QStringList Utils::extractWebLinks(const QString &content) {
   return rtn;
 }
 
+QList<QMap<QString, QString>> Utils::parseDebianChangelog(const QString &text) {
+  QList<QMap<QString, QString>> result;
+  const QRegularExpression headerRegex(R"(conversations \(([^)]+)\) unstable; urgency=.*)");
+  const QRegularExpression metaRegex(R"(^\s+-- .+? <.+?>\s+.+$)");
+  QStringList lines = text.split('\n');
+  QMap<QString, QString> entry;
+  QStringList bodyLines;
+
+  for (const QString &line : lines) {
+    if (auto headerMatch = headerRegex.match(line); headerMatch.hasMatch()) {
+      if (!entry.isEmpty()) {
+        auto body = bodyLines.join('\n').trimmed();
+        if (!body.startsWith("  "))
+          body = "  " + body;
+        entry["body"] = body;
+        result.append(entry);
+        entry.clear();
+        bodyLines.clear();
+      }
+      entry["version"] = headerMatch.captured(1);
+      continue;
+    }
+    if (metaRegex.match(line).hasMatch()) {
+      entry["meta"] = line.trimmed();
+      continue;
+    }
+    if (!line.trimmed().isEmpty() || !bodyLines.isEmpty()) {
+      bodyLines.append(line);
+    }
+  }
+  if (!entry.isEmpty()) {
+    auto body = bodyLines.join('\n').trimmed();
+    if (!body.startsWith("  "))
+      body = "  " + body;
+    entry["body"] = body;
+    result.append(entry);
+  }
+
+  return result;
+}
+
 void Utils::init_device_type() {
     QFile file("/etc/hostname");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {

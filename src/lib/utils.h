@@ -65,6 +65,7 @@ public:
   static bool IPCSend(int sock, const QString &message);
   static QStringList extractWebLinks(const QString &content);
   static QString escapeHtml(const QString& text);
+  static QList<QMap<QString, QString>> parseDebianChangelog(const QString &text);
 
   static __attribute__((always_inline)) bool get_avatar(const std::string& local_uid, const std::string& remote_uid, const std::string& token, QPixmap& pixmap) {
     // check cache
