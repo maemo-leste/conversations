@@ -1,3 +1,9 @@
+conversations (0.7.62) unstable; urgency=medium
+
+  * ctx & mainwindow: more timing logs to debug boot time
+
+ -- Sander <sander@sanderf.nl>  Tue, 03 Jun 2025 23:12:47 +0300
+
 conversations (0.7.61) unstable; urgency=medium
 
   * mainwindow: move 'quit conversations' to the top of the qmenu
