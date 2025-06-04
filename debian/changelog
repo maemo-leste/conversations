@@ -1,3 +1,17 @@
+conversations (0.7.64) unstable; urgency=medium
+
+  * launcher: enforce not running twice
+  * - do not `execv` when the launcher is already running, it could take a while before conversations has started its IPC listener, and while waiting, the launcher could theoretically get started again (unlikely) - resulting in 2 forks.
+  * main: conversation itself now also enforces not running twice
+  * - same as above, and check both qml/slim, in case someone circumvents the launcher and starts `conversations_slim` directly, while `conversation_qml` is already active.
+  * - wakeup IPC mechanism is now shared between conversations and the launcher - both can issue wakeups
+  * launcher: supply the correct argv[0] to our fork
+  * launcher: ensure paths to binaries exist before forking
+  * launcher/main: construct paths to the conversation binaries from the CMake install prefix, so that this all works with custom paths (e.g. /usr/local/)
+  * tools: increment_and_tag.py, push to the correct repo
+
+ -- Sander <sander@sanderf.nl>  Wed, 04 Jun 2025 03:07:04 +0300
+
 conversations (0.7.63) unstable; urgency=medium
 
   * ctx: add a comment regarding abook_init timings during boot
