@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
   const int qml_count = active_proc_count_by_path(PATH_CONV);
   const int slim_count = active_proc_count_by_path(PATH_CONV_SLIM);
 
-  if (qml_count + slim_count != 1 || qml_count > 1 || slim_count > 1) {
+  if (qml_count + slim_count != 0 && (qml_count + slim_count != 1 || qml_count > 1 || slim_count > 1)) {
     printf("already running? trying wakeup\n");
     const char *ipc_message = argc > 1 ? argv[1] : "makeActive";
     return ipc_try_wakeup(ipc_message);  // regardless, exit and refuse to run twice
