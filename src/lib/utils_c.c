@@ -36,10 +36,8 @@ int ipc_try_socket(const char *path, const char *message) {
 
 int ipc_try_wakeup(const char* ipc_message) {
   const char *user = getenv("USER");
-  if (!user) {
-    // default to the leste default user
+  if (!user)
     user = "user";
-  }
 
   char socket_path[256];
   snprintf(socket_path, sizeof(socket_path), "/tmp/conversations-%s.sock", user);

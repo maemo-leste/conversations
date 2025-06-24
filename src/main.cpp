@@ -6,6 +6,10 @@
 #include <QtCore>
 
 #include <unistd.h>
+#include <cstdlib>
+#include <string>
+#include <filesystem>
+#include <iostream>
 #include <sys/types.h>
 #include "conversations.h"
 #include "lib/globals.h"
@@ -59,18 +63,27 @@ int main(int argc, char *argv[]) {
 #endif
 
 #ifdef DEBUG
-  // Tp::enableDebug(true);
-  // Tp::enableWarnings(true);
-  // qputenv("G_MESSAGES_DEBUG", "all");
-  // qputenv("OSSO_ABOOK_DEBUG", "all");
-#else
-  Tp::enableDebug(false);
-  Tp::enableWarnings(false);
-#endif
-
-#ifdef DEBUG
   clion_debug_setup();
 #endif
+
+  // ensure config directory exists
+  const std::string home = std::getenv("HOME") ? std::getenv("HOME") : "/home/user";
+  const std::filesystem::path configDir = std::filesystem::path(home) / ".config" / "conversations";
+  std::filesystem::create_directories(configDir);
+
+  // if these paths exist, we add additional logging
+  const std::filesystem::path path_enable_glib_logging = configDir / ".log_glib";
+  const std::filesystem::path path_enable_tp_logging = configDir / ".log_tp";
+  if (std::filesystem::exists(path_enable_glib_logging)) {
+    qputenv("G_MESSAGES_DEBUG", "all");
+  }
+  if (std::filesystem::exists(path_enable_tp_logging)) {
+    Tp::enableDebug(true);
+    Tp::enableWarnings(true);
+  } else {
+    Tp::enableDebug(false);
+    Tp::enableWarnings(false);
+  }
 
   CLOCK_MEASURE_START(start_osso_intl);
   intl("conversations-ui");
@@ -83,7 +96,7 @@ int main(int argc, char *argv[]) {
   QApplication::setApplicationVersion(CONVERSATIONS_VERSION);
 
   CLOCK_MEASURE_START(start_cfg);
-  if(auto gpu = config()->get(ConfigKeys::EnableGPUAccel).toBool(); !gpu)
+  if(const auto gpu = config()->get(ConfigKeys::EnableGPUAccel).toBool(); !gpu)
     qputenv("QT_QUICK_BACKEND", "software");
   CLOCK_MEASURE_END(start_cfg, "main::config init");
 
@@ -97,14 +110,17 @@ int main(int argc, char *argv[]) {
 
   // logging
   CLOCK_MEASURE_START(start_tmp_logging);
-  const QString logPath = "/tmp/conversations.log";
-  logFile = new QFile(logPath);
-  if(!logFile->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
-    qWarning() << QString("could not open logfile: %1").arg(logPath);
+  if (config()->get(ConfigKeys::EnableLogSyslog).toBool())
+    conversations_logger::syslog_enabled = true;
+  if (config()->get(ConfigKeys::EnableLogWrite).toBool()) {
+    conversations_logger::logFile = new QFile(QString("%1/conversations.log").arg(QString::fromStdString(configDir)));
+    if(!conversations_logger::logFile->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+      qWarning() << QString("could not open logfile");
+  }
   CLOCK_MEASURE_END(start_tmp_logging, "main::start_tmp_logging");
 
   CLOCK_MEASURE_START(start_log_handler);
-  qInstallMessageHandler(conversationsMessageHandler);
+  qInstallMessageHandler(conversations_logger::conversationsMessageHandler);
   app.setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
   app.setAttribute(Qt::AA_CompressTabletEvents);
   app.setAttribute(Qt::AA_CompressHighFrequencyEvents);
@@ -166,7 +182,7 @@ int main(int argc, char *argv[]) {
   // initialize application
   CLOCK_MEASURE_START(start_ctx);
   auto *ctx = new Conversations(&parser, ipc);
-  logger_ctx = ctx;
+  conversations_logger::logger_ctx = ctx;
   ctx->applicationPath = argv_.at(0);
   ctx->isDebug = debugMode;
   ctx->isMaemo = true;  // @TODO: remove

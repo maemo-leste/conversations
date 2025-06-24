@@ -7,6 +7,7 @@
 #include <QGroupBox>
 #include <QFileDialog>
 #include <QCheckBox>
+#include <QPushButton>
 
 #include "settings.h"
 #include "config-conversations.h"
@@ -98,6 +99,55 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
   connect(ui->checkBox_enableDisplayAvatars, &QCheckBox::toggled, [this](bool toggled){
     config()->set(ConfigKeys::EnableDisplayAvatars, toggled);
     emit enableDisplayAvatarsToggled(toggled);
+  });
+
+  // Log: writing
+  ui->checkBox_logWriteToDisk->setChecked(config()->get(ConfigKeys::EnableLogWrite).toBool());
+  connect(ui->checkBox_logWriteToDisk, &QCheckBox::toggled, [this](bool toggled){
+    config()->set(ConfigKeys::EnableLogWrite, toggled);
+  });
+
+  // Log: syslog
+  ui->checkBox_logWriteToSyslog->setChecked(config()->get(ConfigKeys::EnableLogSyslog).toBool());
+  connect(ui->checkBox_logWriteToSyslog, &QCheckBox::toggled, [this](bool toggled){
+    config()->set(ConfigKeys::EnableLogSyslog, toggled);
+  });
+
+  // Log: TP
+  const QString path_log_tp = m_ctx->configDirectory + ".log_tp";
+  ui->checkBox_logTP->setChecked(QFile::exists(path_log_tp));
+  connect(ui->checkBox_logTP, &QCheckBox::toggled, [this, path_log_tp](const bool toggled){
+    if (toggled) {
+      if (!QFile::exists(path_log_tp)) {
+          QFile file(path_log_tp);
+          file.open(QIODevice::WriteOnly);
+          file.close();
+      }
+    } else {
+      if (QFile::exists(path_log_tp))
+          QFile::remove(path_log_tp);
+    }
+  });
+
+  // Log: GLib/osso
+  const QString path_log_glib = m_ctx->configDirectory + ".log_glib";
+  ui->checkBox_logGlib->setChecked(QFile::exists(path_log_glib));
+  connect(ui->checkBox_logGlib, &QCheckBox::toggled, [this, path_log_glib](const bool toggled){
+    if (toggled) {
+      if (!QFile::exists(path_log_glib)) {
+          QFile file(path_log_glib);
+          file.open(QIODevice::WriteOnly);
+          file.close();
+      }
+    } else {
+      if (QFile::exists(path_log_glib))
+          QFile::remove(path_log_glib);
+    }
+  });
+
+  connect(ui->btn_quitConversations, &QPushButton::clicked, [this]() {
+    if(const auto reply = QMessageBox::question(this, "Quit", "Quit application now?", QMessageBox::Yes | QMessageBox::No); reply == QMessageBox::Yes)
+      QApplication::quit();
   });
 
   // chat bg gradient shader

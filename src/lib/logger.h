@@ -16,8 +16,11 @@
 
 #include "conversations.h"
 
-extern Conversations *logger_ctx;
-extern QFile *logFile;
-extern QTextStream *logStream;
+namespace conversations_logger {
+  extern Conversations *logger_ctx;
+  extern QFile *logFile;
+  extern QTextStream *logStream;
+  extern bool syslog_enabled;
 
-void conversationsMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
+  void conversationsMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
+}

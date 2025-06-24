@@ -23,7 +23,9 @@ namespace ConfigKeys {
         EnableDisplayChatGradient,
         GroupChatChannels,
         EnableGPUAccel,
-        EnableSlim
+        EnableSlim,
+        EnableLogWrite,
+        EnableLogSyslog
     };
     Q_ENUM_NS(ConfigKey)
 }
