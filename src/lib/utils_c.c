@@ -37,8 +37,8 @@ int ipc_try_socket(const char *path, const char *message) {
 int ipc_try_wakeup(const char* ipc_message) {
   const char *user = getenv("USER");
   if (!user) {
-    fprintf(stderr, "could not determine user.\n");
-    return 1;
+    // default to the leste default user
+    user = "user";
   }
 
   char socket_path[256];
