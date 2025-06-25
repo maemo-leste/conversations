@@ -298,7 +298,7 @@ void ChatWindow::onChatDelete() {
   }
 
   configState->deleteItem(local_uid, key);
-  Conversations::instance()->overviewModel->onLoad();
+  Conversations::instance()->overviewModel->loadOverviewMessages();
   this->close();
 }
 
@@ -401,7 +401,7 @@ void ChatWindow::onDatabaseAddition(const QSharedPointer<ChatMessage> &msg) {
 
   if(m_windowActive) {
     if(this->chatModel->setMessagesRead())
-      m_ctx->overviewModel->onLoad();  // refresh overview
+      m_ctx->overviewModel->loadOverviewMessages();  // refresh overview
   }
 }
 
@@ -662,7 +662,7 @@ void ChatWindow::changeEvent(QEvent *event) {
 
     if(m_windowActive) {
       if(this->chatModel->setMessagesRead())
-        m_ctx->overviewModel->onLoad();  // refresh overview
+        m_ctx->overviewModel->loadOverviewMessages();  // refresh overview
     }
   }
 }

@@ -89,7 +89,8 @@ public:
   QList<QSharedPointer<ChatMessage>> messages;
 
 public slots:
-  void onLoad();
+  void loadSearchMessages(const QString& needle, const QString& group_uid = "");
+  void loadOverviewMessages();
   void onClear();
   void onDatabaseAddition(QSharedPointer<ChatMessage> &msg);
   void onContacsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts);

@@ -42,7 +42,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
 
   // messages overview widget
   CLOCK_MEASURE_START(start_overviewwidget);
-  m_widgetOverview = new OverviewWidget(ctx, this);
+  m_widgetOverview = new OverviewWidget(ctx, ctx->overviewProxyModel, this);
   ui->mainLayout->addWidget(m_widgetOverview);
   connect(m_ctx, &Conversations::textScalingChanged, m_widgetOverview, &OverviewWidget::onSetColumnStyleDelegate);
   connect(m_ctx, &Conversations::textScalingChanged, m_widgetOverview, &OverviewWidget::onSetTableHeight);
@@ -189,7 +189,7 @@ void MainWindow::onOpenChatWindow(QString local_uid, QString remote_uid, QString
 
   connect(window, &ChatWindow::sendMessage, this->m_ctx, &Conversations::onSendOutgoingMessage);
   connect(window, &ChatWindow::closed, this, &MainWindow::onChatWindowClosed);
-  connect(window, &ChatWindow::chatCleared, m_ctx->overviewModel, &OverviewModel::onLoad);
+  connect(window, &ChatWindow::chatCleared, m_ctx->overviewModel, &OverviewModel::loadOverviewMessages);
 }
 
 void MainWindow::onOpenChatWindow(const QSharedPointer<ChatMessage> &msg) {

@@ -37,7 +37,6 @@ public:
     static Conversations *getContext();
    ~SearchWindow() override;
 
-    ChatModel *searchModel;
     Q_PROPERTY(QString group_uid MEMBER m_group_uid CONSTANT);
 
 signals:
@@ -46,9 +45,6 @@ signals:
 
   void search_termChanged();
 
-private slots:
-  void onItemClicked(int idx);
-
 protected:
   void closeEvent(QCloseEvent *event) override;
 
@@ -56,11 +52,6 @@ private:
     void drawContactsSearch();
     void drawContentSearch();
     void resetSearch();
-#ifdef QUICK
-    void setupQML();
-#endif
-
-    bool m_qml = false;
     Conversations *m_ctx;
     static SearchWindow *pSearchWindow;
     QString m_group_uid = "";
@@ -68,6 +59,7 @@ private:
     QString search_term;
 
     OverviewWidget* m_overviewWidget = nullptr;
+    OverviewModel* m_overviewModel = nullptr;
     OverviewProxyModel* m_overviewProxyModel = nullptr;
 };
 

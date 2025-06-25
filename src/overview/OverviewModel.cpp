@@ -66,7 +66,7 @@ void OverviewProxyModel::setNameFilter(QString name) {
   this->m_nameFilter = name.toLower();
   if (this->sourceModel() != nullptr) {
     auto mdl = dynamic_cast<OverviewModel*>(this->sourceModel());
-    this->invalidate();
+    this->invalidateFilter();
   }
 }
 
@@ -79,7 +79,7 @@ void OverviewProxyModel::setProtocolFilter(QString protocol) {
   this->m_protocolFilter = protocol.toLower();
   if (this->sourceModel() != nullptr) {
     auto mdl = dynamic_cast<OverviewModel*>(this->sourceModel());
-    this->invalidate();
+    this->invalidateFilter();
   }
 }
 
@@ -97,7 +97,8 @@ bool OverviewProxyModel::filterAcceptsRow(int source_row, const QModelIndex& sou
     return false;
 
   // filtering
-  if(m_protocolFilter.isEmpty() && m_nameFilter.isEmpty()) return true;
+  if(m_protocolFilter.isEmpty() && m_nameFilter.isEmpty())
+    return true;
   bool show = false;
 
   if(!m_protocolFilter.isEmpty()) {
@@ -150,7 +151,7 @@ int OverviewModel::columnCount(const QModelIndex &parent) const {
 
 void OverviewModel::onDatabaseAddition(QSharedPointer<ChatMessage> &msg) {
   // try to modify an existing row
-  // if it's a new row, onLoad() as usual
+  // if it's a new row, loadOverviewMessages() as usual
   const auto uid = msg->group_uid();
   bool found = false;
   for (int row = 0; row < messages.count(); row++) {
@@ -174,7 +175,7 @@ void OverviewModel::onDatabaseAddition(QSharedPointer<ChatMessage> &msg) {
   }
 
   if (!found) {
-    this->onLoad();
+    this->loadOverviewMessages();
   }
 }
 
@@ -325,7 +326,19 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
   return {};
 }
 
-void OverviewModel::onLoad() {
+void OverviewModel::loadSearchMessages(const QString& needle, const QString& group_uid) {
+  this->onClear();
+  const auto needle_str = needle.toStdString();
+  const auto group_uid_str = group_uid.toStdString();
+  auto results = rtcom_qt::search_messages(needle_str, group_uid_str);
+
+  beginInsertRows(QModelIndex(), 0, results.size());
+  for(auto const &message: results)
+    messages << QSharedPointer<ChatMessage>(new ChatMessage(message));
+  endInsertRows();
+}
+
+void OverviewModel::loadOverviewMessages() {
   CLOCK_MEASURE_START(start_total);
   // The overview screen has 3 sources:
   // 1. rtcom-db
@@ -358,7 +371,7 @@ void OverviewModel::onLoad() {
     results << new ChatMessage(msg);
   }
 
-  CLOCK_MEASURE_END(start_rtcom, "OverviewModel::onLoad rtcom");
+  CLOCK_MEASURE_END(start_rtcom, "OverviewModel::loadOverviewMessages rtcom");
   CLOCK_MEASURE_START(start_tp);
 
   // ==
@@ -397,7 +410,7 @@ void OverviewModel::onLoad() {
     }
   }
 
-  CLOCK_MEASURE_END(start_tp, "OverviewModel::onLoad TP");
+  CLOCK_MEASURE_END(start_tp, "OverviewModel::loadOverviewMessages TP");
   CLOCK_MEASURE_START(start_config_state);
 
   // ===========
@@ -439,13 +452,13 @@ void OverviewModel::onLoad() {
     group_uids << configItem->group_uid;
   }
 
-  CLOCK_MEASURE_END(start_config_state, "OverviewModel::onLoad ConfigState");
+  CLOCK_MEASURE_END(start_config_state, "OverviewModel::loadOverviewMessages ConfigState");
 
   beginInsertRows(QModelIndex(), 0, results.size());
   for (const auto &message: results)
     messages << QSharedPointer<ChatMessage>(message);
   endInsertRows();
-  CLOCK_MEASURE_END(start_total, "OverviewModel::onLoad total");
+  CLOCK_MEASURE_END(start_total, "OverviewModel::loadOverviewMessages total");
 }
 
 QHash<int, QByteArray> OverviewModel::roleNames() const {

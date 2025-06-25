@@ -26,7 +26,7 @@ class OverviewWidget : public QWidget
 Q_OBJECT
 
 public:
-  explicit OverviewWidget(Conversations *ctx, QWidget *parent = nullptr);
+  explicit OverviewWidget(Conversations *ctx, OverviewProxyModel *proxyModel, QWidget *parent = nullptr);
   ~OverviewWidget() override;
 
 signals:
@@ -41,5 +41,6 @@ private:
   void setupUITable();
   RichItemDelegate *m_richItemDelegate = nullptr;
   Ui::OverviewWidget *ui;
+  OverviewProxyModel *m_proxyModel = nullptr;
   Conversations *m_ctx;
 };

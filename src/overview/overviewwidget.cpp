@@ -1,9 +1,10 @@
 #include "overview/overviewwidget.h"
 #include "overview/ui_overviewwidget.h"
 
-OverviewWidget::OverviewWidget(Conversations *ctx, QWidget *parent) :
+OverviewWidget::OverviewWidget(Conversations *ctx, OverviewProxyModel *proxyModel, QWidget *parent) :
     QWidget(parent),
     m_ctx(ctx),
+    m_proxyModel(proxyModel),
     ui(new Ui::OverviewWidget)
 {
   ui->setupUi(this);
@@ -34,7 +35,7 @@ void OverviewWidget::setupUITable() {
   verticalHeader->setSectionResizeMode(QHeaderView::Fixed);
   this->onSetTableHeight();
 
-  table->setModel(m_ctx->overviewProxyModel);
+  table->setModel(m_proxyModel);
   table->setColumnHidden(OverviewModel::ProtocolRole, true);
   table->setColumnHidden(OverviewModel::TimeRole, true);
   table->setColumnHidden(OverviewModel::COUNT, true);
@@ -54,7 +55,7 @@ void OverviewWidget::setupUITable() {
     // need to go through the proxy model to figure out the underlying 
     // item in the base model. Register to OverviewModel::overviewRowClicked for 
     // the actual signal.
-    m_ctx->overviewProxyModel->onOverviewRowClicked(idx.row());
+    m_proxyModel->onOverviewRowClicked(idx.row());
   });
 
   onAvatarDisplayChanged();

@@ -66,23 +66,23 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   // chat overview models
   CLOCK_MEASURE_START(start_models);
   overviewModel = new OverviewModel(this->telepathy, this->state, this);
-  overviewModel->onLoad();
-  connect(this->telepathy, &Telepathy::accountManagerReady, this->overviewModel, &OverviewModel::onLoad);
+  overviewModel->loadOverviewMessages();
+  connect(this->telepathy, &Telepathy::accountManagerReady, this->overviewModel, &OverviewModel::loadOverviewMessages);
   connect(this->telepathy, &Telepathy::channelDeleted, this->state, &ConfigState::deleteItem);
-  connect(this->state, &ConfigState::updated, this->overviewModel, &OverviewModel::onLoad);
+  connect(this->state, &ConfigState::updated, this->overviewModel, &OverviewModel::loadOverviewMessages);
   // update overview table on contact presence status changes
-  connect(this->telepathy, &Telepathy::rosterChanged, this->overviewModel, &OverviewModel::onLoad);
+  connect(this->telepathy, &Telepathy::rosterChanged, this->overviewModel, &OverviewModel::loadOverviewMessages);
 
   // Overview table updates
   connect(telepathy, &Telepathy::databaseAddition, overviewModel, &OverviewModel::onDatabaseAddition);
   connect(telepathy, &Telepathy::channelJoined, [this](QString local_uid, QString remote_uid) {
-    overviewModel->onLoad();
+    overviewModel->loadOverviewMessages();
   });
   connect(telepathy, &Telepathy::channelLeft, [this](QString local_uid, QString remote_uid) {
-    overviewModel->onLoad();
+    overviewModel->loadOverviewMessages();
   });
   connect(telepathy, &Telepathy::channelDeleted, [this](QString local_uid, QString remote_uid) {
-    overviewModel->onLoad();
+    overviewModel->loadOverviewMessages();
   });
 
   overviewProxyModel = new OverviewProxyModel(this);
@@ -267,7 +267,7 @@ void Conversations::createConfigDirectory(const QString &dir) {
 
 void Conversations::onAbookReady() const {
   abook_qt::abook_init_contact_roster();
-  this->overviewModel->onLoad();
+  this->overviewModel->loadOverviewMessages();
 }
 
 void Conversations::onApplicationLog(QString msg) {}

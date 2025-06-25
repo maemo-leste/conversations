@@ -15,11 +15,7 @@
 #include "config-conversations.h"
 #include "lib/globals.h"
 
-#ifdef QUICK
-#include "ui_searchwindow.h"
-#else
 #include "ui_searchwindow_widgets.h"
-#endif
 
 SearchWindow * SearchWindow::pSearchWindow = nullptr;
 SearchWindow::SearchWindow(Conversations *ctx, QString group_uid, QWidget *parent) :
@@ -33,7 +29,15 @@ SearchWindow::SearchWindow(Conversations *ctx, QString group_uid, QWidget *paren
 
   ui->line_search->setFocus();
 
-  this->searchModel = new ChatModel(this);
+  m_overviewModel = new OverviewModel(m_ctx->telepathy, m_ctx->state, this);
+  m_overviewProxyModel = new OverviewProxyModel(this);
+  m_overviewProxyModel->setSourceModel(m_overviewModel);
+  m_overviewProxyModel->setSortRole(OverviewModel::TimeRole);
+  m_overviewProxyModel->sort(OverviewModel::TimeRole, Qt::DescendingOrder);
+  m_overviewProxyModel->setDynamicSortFilter(true);
+  connect(m_overviewModel, &OverviewModel::overviewRowClicked, [=](const QSharedPointer<ChatMessage>& msg){
+    searchResultClicked(msg);
+  });
 
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
@@ -60,37 +64,33 @@ SearchWindow::SearchWindow(Conversations *ctx, QString group_uid, QWidget *paren
 
     if(search_term.length() >= mininum_characters) {
       if(search_contents)
-        this->searchModel->searchMessages("%%" + search_term + "%%");
+        if (m_group_uid.isEmpty())
+          this->m_overviewModel->loadSearchMessages("%%" + search_term + "%%");
+        else
+          this->m_overviewModel->loadSearchMessages("%%" + search_term + "%%", m_group_uid);
       else
-        m_ctx->overviewProxyModel->setNameFilter(search_term);
+        m_overviewProxyModel->setNameFilter(search_term);
     } else {  // clear
       if(search_contents)
-        this->searchModel->clear();
+        m_overviewModel->onClear();
       else
-        m_ctx->overviewProxyModel->setNameFilter("");
+        m_overviewProxyModel->setNameFilter("");
     }
   });
 
   // setup overview, re-use model from mainwindow
-  m_overviewWidget = new OverviewWidget(m_ctx,  this);
-  ui->frame_contacts->layout()->addWidget(m_overviewWidget);
+  m_overviewWidget = new OverviewWidget(m_ctx, m_overviewProxyModel, this);
+  ui->centralWidget->layout()->addWidget(m_overviewWidget);
+  m_overviewWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 void SearchWindow::drawContactsSearch() {
-  ui->frame_contacts->show();
-  ui->frame_content->hide();
   ui->radio_contacts->setChecked(true);
   ui->radio_content->setChecked(false);
   resetSearch();
 }
 
 void SearchWindow::drawContentSearch() {
-#ifdef QUICK
-  if(!m_qml)
-    setupQML();
-#endif
-  ui->frame_contacts->hide();
-  ui->frame_content->show();
   ui->radio_contacts->setChecked(false);
   ui->radio_content->setChecked(true);
   resetSearch();
@@ -99,13 +99,8 @@ void SearchWindow::drawContentSearch() {
 void SearchWindow::resetSearch() {
   ui->line_search->setText("");
   emit search_termChanged();
-  m_ctx->overviewProxyModel->setNameFilter("");
-  this->searchModel->clear();
-}
-
-void SearchWindow::onItemClicked(int idx) {
-  auto msg = searchModel->chats.at(idx);
-  emit searchResultClicked(msg);
+  m_overviewProxyModel->setNameFilter("");
+  m_overviewModel->loadOverviewMessages();
 }
 
 Conversations *SearchWindow::getContext(){
@@ -117,24 +112,10 @@ void SearchWindow::closeEvent(QCloseEvent *event) {
   QWidget::closeEvent(event);
 }
 
-#ifdef QUICK
-void SearchWindow::setupQML() {
-  auto *qctx = ui->quick->rootContext();
-  qctx->setContextProperty("searchWindow", this);
-  qctx->setContextProperty("chatSearchModel", this->searchModel);
-  qctx->setContextProperty("ctx", m_ctx);
-  const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-  qctx->setContextProperty("fixedFont", fixedFont);
-
-  ui->quick->setSource(QUrl("qrc:/qml/Search.qml"));
-
-  connect((QObject*)ui->quick->rootObject(), SIGNAL(itemClicked(int)), this, SLOT(onItemClicked(int)));
-  m_qml = true;
-}
-#endif
-
 SearchWindow::~SearchWindow() {
   qDebug() << "destroying SearchWindow";
   resetSearch();
+  m_overviewModel->deleteLater();
+  m_overviewProxyModel->deleteLater();
   delete ui;
 }
