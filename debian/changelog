@@ -1,3 +1,14 @@
+conversations (0.7.65) unstable; urgency=medium
+
+  * search: fix name/contact search, and better name matching
+  * - write the conversations logfile to the config directory (instead of /tmp/conversations.log)
+  * - optionally write the logfile to syslog - configurable in settings. Forwards log priorities from Qt (debug/info/warn) to syslog.
+  * - the option for additional logging of GLib, osso, and TP - configurable in settings
+  * utils_c: default to the leste user
+  * main: instance detection; allow running directly without launcher
+
+ -- Sander <sander@sanderf.nl>  Wed, 25 Jun 2025 03:24:12 +0300
+
 conversations (0.7.64) unstable; urgency=medium
 
   * launcher: enforce not running twice
