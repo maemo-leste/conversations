@@ -1,3 +1,10 @@
+conversations (0.7.66) unstable; urgency=medium
+
+  * mainwindow: fix protocol filtering regression; add the filter options back to the menu
+  * search: Fix searching; re-use QWidgets (overviewModel/Widget) for both contacts/content search, and remove QML
+
+ -- Sander <sander@sanderf.nl>  Wed, 25 Jun 2025 22:49:18 +0300
+
 conversations (0.7.65) unstable; urgency=medium
 
   * search: fix name/contact search, and better name matching
