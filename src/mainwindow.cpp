@@ -58,6 +58,10 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   // Setup filter protocol menu items
   CLOCK_MEASURE_START(start_setup_ui_accounts);
   this->onSetupUIAccounts();
+  connect(m_ctx->telepathy, &Telepathy::accountAdded, [this](TelepathyAccountPtr ta) {
+    m_ctx->onGetAvailableServiceAccounts();
+    this->onSetupUIAccounts();  // redraw protocol filter menu
+  });
   CLOCK_MEASURE_END(start_setup_ui_accounts, "mainwindow::setup_ui_accounts");
 
   // js: cfg.get(Config.MaemoTest);  |  cfg.set(Config.MaemoTest , "foo");
