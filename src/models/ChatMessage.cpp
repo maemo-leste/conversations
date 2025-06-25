@@ -67,6 +67,17 @@ QString ChatMessage::name() const {
   return QString::fromStdString(m_raw->remote_uid);
 }
 
+bool ChatMessage::matchesName(const QString& name) const {
+  const auto display_name = abook_qt::get_display_name(m_raw->local_uid, m_raw->remote_uid, m_raw->group_uid);
+  if (QString::fromStdString(display_name).toLower().contains(name))
+    return true;
+  if(m_raw->remote_name.empty() && QString::fromStdString(m_raw->remote_name).toLower().contains(name))
+    return true;
+  if (QString::fromStdString(m_raw->remote_uid).toLower().contains(name))
+    return true;
+  return false;
+}
+
 QString ChatMessage::name_counterparty() const {
   // This chatmessage maybe us (self), but we need the counterparty name of this conversation
   // 1. ask abook

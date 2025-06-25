@@ -108,7 +108,7 @@ bool OverviewProxyModel::filterAcceptsRow(int source_row, const QModelIndex& sou
 
   if(!m_nameFilter.isEmpty()) {
     QSharedPointer<ChatMessage> msg = mdl->messages[index.row()];
-    if(msg->name().contains(m_nameFilter))
+    if(msg->matchesName(m_nameFilter))
       show = true;
   }
 

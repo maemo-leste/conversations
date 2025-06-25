@@ -40,6 +40,7 @@ public:
     QString textSnippet() const;
 
     QString name() const;
+    bool matchesName(const QString& name) const;
     QString name_counterparty() const;
     QString name_channel() const;
     QString generateOverviewItemDelegateRichText();

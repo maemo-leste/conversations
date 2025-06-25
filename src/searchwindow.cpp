@@ -55,14 +55,16 @@ SearchWindow::SearchWindow(Conversations *ctx, QString group_uid, QWidget *paren
     emit search_termChanged();
 
     search_term = term;
+    const bool search_contents = ui->radio_content->isChecked();
+    const auto mininum_characters = search_contents ? 3 : 1;
 
-    if(search_term.length() >= 3) {
-      if(ui->radio_content->isChecked())
+    if(search_term.length() >= mininum_characters) {
+      if(search_contents)
         this->searchModel->searchMessages("%%" + search_term + "%%");
       else
         m_ctx->overviewProxyModel->setNameFilter(search_term);
     } else {  // clear
-      if(ui->radio_content->isChecked())
+      if(search_contents)
         this->searchModel->clear();
       else
         m_ctx->overviewProxyModel->setNameFilter("");
