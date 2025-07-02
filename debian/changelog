@@ -1,3 +1,9 @@
+conversations (0.7.67) unstable; urgency=medium
+
+  * compose: osso/abook contact chooser dialog
+
+ -- Sander <sander@sanderf.nl>  Wed, 02 Jul 2025 12:48:15 +0300
+
 conversations (0.7.66) unstable; urgency=medium
 
   * mainwindow: fix protocol filtering regression; add the filter options back to the menu
