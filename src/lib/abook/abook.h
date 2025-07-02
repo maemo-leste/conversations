@@ -26,10 +26,14 @@ namespace abookqt {
   static bool CONV_ABOOK_INITED = false;
   static OssoABookRoster *CONV_ABOOK_ROSTER = nullptr;
   static OssoABookAggregator *CONV_ABOOK_AGGREGATOR = nullptr;
+  static GtkWidget *CONV_ABOOK_DIALOG_CONTACT_CHOOSER = nullptr;
+  static std::function<void(std::string)> CONV_ABOOK_DIALOG_CONTACT_CHOOSER_CB = nullptr;
 
   // methods
   bool init();
   void init_cb(OssoABookWaitable *waitable, const GError *error, gpointer data);
+  void new_dialog_contact_chooser(const std::function<void(std::string)> &cb);
+  void dialog_contact_chooser_cb(OssoABookContactChooser *chooser, gint response_id, const uintptr_t *data);
 
   OssoABookContact* get_tel_contact(const char* telno);
   OssoABookContact* get_sip_contact(const char* sipno);

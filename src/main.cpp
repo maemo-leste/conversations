@@ -176,7 +176,7 @@ int main(int argc, char *argv[]) {
 
   // init hildon (is this required?)
   CLOCK_MEASURE_START(start_hildon_init);
-  hildon_init();
+  hildon_gtk_init(&argc, &argv);
   CLOCK_MEASURE_END(start_hildon_init, "main::hildon_init");
 
   // initialize application

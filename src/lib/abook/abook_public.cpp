@@ -16,6 +16,10 @@ namespace abook_qt {
     return abookqt::init_contact_roster();
   }
 
+  void new_dialog_contact_chooser(const std::function<void(std::string)> &cb) {
+    abookqt::new_dialog_contact_chooser(cb);
+  }
+
   AbookContactAvatar* abook_get_avatar(const std::string& local_uid, const std::string& remote_uid) {
     return abookqt::get_avatar(local_uid, remote_uid);
   }

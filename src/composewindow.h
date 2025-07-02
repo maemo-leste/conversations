@@ -26,6 +26,7 @@ public:
     explicit Compose(Conversations *ctx, QWidget *parent = nullptr);
     static Conversations *getContext();
     ~Compose() override;
+    void onContactPicked(const std::string &persistent_uid) const;
     Ui::ComposeWindow *ui;
 
 signals:

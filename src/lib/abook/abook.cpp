@@ -429,6 +429,39 @@ namespace abookqt {
     return ROSTER[persistent_uid];
   }
 
+  void new_dialog_contact_chooser(const std::function<void(std::string)> &cb) {
+    if (!CONV_ABOOK_INITED) {
+      fprintf(stderr, "abook not initialized yet\n");
+      return;
+    }
+    CONV_ABOOK_DIALOG_CONTACT_CHOOSER_CB = cb;
+    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    CONV_ABOOK_DIALOG_CONTACT_CHOOSER =
+      osso_abook_contact_chooser_new(GTK_WINDOW(window), g_dgettext("maemo-af-desktop", "home_ti_select_contact"));
+    g_signal_connect(G_OBJECT(CONV_ABOOK_DIALOG_CONTACT_CHOOSER), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    g_signal_connect(CONV_ABOOK_DIALOG_CONTACT_CHOOSER, "response", G_CALLBACK(dialog_contact_chooser_cb), NULL);
+    gtk_widget_show(CONV_ABOOK_DIALOG_CONTACT_CHOOSER);
+  }
+
+  void dialog_contact_chooser_cb(OssoABookContactChooser *chooser, const gint response_id, const uintptr_t *data) {
+    if (response_id == GTK_RESPONSE_OK) {
+      GList *contacts = osso_abook_contact_chooser_get_selection(chooser);
+
+      if (contacts) {
+        auto *contact = static_cast<OssoABookContact*>(contacts->data);
+        std::string persistent_uid = osso_abook_contact_get_persistent_uid(contact);
+        if (CONV_ABOOK_DIALOG_CONTACT_CHOOSER_CB != nullptr)
+          CONV_ABOOK_DIALOG_CONTACT_CHOOSER_CB(persistent_uid);
+      }
+
+      g_list_free(contacts);
+    }
+
+    gtk_widget_destroy(CONV_ABOOK_DIALOG_CONTACT_CHOOSER);
+    CONV_ABOOK_DIALOG_CONTACT_CHOOSER = nullptr;
+    CONV_ABOOK_DIALOG_CONTACT_CHOOSER_CB = nullptr;
+  }
+
   std::string presence_to_string(OssoABookPresenceState presence) {
     switch (presence) {
       case OssoABookPresenceState::OSSO_ABOOK_PRESENCE_STATE_YES:
