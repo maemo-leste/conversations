@@ -1,3 +1,13 @@
+conversations (0.7.69) unstable; urgency=medium
+
+  * settings: always ask to restart after changing GPU accel
+  * qml: allow exceeding chat message width when metarow is larger. Fixes date string cut-off
+  * qml: scaling tweaks for preview items
+  * chatmodel: reconnect preview item clicked signal on new model instances
+  * qml: scaling for preview items
+
+ -- Sander <sander@sanderf.nl>  Wed, 27 Aug 2025 02:29:17 +0300
+
 conversations (0.7.68) unstable; urgency=medium
 
   * preview arbitrary weblinks in chat messages
