@@ -1,3 +1,24 @@
+conversations (0.7.68) unstable; urgency=medium
+
+  * preview arbitrary weblinks in chat messages
+  * - operate in 1) disabled mode 2) first requiring user-interaction 3) automatic mode
+  * - parses http(s) links from messages
+  * - first HEAD, then GET
+  * - max file size - checks content-length during HEAD. Keeps track of size while downloading for when the server did not provide any content-length during HEAD
+  * - asynchronous
+  * - timeout safeguard
+  * - show download progress in GUI
+  * - show individual items / results inline, in a chat message
+  * - the ability to retry if one (or more) items failed
+  * - attempts to extract <title></title> from HTML pages
+  * - inline image display (optional)
+  * - open links (or saved files) via hildon_uri_open() (like xdg-open) - e.g. open an URL with jib
+  * - dedicated image inspection window with pinch gestures (pan/zoom) for received images
+  * - State and logic is on the C++ side, and stored - since QML may dismiss/destroy model delegates when not in view (may happen while scrolling))
+  * compose: address book typo
+
+ -- Sander <sander@sanderf.nl>  Tue, 26 Aug 2025 11:04:02 +0300
+
 conversations (0.7.67) unstable; urgency=medium
 
   * compose: osso/abook contact chooser dialog
