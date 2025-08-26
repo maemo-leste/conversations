@@ -87,10 +87,8 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
   ui->checkBox_enableGPUAccel->setChecked(config()->get(ConfigKeys::EnableGPUAccel).toBool());
   connect(ui->checkBox_enableGPUAccel, &QCheckBox::toggled, [this](bool toggled){
     config()->set(ConfigKeys::EnableGPUAccel, toggled);
-    if (toggled) {
-      if(const auto reply = QMessageBox::question(this, "Quit", "Quit application now?", QMessageBox::Yes | QMessageBox::No); reply == QMessageBox::Yes)
-        QApplication::quit();
-    }
+    if(const auto reply = QMessageBox::question(this, "Quit", "Quit application now?", QMessageBox::Yes | QMessageBox::No); reply == QMessageBox::Yes)
+      QApplication::quit();
     emit enableGPUAccel(toggled);
   });
 
