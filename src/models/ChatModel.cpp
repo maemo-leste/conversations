@@ -142,17 +142,18 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
 
     const auto event_id = message->event_id();
     if (!webPreviewCache.contains(event_id)) {
-      auto *x = new PreviewModel(event_id);
-      const auto ptr = QSharedPointer<PreviewModel>(x);
+      auto *previewModel = new PreviewModel(event_id);
+      const auto ptr = QSharedPointer<PreviewModel>(previewModel);
 
-      //const auto ptr = QSharedPointer<PreviewModel>::create(event_id);
-      connect(x, &PreviewModel::previewItemClicked, this, &ChatModel::previewItemClicked);
+      connect(previewModel, &PreviewModel::previewItemClicked, this, &ChatModel::previewItemClicked);
       ptr->addLinks(links);
       webPreviewCache[event_id] = ptr;
 
       bool requires_user_interaction = config()->get(ConfigKeys::LinkPreviewRequiresUserInteraction).toBool();
       if (!requires_user_interaction)
         ptr->buttonPressed();
+    } else {
+      connect(webPreviewCache[event_id].data(), &PreviewModel::previewItemClicked, this, &ChatModel::previewItemClicked, Qt::UniqueConnection);
     }
 
     return QVariant::fromValue(webPreviewCache[event_id].data());
