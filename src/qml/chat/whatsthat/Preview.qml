@@ -29,7 +29,7 @@ Rectangle {
         Rectangle {
             color: "transparent"
             visible: previewRoot.model.displayButton
-            Layout.preferredHeight: previewRoot.model.buttonHeight * ctx.scaleFactor
+            Layout.preferredHeight: ctx.scaleFactor !== 1.0 ? 64 : previewRoot.model.buttonHeight
             Layout.fillWidth: true
 
             RowLayout {
@@ -51,7 +51,9 @@ Rectangle {
 
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
-                                font.pointSize: 14 * ctx.scaleFactor
+                                font.pointSize: ctx.scaleFactor !== 1.0 ? 16 : 14;
+                                font.bold: true
+                                font.family: fixedFont
                                 wrapMode: hardWordWrap ? Text.WrapAnywhere : Text.WordWrap
                                 color: "white"
                                 text: {
@@ -81,12 +83,12 @@ Rectangle {
 
                     Item {
                         Layout.fillHeight: true
-                        Layout.preferredWidth: 42
+                        Layout.preferredWidth: ctx.scaleFactor !== 1.0 ? 60 : 42;
 
                         Image {
                             visible: previewRoot.model.state !== 3
-                            width: 32
-                            height: 32
+                            width: ctx.scaleFactor !== 1.0 ? 46 : 32;
+                            height: ctx.scaleFactor !== 1.0 ? 46 : 32;
                             anchors.centerIn: parent
                             source: "qrc:/Shortcut.svg"
                             sourceSize: Qt.size(width, height)
@@ -97,8 +99,8 @@ Rectangle {
                             id: previewProgressIcon
                             visible: previewRoot.model.state === 3
                             anchors.centerIn: parent
-                            height: 32
-                            width: 32
+                            height: 32 * ctx.scaleFactor
+                            width: 32 * ctx.scaleFactor
                             source: "qrc:/Progress%1.svg".arg(previewRoot.loadingIconFrameIndex)
                             sourceSize: Qt.size(width, height)
 

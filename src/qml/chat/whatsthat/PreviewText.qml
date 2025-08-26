@@ -19,12 +19,12 @@ RowLayout {
         color: "#1f2528"
         visible: itemType !== 2
         Layout.fillHeight: true
-        Layout.preferredWidth: 42
+        Layout.preferredWidth: ctx.scaleFactor !== 1.0 ? 60 : 42;
 
         Image {
             id: resultIcon
-            width: 32
-            height: 32
+            width: ctx.scaleFactor !== 1.0 ? 46 : 32;
+            height: ctx.scaleFactor !== 1.0 ? 46 : 32;
             anchors.centerIn: parent
             source: icon
             sourceSize: Qt.size(width, height)
