@@ -4,12 +4,21 @@
 
 #include "lib/rtcom/rtcom_public.h"
 #include "lib/rtcom/rtcom_models.h"
+#include "lib/webpreviewmodel.h"
 
 #include "models/ChatModel.h"
 #include "conversations.h"
 
-ChatModel::ChatModel(QObject *parent)
-    : QAbstractListModel(parent) {
+ChatModel::ChatModel(const bool has_preview_capability, QObject *parent)
+    : m_has_preview_capability(has_preview_capability), QAbstractListModel(parent) {
+  if(m_has_preview_capability) {
+    const auto *ctx = Conversations::instance();
+    connect(ctx, &Conversations::enableLinkPreviewEnabledToggled, [=](bool enabled) {
+      const QModelIndex topLeft = index(0, 0);
+      const QModelIndex bottomRight = index(rowCount() - 1, 0);
+      emit dataChanged(topLeft, bottomRight, { previewRole });
+    });
+  }
 }
 
 void ChatModel::prependMessage(const QSharedPointer<ChatMessage> &message) {
@@ -115,15 +124,46 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
     return message->displayTimestamp();
   else if (role == shouldHardWordWrapRole)
     return message->shouldHardWordWrap();
-  else if (role == weblinksRole)
+  else if (role == weblinksRole) {
     return message->weblinks();
+  }
+  else if (role == weblinksCountRole) {
+    return message->weblinks_count();
+  }
+  else if (role == previewRole) {
+    if (!m_has_preview_capability) return {};
+    auto linkPreviewEnabled = config()->get(ConfigKeys::LinkPreviewEnabled).toBool();
+    if (!linkPreviewEnabled)
+      return {};
+
+    const auto links = message->weblinks();
+    if (links.isEmpty())
+      return {};
+
+    const auto event_id = message->event_id();
+    if (!webPreviewCache.contains(event_id)) {
+      auto *x = new PreviewModel(event_id);
+      const auto ptr = QSharedPointer<PreviewModel>(x);
+
+      //const auto ptr = QSharedPointer<PreviewModel>::create(event_id);
+      connect(x, &PreviewModel::previewItemClicked, this, &ChatModel::previewItemClicked);
+      ptr->addLinks(links);
+      webPreviewCache[event_id] = ptr;
+
+      bool requires_user_interaction = config()->get(ConfigKeys::LinkPreviewRequiresUserInteraction).toBool();
+      if (!requires_user_interaction)
+        ptr->buttonPressed();
+    }
+
+    return QVariant::fromValue(webPreviewCache[event_id].data());
+  }
   return QVariant();
 }
 
 void ChatModel::exportChatToCsv(const QString &service, const QString &group_uid, QObject *parent) {
   qDebug() << __FUNCTION__;
 
-  auto *model = new ChatModel(parent);
+  auto *model = new ChatModel(false, parent);
   model->setGroupUID(group_uid);
   model->setServiceID(service);
 
@@ -177,6 +217,8 @@ QHash<int, QByteArray> ChatModel::roleNames() const {
   roles[displayTimestampRole] = "display_timestamp";
   roles[shouldHardWordWrapRole] = "hardWordWrap";
   roles[weblinksRole] = "weblinks";
+  roles[weblinksCountRole] = "weblinks_count";
+  roles[previewRole] = "preview";
   return roles;
 }
 

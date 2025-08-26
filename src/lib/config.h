@@ -25,7 +25,10 @@ namespace ConfigKeys {
         EnableGPUAccel,
         EnableSlim,
         EnableLogWrite,
-        EnableLogSyslog
+        EnableLogSyslog,
+        LinkPreviewEnabled,
+        LinkPreviewRequiresUserInteraction,
+        LinkPreviewImageEnabled
     };
     Q_ENUM_NS(ConfigKey)
 }

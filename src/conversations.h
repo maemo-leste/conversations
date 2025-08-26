@@ -15,6 +15,7 @@
 #include "lib/tp/tp.h"
 #include "lib/state.h"
 #include "lib/abook/abook_public.h"
+#include "lib/PreviewImageProvider.h"
 #include "lib/libnotify-qt/Notification.h"
 #include "models/ChatModel.h"
 #include "models/ContactItem.h"
@@ -77,7 +78,9 @@ public:
     Telepathy *telepathy;
     QList<QSharedPointer<ServiceAccount>> serviceAccounts;
     AvatarImageProvider* avatarProvider = nullptr;
-
+#ifdef QUICK
+    PreviewImageProvider* previewImageProvider = nullptr;
+#endif
     // keep track of previous libnotify broadcasts to prevent notification spam
     QMap<QString, uint64_t> notificationMap;  // remote_uid, context
 
@@ -115,6 +118,9 @@ signals:
     void hildonThemeChanged();
     void avatarChanged(std::string local_uid, std::string remote_uid);
     void abookReady();
+    void enableLinkPreviewEnabledToggled(bool enabled);
+    void enableLinkPreviewImageEnabledToggled(bool enabled);
+    void enableLinkPreviewRequiresUserInteractionToggled(bool enabled);
 
 public slots:
     void onContactsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts);

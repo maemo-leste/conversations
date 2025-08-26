@@ -85,7 +85,10 @@ public:
     bool displayTimestamp() const;
     bool shouldHardWordWrap() const;
 
-    QStringList weblinks() const;
+    QStringList weblinks();
+    unsigned int weblinks_count() const {
+      return m_weblinks_count;
+    }
 
     QSharedPointer<ChatMessage> previous = nullptr;
     QSharedPointer<ChatMessage> next = nullptr;
@@ -101,5 +104,8 @@ private:
     QString m_persistent_uid;
     QDateTime m_date;
     QString m_cid;
+
+    QStringList m_weblinks;
+    unsigned int m_weblinks_count = 0;
 };
 

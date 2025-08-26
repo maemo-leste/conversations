@@ -3,7 +3,10 @@ import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.0
 import QtGraphicalEffects 1.15
 
+import Conversations 1.0
+
 import "../components" as Components
+import "."
 
 RowLayout {
     id: item
@@ -99,7 +102,7 @@ RowLayout {
         }
     }
 
-    height: {
+    function calculateItemHeight() {
         let meta_height = 12 * ctx.scaleFactor;
         if(!isHead && !display_timestamp)
             meta_height = -12 * ctx.scaleFactor;
@@ -119,6 +122,10 @@ RowLayout {
             return _height;
         }
     }
+
+    height: preview !== undefined ?
+        preview.totalHeight + item.calculateItemHeight() :
+        item.calculateItemHeight()
 
     Rectangle {
         visible: outgoing
@@ -257,6 +264,46 @@ RowLayout {
                         font.pointSize: 14 * ctx.scaleFactor
                         wrapMode: hardWordWrap ? Text.WrapAnywhere : Text.WordWrap
                         Layout.fillWidth: true
+
+                        MouseArea {
+                            anchors.fill: parent
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
+                            onPressed: {
+                                textContainer.state = "on";
+                            }
+                            onReleased: {
+                                textContainer.state = "off";
+                            }
+                            onClicked: function (mouse) {
+                                if (mouse.button === Qt.RightButton)
+                                    chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
+                            }
+                            onPressAndHold: function (mouse) {
+                                if (mouse.button === Qt.LeftButton /*&&
+                                     mouse.source === Qt.MouseEventNotSynthesized*/) {
+                                    chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
+                                }
+                            }
+                        }
+                    }
+
+                    Loader {
+                        id: previewLoader
+                        visible: status === Loader.Ready
+                        active: typeof(preview) !== 'undefined'
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: preview !== undefined ? preview.totalHeight : 0;
+
+                        sourceComponent: Component {
+                            Preview {
+                                id: previewComponent
+                                model: preview
+                            }
+                        }
+
+                        onLoaded: {
+                            // console.log("preview component state", preview.state);
+                        }
                     }
 
                     Item {
@@ -264,27 +311,6 @@ RowLayout {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                     }
-                }
-            }
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
-            onPressed: {
-                textContainer.state = "on";
-            }
-            onReleased: {
-                textContainer.state = "off";
-            }
-            onClicked: function (mouse) {
-                if (mouse.button === Qt.RightButton)
-                    chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
-            }
-            onPressAndHold: function (mouse) {
-                if (mouse.button === Qt.LeftButton /*&&
-                     mouse.source === Qt.MouseEventNotSynthesized*/) {
-                    chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
                 }
             }
         }

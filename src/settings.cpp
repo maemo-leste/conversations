@@ -150,6 +150,26 @@ Settings::Settings(Conversations *ctx, QWidget *parent) :
       QApplication::quit();
   });
 
+  // attachment preview options
+  ui->checkBox_enablePreview->setChecked(config()->get(ConfigKeys::LinkPreviewEnabled).toBool());
+  ui->checkBox_enablePreviewInlineImages->setChecked(config()->get(ConfigKeys::LinkPreviewImageEnabled).toBool());
+  ui->checkBox_enablePreviewUserInteraction->setChecked(config()->get(ConfigKeys::LinkPreviewRequiresUserInteraction).toBool());
+
+  connect(ui->checkBox_enablePreview, &QCheckBox::toggled, [this](bool toggled){
+    config()->set(ConfigKeys::LinkPreviewEnabled, toggled);
+    emit enableLinkPreviewEnabledToggled(toggled);
+  });
+
+  connect(ui->checkBox_enablePreviewInlineImages, &QCheckBox::toggled, [this](bool toggled){
+    config()->set(ConfigKeys::LinkPreviewImageEnabled, toggled);
+    emit enableLinkPreviewImageEnabledToggled(toggled);
+  });
+
+  connect(ui->checkBox_enablePreviewUserInteraction, &QCheckBox::toggled, [this](bool toggled){
+    config()->set(ConfigKeys::LinkPreviewRequiresUserInteraction, toggled);
+    emit enableLinkPreviewRequiresUserInteractionToggled(toggled);
+  });
+
   // chat bg gradient shader
   ui->checkBox_enableDisplayChatGradient->setChecked(config()->get(ConfigKeys::EnableDisplayChatGradient).toBool());
   connect(ui->checkBox_enableDisplayChatGradient, &QCheckBox::toggled, [this](bool toggled){

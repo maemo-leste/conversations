@@ -320,6 +320,7 @@ namespace abookqt {
         break;
       }
 
+      // @todo: segfault here during `mc-tool disable <gabble xmpp acc>`
       std::string persistent_uid = osso_abook_contact_get_persistent_uid(contact);
       if (!persistent_uid.empty())
         ROSTER.erase(persistent_uid);

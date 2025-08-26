@@ -43,6 +43,9 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
 
   CLOCK_MEASURE_START(start_avatar_provider);
   this->avatarProvider = new AvatarImageProvider;
+#ifdef QUICK
+  this->previewImageProvider = new PreviewImageProvider;
+#endif
   CLOCK_MEASURE_END(start_avatar_provider, "ctx::avatar_provider");
 
   CLOCK_MEASURE_START(start_tp_constructor);
@@ -104,7 +107,7 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   CLOCK_MEASURE_END(start_hildon_theme, "ctx::hildon_theme");
 
   CLOCK_MEASURE_START(start_chatmodel);
-  chatOverviewModel = new ChatModel();
+  chatOverviewModel = new ChatModel(false);
   CLOCK_MEASURE_END(start_chatmodel, "ctx::chatmodel");
 
   connect(telepathy, &Telepathy::databaseAddition, this, &Conversations::onDatabaseAddition);

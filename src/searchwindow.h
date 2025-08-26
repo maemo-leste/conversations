@@ -1,5 +1,4 @@
-#ifndef SEARCHWINDOW_H
-#define SEARCHWINDOW_H
+#pragma once
 
 #include <QtGlobal>
 #include <QResource>
@@ -63,4 +62,3 @@ private:
     OverviewProxyModel* m_overviewProxyModel = nullptr;
 };
 
-#endif

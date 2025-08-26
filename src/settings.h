@@ -38,6 +38,9 @@ signals:
     void enableDisplayChatGradientToggled(bool enabled);
     void enableSlimToggled(bool enabled);
     void enterKeySendsChatToggled(bool enabled);
+    void enableLinkPreviewEnabledToggled(bool enabled);
+    void enableLinkPreviewImageEnabledToggled(bool enabled);
+    void enableLinkPreviewRequiresUserInteractionToggled(bool enabled);
 
 private slots:
     void onTextScalingValueChanged(int val);

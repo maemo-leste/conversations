@@ -70,7 +70,12 @@ ChatWindow::ChatWindow(
     chatBox->installEventFilter(this);
   }
 
-   this->chatModel = new ChatModel(this);
+#ifdef QUICK
+   this->chatModel = new ChatModel(true, this);
+#else
+  this->chatModel = new ChatModel(false, this);
+#endif
+   connect(this->chatModel, &ChatModel::previewItemClicked, this, &ChatWindow::onPreviewItemClicked);
 #ifndef QUICK
   this->chatModel->setLimit(-1);
 #endif
@@ -87,6 +92,7 @@ ChatWindow::ChatWindow(
    qctx->setContextProperty("fixedFont", fixedFont);
    ui->quick->setAttribute(Qt::WA_AlwaysStackOnTop);
    ui->quick->engine()->addImageProvider("avatar", new AvatarImageProvider);
+   ui->quick->engine()->addImageProvider("previewImage", new PreviewImageProvider);
 
    // QML theme
    const auto theme = config()->get(ConfigKeys::ChatTheme).toString();
@@ -353,6 +359,11 @@ void ChatWindow::onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg) {
   m_searchWindow->deleteLater();
 }
 
+void ChatWindow::onClosePreviewWindow(const QSharedPointer<ChatMessage> &msg) {
+  m_previewWindow->close();
+  m_previewWindow->deleteLater();
+}
+
 void ChatWindow::onOpenSearchWindow() {
   m_searchWindow = new SearchWindow(m_ctx, group_uid, this);
   m_searchWindow->show();
@@ -360,6 +371,12 @@ void ChatWindow::onOpenSearchWindow() {
   connect(m_searchWindow, &SearchWindow::searchResultClicked, this, &ChatWindow::onSearchResultClicked);
   connect(m_searchWindow, &SearchWindow::searchResultClicked, this, &ChatWindow::onCloseSearchWindow);
 }
+
+void ChatWindow::onOpenPreviewWindow(QSharedPointer<PreviewItem> item) {
+  m_previewWindow = new PreviewWindow(m_ctx, item, this);
+  m_previewWindow->show();
+}
+
 
 void ChatWindow::onSearchResultClicked(const QSharedPointer<ChatMessage> &msg) {
   this->setHighlight(msg->event_id());
@@ -541,6 +558,65 @@ void ChatWindow::closeEvent(QCloseEvent *event) {
 
   emit closed(group_uid);
   QWidget::closeEvent(event);
+}
+
+void ChatWindow::onPreviewItemClicked(const QSharedPointer<PreviewItem> &item, const QPoint point) {
+  const bool preview_window =
+    item->itemType == PreviewItem::ItemType::Image &&
+    item->displayType == PreviewItem::DisplayType::Image;
+
+  const bool open_from_disk =
+    item->state == PreviewItem::State::Downloaded &&
+    item->itemType != PreviewItem::ItemType::Html;
+
+  QString ref_type = item->itemType == PreviewItem::ItemType::Html ? "link" : "file";
+  if (ref_type == "file" && item->state != PreviewItem::State::Downloaded)
+    ref_type = "link";
+  QString ref_title = ref_type == "link" ? "Open in browser" : "Open from disk";
+  if (preview_window)
+    ref_title = "Preview file";
+
+  QDialog dialog(this);
+  dialog.setWindowTitle(QString("Attachment"));
+  dialog.setModal(true);
+  //
+  QVBoxLayout *mainLayout = new QVBoxLayout(&dialog);
+  //
+  QLabel *label = new QLabel(QString(item->url.toString()));
+  mainLayout->addWidget(label);
+  //
+  QHBoxLayout *buttonLayout = new QHBoxLayout();
+  mainLayout->addLayout(buttonLayout);
+  //
+  QPushButton *openButton = new QPushButton(ref_title, &dialog);
+  QPushButton *copyUrlButton = new QPushButton("Copy URL", &dialog);
+  QPushButton *cancelButton = new QPushButton("Cancel", &dialog);
+  buttonLayout->addWidget(cancelButton);
+  buttonLayout->addWidget(copyUrlButton);
+  buttonLayout->addWidget(openButton);
+  //
+  connect(openButton, &QPushButton::clicked, [&dialog] { dialog.done(1); });
+  connect(copyUrlButton, &QPushButton::clicked, [&dialog] { dialog.done(2); });
+  connect(cancelButton, &QPushButton::clicked, [&dialog] { dialog.done(0); });
+  // dialog
+  if (const int result = dialog.exec(); result == 1) {
+    if (preview_window) {
+      this->onOpenPreviewWindow(item);
+    } else {
+      GError *error = NULL;
+      const QString ref = open_from_disk ? item->filePath : item->url.toString();
+      hildon_uri_open(ref.toStdString().c_str(), NULL, &error);
+    }
+  } else if (result == 2) {
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(item->url.toString());
+
+    QMessageBox _msgBox;
+    _msgBox.setText(QString("URL copied."));
+    _msgBox.exec();
+  } else {
+    // dismiss
+  }
 }
 
 void ChatWindow::onDisplayChatBox() {

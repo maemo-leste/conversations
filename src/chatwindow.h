@@ -27,7 +27,9 @@
 #include "lib/abook/abook_roster.h"
 #include "lib/rtcom/rtcom_public.h"
 #include "lib/mainwindow.h"
+#include "lib/webpreviewmodel.h"
 #include "searchwindow.h"
+#include "previewwindow.h"
 #include "models/ChatModel.h"
 #include "models/ChatMessage.h"
 
@@ -71,8 +73,10 @@ private slots:
     void onChatPreReady();
     void onGatherMessage();
     void onOpenSearchWindow();
+    void onOpenPreviewWindow(QSharedPointer<PreviewItem> item);
     void onExportToCsv();
     void onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg);
+    void onClosePreviewWindow(const QSharedPointer<ChatMessage> &msg);
     void onAutoCloseChatWindowsChanged(bool enabled);
     void onSearchResultClicked(const QSharedPointer<ChatMessage> &msg);
     void onGroupchatJoinLeaveRequested();
@@ -93,6 +97,7 @@ private slots:
     void onAcceptFriend();
     void onRejectFriend();
     void onDisplayChatBox();
+    void onPreviewItemClicked(const QSharedPointer<PreviewItem> &item, const QPoint point);
 
 signals:
     void closed(const QString &remote_uid);
@@ -110,6 +115,7 @@ private:
     ChatModel *chatModel = nullptr;
     static ChatWindow *pChatWindow;
     SearchWindow *m_searchWindow = nullptr;
+    PreviewWindow *m_previewWindow = nullptr;
     bool m_auto_join = false;
     bool m_ignore_notifications = false;
     QSharedPointer<ContactItem> m_abook_contact;

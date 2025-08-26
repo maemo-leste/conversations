@@ -257,3 +257,25 @@ void Utils::init_device_type() {
     }
 }
 
+QString Utils::extractTitleFromHtml(const QString &filePath, const int max_len) {
+  QFile file(filePath);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    qWarning() << "Cannot open file:" << filePath;
+    return {};
+  }
+
+  QTextStream in(&file);
+  in.setCodec("UTF-8");
+  const QString content = in.readAll();
+  file.close();
+
+  const QRegularExpression re("<title>(.*?)</title>", QRegularExpression::CaseInsensitiveOption | QRegularExpression::DotMatchesEverythingOption);
+  QRegularExpressionMatch match = re.match(content);
+  if (match.hasMatch()) {
+    QString title = match.captured(1).trimmed();
+    if (title.length() > max_len)
+      title = title.left(max_len);
+    return title;
+  }
+  return {};
+}

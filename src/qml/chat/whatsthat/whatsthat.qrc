@@ -3,6 +3,9 @@
         <file>bg.png</file>
         <file>whatsthat.png</file>
         <file>whatsthat.qml</file>
+        <file>Preview.qml</file>
         <file>MessageDelegate.qml</file>
+        <file>PreviewImage.qml</file>
+        <file>PreviewText.qml</file>
     </qresource>
 </RCC>

@@ -29,7 +29,10 @@ static QHash<ConfigKeys::ConfigKey, ConfigDirective> configStrings = {
   {ConfigKeys::GroupChatChannels, {QS("GroupChatChannels"), "{}"}},
   {ConfigKeys::EnableSlim, {QS("EnableSlim"), false}},
   {ConfigKeys::EnableLogWrite, {QS("EnableLogWrite"), false}},
-  {ConfigKeys::EnableLogSyslog, {QS("EnableLogSyslog"), false}}
+  {ConfigKeys::EnableLogSyslog, {QS("EnableLogSyslog"), false}},
+  {ConfigKeys::LinkPreviewEnabled, {QS("LinkPreviewEnabled"), true}},
+  {ConfigKeys::LinkPreviewRequiresUserInteraction, {QS("LinkPreviewRequiresUserInteraction"), true}},
+  {ConfigKeys::LinkPreviewImageEnabled, {QS("LinkPreviewImageEnabled"), true}}
 };
 
 QPointer<Config> Config::m_instance(nullptr);

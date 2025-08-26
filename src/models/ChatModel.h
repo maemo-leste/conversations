@@ -14,7 +14,7 @@
 
 #include "models/ChatMessage.h"
 #include "lib/rtcom/rtcom_public.h"
-
+#include "lib/webpreviewmodel.h"
 
 class ChatModel : public QAbstractListModel {
 Q_OBJECT
@@ -46,10 +46,12 @@ public:
         MessageReadRole,
         displayTimestampRole,
         weblinksRole,
+        weblinksCountRole,
+        previewRole,
         shouldHardWordWrapRole
     };
 
-    explicit ChatModel(QObject *parent = nullptr);
+    explicit ChatModel(bool has_preview_capability, QObject *parent = nullptr);
     ~ChatModel() override {
       this->clear();
       qDebug() << "destroying ChatModel";
@@ -98,6 +100,7 @@ signals:
     void offsetChanged();
     void countChanged();
     void messageRead(unsigned int event_id);
+    void previewItemClicked(QSharedPointer<PreviewItem> item, const QPoint point);
 private slots:
     void onMessageFlagsChanged(unsigned int event_id);
 protected:
@@ -111,4 +114,5 @@ private:
     int m_offset = 0;
     int m_count = 0;
     bool m_exhausted = false;
+    bool m_has_preview_capability = false;
 };

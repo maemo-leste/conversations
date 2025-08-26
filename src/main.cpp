@@ -16,6 +16,7 @@
 #include "lib/ipc.h"
 #include "lib/config.h"
 #include "lib/rtcom/rtcom_public.h"
+#include "lib/webpreviewmodel.h"
 #include "conv-intl.h"
 #include "config-conversations.h"
 #include "mainwindow.h"
@@ -36,6 +37,8 @@
 
 #define PATH_CONV INSTALL_PREFIX_QUOTED "/bin/conversations_qml"
 #define PATH_CONV_SLIM INSTALL_PREFIX_QUOTED "/bin/conversations_slim"
+
+Q_DECLARE_METATYPE(PreviewModel*)
 
 int main(int argc, char *argv[]) {
   // do not run twice
@@ -64,6 +67,12 @@ int main(int argc, char *argv[]) {
 
 #ifdef DEBUG
   clion_debug_setup();
+#endif
+
+#ifdef QUICK
+  qRegisterMetaType<PreviewModel*>("PreviewModel*");
+  qmlRegisterUncreatableType<PreviewModel>("Conversations", 1, 0, "PreviewModel",
+                                          "PreviewModel is created in C++ and cannot be created in QML");
 #endif
 
   // ensure config directory exists
@@ -103,6 +112,8 @@ int main(int argc, char *argv[]) {
 #ifdef DISABLE_QML_DISK_CACHE
   qputenv("QML_DISABLE_DISK_CACHE", "1");
 #endif
+  // QDirIterator it(":", QDirIterator::Subdirectories);
+  // while (it.hasNext()) { qDebug() << it.next(); }
 
   CLOCK_MEASURE_START(start_create_app);
   const QApplication app(argc, argv);

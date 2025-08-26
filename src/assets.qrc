@@ -19,5 +19,24 @@
         <file alias="presence_away.png">assets/images/presence_away.png</file>
         <file alias="presence_empty.png">assets/images/presence_empty.png</file>
         <file alias="presence_unset.png">assets/images/presence_unset.png</file>
+        <file alias="Shortcut.svg">assets/images/Shortcut.svg</file>
+        <file alias="Zoom.svg">assets/images/Zoom.svg</file>
+        <file alias="NavigationLink2D.svg">assets/images/NavigationLink2D.svg</file>
+        <file alias="ExternalLink.svg">assets/images/ExternalLink.svg</file>
+        <file alias="AudioStreamPlayer.svg">assets/images/AudioStreamPlayer.svg</file>
+        <file alias="VideoStreamPlayer.svg">assets/images/VideoStreamPlayer.svg</file>
+        <file alias="Image.svg">assets/images/Image.svg</file>
+        <file alias="PlaceholderTexture2D.svg">assets/images/PlaceholderTexture2D.svg</file>
+        <file alias="FileDead.svg">assets/images/FileDead.svg</file>
+        <file alias="PreviewEnvironment.svg">assets/images/PreviewEnvironment.svg</file>
+        <file alias="ShowInFileSystem.svg">assets/images/ShowInFileSystem.svg</file>
+        <file alias="Progress1.svg">assets/images/Progress1.svg</file>
+        <file alias="Progress2.svg">assets/images/Progress2.svg</file>
+        <file alias="Progress3.svg">assets/images/Progress3.svg</file>
+        <file alias="Progress4.svg">assets/images/Progress4.svg</file>
+        <file alias="Progress5.svg">assets/images/Progress5.svg</file>
+        <file alias="Progress6.svg">assets/images/Progress6.svg</file>
+        <file alias="Progress7.svg">assets/images/Progress7.svg</file>
+        <file alias="Progress8.svg">assets/images/Progress8.svg</file>
     </qresource>
 </RCC>

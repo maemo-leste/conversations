@@ -234,6 +234,34 @@
              </widget>
             </item>
             <item>
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Attachment preview</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_enablePreview">
+              <property name="text">
+               <string>Enable preview</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_enablePreviewUserInteraction">
+              <property name="text">
+               <string>Preview requires user-interaction</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_enablePreviewInlineImages">
+              <property name="text">
+               <string>inline preview images</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QLabel" name="label">
               <property name="text">
                <string>in-development:</string>

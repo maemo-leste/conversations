@@ -303,6 +303,11 @@ void MainWindow::onOpenSettingsWindow() {
     m_ctx->displayChatGradient = toggled;
     emit m_ctx->displayChatGradientChanged(toggled);
   });
+
+  connect(m_settings, &Settings::enableLinkPreviewEnabledToggled, m_ctx, &Conversations::enableLinkPreviewEnabledToggled);
+  connect(m_settings, &Settings::enableLinkPreviewImageEnabledToggled, m_ctx, &Conversations::enableLinkPreviewImageEnabledToggled);
+  connect(m_settings, &Settings::enableLinkPreviewRequiresUserInteractionToggled, m_ctx, &Conversations::enableLinkPreviewRequiresUserInteractionToggled);
+
   connect(m_settings, &Settings::enterKeySendsChatToggled, m_ctx, &Conversations::enterKeySendsChatToggled);
 }
 

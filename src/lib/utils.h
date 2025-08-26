@@ -64,6 +64,7 @@ public:
   static int IPCOpen(const std::string &path);
   static bool IPCSend(int sock, const QString &message);
   static QStringList extractWebLinks(const QString &content);
+  static QString extractTitleFromHtml(const QString &filePath, int max_len = 32);
   static QString escapeHtml(const QString& text);
   static QList<QMap<QString, QString>> parseDebianChangelog(const QString &text);
 

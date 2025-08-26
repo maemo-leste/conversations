@@ -189,9 +189,12 @@ ChatMessage::~ChatMessage() {
 // #endif
 }
 
-QStringList ChatMessage::weblinks() const {
+QStringList ChatMessage::weblinks() {
   const auto text = QString::fromStdString(m_raw->text);
   if(!text.contains("http"))
     return {};
-  return Utils::extractWebLinks(text);
+  auto results = Utils::extractWebLinks(text);
+  m_weblinks_count = results.size();
+  m_weblinks = results;
+  return results;
 }
