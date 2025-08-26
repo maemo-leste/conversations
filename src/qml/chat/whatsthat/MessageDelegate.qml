@@ -65,7 +65,9 @@ RowLayout {
                 return width_message;
             }
 
-            // console.log("max_width", max_width);
+            if(width_result >= max_width)
+                return width_result;
+
             return max_width;
         }
 
