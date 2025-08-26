@@ -124,7 +124,7 @@ RowLayout {
     }
 
     height: preview !== undefined ?
-        preview.totalHeight + item.calculateItemHeight() :
+        (preview.totalHeight * ctx.scaleFactor) + item.calculateItemHeight() :
         item.calculateItemHeight()
 
     Rectangle {
@@ -292,7 +292,7 @@ RowLayout {
                         visible: status === Loader.Ready
                         active: typeof(preview) !== 'undefined'
                         Layout.fillWidth: true
-                        Layout.preferredHeight: preview !== undefined ? preview.totalHeight : 0;
+                        Layout.preferredHeight: preview !== undefined ? preview.totalHeight * ctx.scaleFactor : 0;
 
                         sourceComponent: Component {
                             Preview {

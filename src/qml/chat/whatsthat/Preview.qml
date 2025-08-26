@@ -29,7 +29,7 @@ Rectangle {
         Rectangle {
             color: "transparent"
             visible: previewRoot.model.displayButton
-            Layout.preferredHeight: previewRoot.model.buttonHeight
+            Layout.preferredHeight: previewRoot.model.buttonHeight * ctx.scaleFactor
             Layout.fillWidth: true
 
             RowLayout {
@@ -130,7 +130,7 @@ Rectangle {
         // results
         Rectangle {
             color: "#1f2528"
-            Layout.preferredHeight: previewRoot.model.resultsHeight
+            Layout.preferredHeight: previewRoot.model.resultsHeight * ctx.scaleFactor
 
             Layout.fillWidth: true
             visible: previewRoot.model.resultsHeight !== 0
@@ -144,7 +144,7 @@ Rectangle {
 
                 delegate: Rectangle {
                     width: parent.width
-                    height: itemHeight
+                    height: itemHeight * ctx.scaleFactor
                     color: "transparent"
 
                     // text
