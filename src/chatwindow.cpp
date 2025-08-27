@@ -771,6 +771,7 @@ void ChatWindow::changeEvent(QEvent *event) {
 
 void ChatWindow::resizeEvent(QResizeEvent *event) {
   m_windowHeight = this->height();
+  dynamicInputTextHeight(ui->chatBox_multi);
   QMainWindow::resizeEvent(event);
 }
 
