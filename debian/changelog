@@ -1,3 +1,12 @@
+conversations (0.7.70) unstable; urgency=medium
+
+  * chatwindow: chat textbox input improvements
+  * - Dynamically grow textbox instead of wrapping on a single line, with a vertical max of 50% of available screen space
+  * - Support key combination shift+enter to introduce a newline *whilst* 'auto-send on ENTER' is enabled
+  * - Properly set focus after sending a chat message
+
+ -- Sander <sander@sanderf.nl>  Wed, 27 Aug 2025 03:31:30 +0300
+
 conversations (0.7.69) unstable; urgency=medium
 
   * settings: always ask to restart after changing GPU accel
