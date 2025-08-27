@@ -46,6 +46,7 @@ Q_PROPERTY(bool groupchat MEMBER groupchat NOTIFY groupchatChanged);
 public:
     Ui::ChatWindow *ui;
     explicit ChatWindow(Conversations *ctx, const QString &local_uid, const QString &remote_uid, const QString &group_uid, const QString &channel, const QString &service_uid, QWidget *parent = nullptr);
+
     static Conversations *getContext();
     ~ChatWindow() override;
 public:
@@ -119,7 +120,8 @@ private:
     bool m_auto_join = false;
     bool m_ignore_notifications = false;
     QSharedPointer<ContactItem> m_abook_contact;
-
+protected:
+  void resizeEvent(QResizeEvent *event) override;
 private:
     QTimer *m_windowFocusTimer;
     bool m_enterKeySendsChat = false;
@@ -127,11 +129,12 @@ private:
     unsigned int m_windowFocus = 0; // seconds
     bool m_active = false;  // do we have an active Tp connection?
     bool m_windowActive = false;
-    QWidget* m_chatBox = nullptr;
+    int m_windowHeight = 0;
 private:
     QString remoteId() const;
     void detectActiveChannel();
     void setChatState(Tp::ChannelChatState state) const;
+    void dynamicInputTextHeight(QTextEdit *edit) const;
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;

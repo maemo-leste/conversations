@@ -60,16 +60,6 @@ ChatWindow::ChatWindow(
    setProperty("X-Maemo-Orientation", 2);
    setProperty("X-Maemo-StackedWindow", 0);
 
-   // [chatBox]
-  for (QWidget *chatBox : {static_cast<QWidget*>(ui->chatBox_line), static_cast<QWidget*>(ui->chatBox_multi)}) {
-    chatBox->setFocus();
-    QFontMetrics metrics(chatBox->font());
-    int lineHeight = metrics.lineSpacing();
-    int margins = 25;  // ew, hardcoded.
-    chatBox->setFixedHeight(lineHeight + (margins*2));
-    chatBox->installEventFilter(this);
-  }
-
 #ifdef QUICK
    this->chatModel = new ChatModel(true, this);
 #else
@@ -174,6 +164,31 @@ ChatWindow::ChatWindow(
     ui->actionIgnore_notifications->setText("Ignore notifications");
   }
 
+  m_windowHeight = this->height();
+  this->show();
+
+  // chatBox
+  ui->chatBox_multi->setFocus();
+  // hack to calculate initial line height
+  // 1) send event synchronously
+  // 2) textBox generates some richText
+  // 3) calculate height based on that
+  // 4) reset
+  // other approaches have failed
+  // note: depends on this->show()
+  QKeyEvent press(QEvent::KeyPress, Qt::Key_E, Qt::NoModifier, "e");
+  QKeyEvent release(QEvent::KeyRelease, Qt::Key_E, Qt::NoModifier, "e");
+  QCoreApplication::sendEvent(ui->chatBox_multi, &press);
+  QCoreApplication::sendEvent(ui->chatBox_multi, &release);
+  dynamicInputTextHeight(ui->chatBox_multi);
+  ui->chatBox_multi->setText("");
+  //
+  connect(ui->chatBox_multi, &QTextEdit::textChanged, this, [this] {
+      dynamicInputTextHeight(ui->chatBox_multi);
+  });
+  // manually handle keys: enter, and shift+enter
+  ui->chatBox_multi->installEventFilter(this);
+
 #ifndef QUICK
   setupChatWidget();
   connect(this->chatModel, &ChatModel::countChanged, this, [this]() {
@@ -204,6 +219,31 @@ void ChatWindow::setupChatWidget() {
   ui->chat->moveCursor(QTextCursor::End);
 }
 #endif
+
+void ChatWindow::dynamicInputTextHeight(QTextEdit *edit) const {
+  if (!edit || !edit->parentWidget())
+    return;
+
+  const QSizeF doc_size = edit->document()->documentLayout()->documentSize();
+  int h = qCeil(doc_size.height()
+                + edit->contentsMargins().top()
+                + edit->contentsMargins().bottom())
+                + 4;
+
+  const int line_height = edit->fontMetrics().height()
+    + edit->contentsMargins().top()
+    + edit->contentsMargins().bottom()
+    + 4;
+
+  // min height
+  const int min_h = line_height + 2;
+
+  // max height = 50% window
+  const int max_h = m_windowHeight / 2;
+
+  h = qBound(min_h, h, max_h);
+  edit->setFixedHeight(h);
+}
 
 void ChatWindow::onContactsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts) {
   int wegweg = 1;
@@ -430,20 +470,19 @@ void ChatWindow::onGatherMessage() {
   emit avatarChanged();
   QString msg;
 
-  if (const auto chatBox_line = qobject_cast<QLineEdit*>(m_chatBox)) {
-    msg = this->ui->chatBox_line->text();
-    chatBox_line->clear();
-  } else if (const auto chatBox_multi = qobject_cast<QTextEdit*>(m_chatBox)) {
-    msg = this->ui->chatBox_multi->toPlainText();
-    chatBox_multi->clear();
-  }
+  msg = this->ui->chatBox_multi->toPlainText();
+  this->ui->chatBox_multi->clear();
 
   msg = msg.trimmed();
   if(msg.isEmpty())
     return;
 
   emit sendMessage(local_uid, remoteId(), msg);
-  m_chatBox->setFocus();
+
+  // apparently need to wait a bit
+  QTimer::singleShot(50, this, [this] {
+      this->ui->chatBox_multi->setFocus();
+  });
 }
 
 void ChatWindow::onGroupchatJoinLeaveRequested() {
@@ -527,25 +566,26 @@ void ChatWindow::setChatState(Tp::ChannelChatState state) const {
 }
 
 bool ChatWindow::eventFilter(QObject *watched, QEvent *event) {
-  switch(event->type()) {
-    case QKeyEvent::KeyPress:
-    {
+  switch (event->type()) {
+    case QEvent::KeyPress: {
       auto *ke = static_cast<QKeyEvent*>(event);
 
-      if(m_enterKeySendsChat &&
-         (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter)) {
-          this->onGatherMessage();
-          return true;
+      if (m_enterKeySendsChat &&
+          (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter) &&
+          (ke->modifiers() == Qt::NoModifier)) {
+
+        this->onGatherMessage();
+        return true;
       }
 
       break;
     }
     case QEvent::WindowActivate:
       setChatState(Tp::ChannelChatStateActive);
-      break;
+    break;
     case QEvent::WindowDeactivate:
       setChatState(Tp::ChannelChatStateInactive);
-      break;
+    break;
   }
 
   return QMainWindow::eventFilter(watched, event);
@@ -620,16 +660,7 @@ void ChatWindow::onPreviewItemClicked(const QSharedPointer<PreviewItem> &item, c
 }
 
 void ChatWindow::onDisplayChatBox() {
-  ui->chatBox_line->hide();
-  ui->chatBox_multi->hide();
-
-  if (m_enterKeySendsChat) {
-    ui->chatBox_line->show();
-    m_chatBox = ui->chatBox_line;
-  } else {
-    ui->chatBox_multi->show();
-    m_chatBox = ui->chatBox_multi;
-  }
+  ui->chatBox_multi->show();
 }
 
 void ChatWindow::showMessageContextMenu(const unsigned int event_id, const QPoint point) {
@@ -650,16 +681,11 @@ void ChatWindow::showMessageContextMenu(const unsigned int event_id, const QPoin
   QAction actionNew("Reply", this);
   connect(&actionNew, &QAction::triggered, [this, msg] {
     const auto text_reply = QString("> %1\n").arg(msg->text());
-    if (const auto chatBox_line = qobject_cast<QLineEdit*>(m_chatBox)) {
-      chatBox_line->setText(text_reply);
-      chatBox_line->setFocus();
-    } else if (const auto chatBox_multi = qobject_cast<QTextEdit*>(m_chatBox)) {
-      chatBox_multi->setText(text_reply);
-      QTextCursor cursor = chatBox_multi->textCursor();
-      cursor.movePosition(QTextCursor::End);
-      chatBox_multi->setTextCursor(cursor);
-      chatBox_multi->setFocus();
-    }
+    ui->chatBox_multi->setText(text_reply);
+    QTextCursor cursor = ui->chatBox_multi->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    ui->chatBox_multi->setTextCursor(cursor);
+    ui->chatBox_multi->setFocus();
   });
   contextMenu.addAction(&actionNew);
 
@@ -741,6 +767,11 @@ void ChatWindow::changeEvent(QEvent *event) {
         m_ctx->overviewModel->loadOverviewMessages();  // refresh overview
     }
   }
+}
+
+void ChatWindow::resizeEvent(QResizeEvent *event) {
+  m_windowHeight = this->height();
+  QMainWindow::resizeEvent(event);
 }
 
 ChatWindow::~ChatWindow() {
