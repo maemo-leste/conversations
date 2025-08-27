@@ -1,3 +1,9 @@
+conversations (0.7.71) unstable; urgency=medium
+
+  * chatwindow: recalc (max) textbox height on window resizes (or rotation)
+
+ -- Sander <sander@sanderf.nl>  Wed, 27 Aug 2025 03:38:55 +0300
+
 conversations (0.7.70) unstable; urgency=medium
 
   * chatwindow: chat textbox input improvements
