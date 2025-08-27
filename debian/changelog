@@ -1,3 +1,9 @@
+conversations (0.7.72) unstable; urgency=medium
+
+  * debian: stop conversations during upgrades or purges
+
+ -- Sander <sander@sanderf.nl>  Wed, 27 Aug 2025 04:28:45 +0300
+
 conversations (0.7.71) unstable; urgency=medium
 
   * chatwindow: recalc (max) textbox height on window resizes (or rotation)
