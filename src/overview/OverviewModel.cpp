@@ -7,7 +7,7 @@
 #include "overview/OverviewModel.h"
 #include "conversations.h"
 
-ServiceAccount::ServiceAccount() {}
+ServiceAccount::ServiceAccount() = default;
 ServiceAccount* ServiceAccount::fromTpProtocol(const QString &local_uid, const QString &protocol) {
   auto *rtn = new ServiceAccount();
   rtn->protocol = protocol;
