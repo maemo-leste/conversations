@@ -267,10 +267,6 @@ void Telepathy::onNewAccount(const Tp::AccountPtr &account) {
   });
 
   emit accountAdded(accountPtr);
-
-  // set initial online state
-  const auto online = telepathyAccount->acc->isOnline();
-  telepathyAccount->onOnline(online);
 }
 
 void Telepathy::onAccountRemoved(const QString &local_uid) {
@@ -530,6 +526,10 @@ void TelepathyAccount::onConnectionChanged(const Tp::ConnectionPtr &conn) {
 
 void TelepathyAccount::onConnectionReady(Tp::PendingOperation *op) {
   m_connection = op->property("connection").value<Tp::ConnectionPtr>();
+
+  // set initial onlineness
+  const auto online = this->acc->isOnline();
+  this->onOnline(online);
 }
 
 void TelepathyAccount::TpOpenChannelWindow(Tp::TextChannelPtr channel) {
