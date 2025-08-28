@@ -403,6 +403,18 @@ namespace abookqt {
     const bool can_block = osso_abook_contact_can_block(contact, NULL);
     const bool can_auth = osso_abook_contact_can_request_auth(contact, NULL);
 
+    TpAccount *acc = osso_abook_contact_get_account(contact);
+    TpConnection *connection = tp_account_get_connection(acc);
+    std::string tp_account_cm_name;
+    std::string tp_protocol_name;
+    std::string tp_account_display_name;
+
+    if (acc && connection) {
+      tp_account_cm_name = std::string(tp_account_get_cm_name(acc));
+      tp_protocol_name = std::string(tp_connection_get_protocol_name(connection));
+      tp_account_display_name = std::string(tp_account_get_display_name(acc));
+    }
+
     OssoABookPresence *abook_presence = OSSO_ABOOK_PRESENCE(contact);
     const TpConnectionPresenceType presenceType = osso_abook_presence_get_presence_type(abook_presence);
 
@@ -418,7 +430,7 @@ namespace abookqt {
       ROSTER[persistent_uid] = std::make_shared<AbookContact>(persistent_uid);
 
     const char* display_name_cstr = osso_abook_contact_get_name(contact);
-    std::string display_name = display_name_cstr ? std::string(display_name_cstr) : std::string();
+    const std::string display_name = display_name_cstr ? std::string(display_name_cstr) : std::string();
 
     ROSTER[persistent_uid]->display_name = display_name;
     ROSTER[persistent_uid]->published = published;
@@ -427,6 +439,9 @@ namespace abookqt {
     ROSTER[persistent_uid]->is_blocked = is_blocked;
     ROSTER[persistent_uid]->can_block = can_block;
     ROSTER[persistent_uid]->can_auth = can_auth;
+    ROSTER[persistent_uid]->tp_account_cm_name = tp_account_cm_name;
+    ROSTER[persistent_uid]->tp_protocol_name = tp_protocol_name;
+    ROSTER[persistent_uid]->tp_account_display_name = tp_account_display_name;
     return ROSTER[persistent_uid];
   }
 

@@ -21,6 +21,10 @@ struct AbookContact {
   std::string published;
   std::string avatar_token;
 
+  std::string tp_protocol_name;
+  std::string tp_account_cm_name;
+  std::string tp_account_display_name;
+
   explicit AbookContact(std::string _abook_uid) {
     const size_t pos = _abook_uid.rfind('-');
 

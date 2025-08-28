@@ -493,6 +493,9 @@ TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc, QObject *parent) :
   m_protocol_name = acc->protocolName();
   m_parent = static_cast<Telepathy *>(parent);
 
+  cm_name = macc->cmName();
+  display_name = macc->displayName();
+
   onConnectionChanged(acc->connection());
 
   connect(acc.data(), &Tp::Account::removed, this, &TelepathyAccount::onRemoved);

@@ -97,6 +97,8 @@ public:
   const Tp::AccountPtr acc;
   QMap<QString, TelepathyChannelPtr> channels;
 
+  QString cm_name;
+  QString display_name;
   const QString local_uid;
 
   QString name() const {

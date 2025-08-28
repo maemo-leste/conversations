@@ -14,6 +14,7 @@
 #include <libosso-abook/osso-abook.h>
 #include <libosso-abook/osso-abook-contact.h>
 #include <telepathy-glib/account.h>
+#include <telepathy-glib/connection.h>
 #include <libebook/libebook.h>
 
 #include "abook_contact.h"
