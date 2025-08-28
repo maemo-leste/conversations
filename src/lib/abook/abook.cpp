@@ -313,20 +313,20 @@ namespace abookqt {
   void contacts_removed_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer data) {
     if (!ensure_aggregator_rdy(__func__)) return;
 
-    while (*contacts) {
-      OssoABookContact *contact = *contacts;
-      if (!contact) {
-        fprintf(stderr, "contacts_removed_cb: null contact\n");
-        break;
-      }
-
-      // @todo: segfault here during `mc-tool disable <gabble xmpp acc>`
-      std::string persistent_uid = osso_abook_contact_get_persistent_uid(contact);
-      if (!persistent_uid.empty())
-        ROSTER.erase(persistent_uid);
-
-      contacts++;
-    }
+    // while (*contacts) {
+    //   OssoABookContact *contact = *contacts;
+    //   if (!contact) {
+    //     fprintf(stderr, "contacts_removed_cb: null contact\n");
+    //     break;
+    //   }
+    //
+    //   // @todo: segfault here during `mc-tool disable <gabble xmpp acc>`
+    //   std::string persistent_uid = osso_abook_contact_get_persistent_uid(contact);
+    //   if (!persistent_uid.empty())
+    //     ROSTER.erase(persistent_uid);
+    //
+    //   contacts++;
+    // }
   }
 
   void notify_avatar_image_cb(GObject *gobject, GParamSpec *pspec, gpointer user_data) {
