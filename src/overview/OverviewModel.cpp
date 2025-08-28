@@ -243,6 +243,18 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
     }
   }
 
+  if (role == Qt::TextAlignmentRole) {
+    switch (index.column()) {
+      case OverviewModel::PresenceIcon:
+      case OverviewModel::MsgStatusIcon:
+      case OverviewModel::ChatTypeIcon:
+      case OverviewModel::AvatarIcon:
+          return Qt::AlignHCenter;
+      default:
+        return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
+    }
+  }
+
   if (role == Qt::DecorationRole) {
     switch (index.column()) {
       case OverviewModel::MsgStatusIcon: {
@@ -299,20 +311,13 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
     }
   }
 
-  // @TODO: regular Qt tables do not support one column have varying widths
-  // over multiple rows. This means e.g. the avatar column always takes
-  // space, visible or not. This then leads to truncated text for column 'content'.
-  // the solution is to do custom painting
   if (role == Qt::SizeHintRole) {
     switch (index.column()) {
       case OverviewModel::MsgStatusIcon:
-      case OverviewModel::AvatarIcon:
       case OverviewModel::ChatTypeIcon:
         return QSize(58, 54);
       case OverviewModel::PresenceIcon:
         return QSize(18, 54);
-      case OverviewModel::AvatarPadding:
-        return QSize(4, 54);
       default:
         return {};
     }

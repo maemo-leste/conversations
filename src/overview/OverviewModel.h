@@ -69,7 +69,6 @@ public:
     OverviewNameRole,
     ProtocolRole,
     AvatarIcon,
-    AvatarPadding,
     PresenceIcon,
     ChatTypeIcon,
     TimeRole,

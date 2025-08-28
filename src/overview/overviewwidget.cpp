@@ -2,16 +2,19 @@
 #include "overview/ui_overviewwidget.h"
 
 OverviewWidget::OverviewWidget(Conversations *ctx, OverviewProxyModel *proxyModel, QWidget *parent) :
-    QWidget(parent),
-    m_ctx(ctx),
-    m_proxyModel(proxyModel),
-    ui(new Ui::OverviewWidget)
-{
+  QWidget(parent),
+  m_ctx(ctx),
+  m_proxyModel(proxyModel),
+  ui(new Ui::OverviewWidget) {
   ui->setupUi(this);
   this->setupUITable();
 
   // avatars
   connect(m_ctx, &Conversations::displayAvatarsChanged, this, &OverviewWidget::onAvatarDisplayChanged);
+}
+
+int proxyColumn(QSortFilterProxyModel *proxy, int sourceColumn) {
+  return proxy->mapFromSource(proxy->sourceModel()->index(0, sourceColumn)).column();
 }
 
 void OverviewWidget::setupUITable() {
@@ -28,30 +31,42 @@ void OverviewWidget::setupUITable() {
   table->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
   table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-  // row height
-
   const auto header = table->horizontalHeader();
+  header->setMinimumSectionSize(0);
   QHeaderView *verticalHeader = table->verticalHeader();
   verticalHeader->setSectionResizeMode(QHeaderView::Fixed);
   this->onSetTableHeight();
 
   table->setModel(m_proxyModel);
-  table->setColumnHidden(OverviewModel::ProtocolRole, true);
-  table->setColumnHidden(OverviewModel::TimeRole, true);
-  table->setColumnHidden(OverviewModel::COUNT, true);
+
+  auto proxyColumn = [proxy = m_proxyModel](const int sourceColumn) {
+    return proxy->mapFromSource(proxy->sourceModel()->index(0, sourceColumn)).column();
+  };
+
+  // hidden columns
+  for (const int col: {
+      OverviewModel::COUNT,
+      // OverviewModel::MsgStatusIcon,
+      OverviewModel::OverviewNameRole,
+      // OverviewModel::ChatTypeIcon,
+      OverviewModel::ProtocolRole,
+      OverviewModel::TimeRole,
+      OverviewModel::AvatarIcon}) {
+    table->setColumnHidden(proxyColumn(col), true);
+  }
 
   this->onSetColumnStyleDelegate();
 
-  header->setSectionResizeMode(OverviewModel::MsgStatusIcon, QHeaderView::ResizeToContents);
-  header->setSectionResizeMode(OverviewModel::ContentRole, QHeaderView::Stretch);
-  header->setSectionResizeMode(OverviewModel::PresenceIcon, QHeaderView::ResizeToContents);
-  header->setSectionResizeMode(OverviewModel::ChatTypeIcon, QHeaderView::ResizeToContents);
-  header->setSectionResizeMode(OverviewModel::AvatarIcon, QHeaderView::ResizeToContents);
-  header->setSectionResizeMode(OverviewModel::AvatarPadding, QHeaderView::ResizeToContents);
+  header->setSectionResizeMode(proxyColumn(OverviewModel::ChatTypeIcon), QHeaderView::ResizeToContents);
+  header->setSectionResizeMode(proxyColumn(OverviewModel::MsgStatusIcon), QHeaderView::ResizeToContents);
+  header->setSectionResizeMode(proxyColumn(OverviewModel::PresenceIcon), QHeaderView::Fixed);
+  table->setColumnWidth(proxyColumn(OverviewModel::PresenceIcon), 32);
+  header->setSectionResizeMode(proxyColumn(OverviewModel::ContentRole), QHeaderView::Stretch);
+
   table->setFocusPolicy(Qt::NoFocus);
 
   // table click handler
-  connect(table, &QAbstractItemView::clicked, this, [this](const QModelIndex& idx) {
+  connect(table, &QAbstractItemView::clicked, this, [this](const QModelIndex &idx) {
     // need to go through the proxy model to figure out the underlying 
     // item in the base model. Register to OverviewModel::overviewRowClicked for 
     // the actual signal.
@@ -62,14 +77,12 @@ void OverviewWidget::setupUITable() {
 }
 
 void OverviewWidget::onAvatarDisplayChanged() {
-  bool enableDisplayAvatars = config()->get(ConfigKeys::EnableDisplayAvatars).toBool();
-  ui->tableOverview->setColumnHidden(OverviewModel::AvatarIcon, !enableDisplayAvatars);
-  ui->tableOverview->setColumnHidden(OverviewModel::AvatarPadding, !enableDisplayAvatars);
+  // @TODO: implement
 }
 
 void OverviewWidget::onSetTableHeight() {
   auto itemHeight = 66;
-  if(m_ctx->textScaling == 1.0) {
+  if (m_ctx->textScaling == 1.0) {
     itemHeight = 66;
   } else if (m_ctx->textScaling <= 1.25) {
     itemHeight = 80;
@@ -86,7 +99,7 @@ void OverviewWidget::onSetTableHeight() {
 }
 
 void OverviewWidget::onSetColumnStyleDelegate() {
-  if(m_richItemDelegate != nullptr)
+  if (m_richItemDelegate != nullptr)
     m_richItemDelegate->deleteLater();
 
   m_richItemDelegate = new RichItemDelegate(this);
