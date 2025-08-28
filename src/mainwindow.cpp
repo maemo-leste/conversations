@@ -99,6 +99,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx->telepathy, &Telepathy::accountAdded, [this](TelepathyAccountPtr ta) { this->onDeterminePage(); });
   connect(m_ctx->telepathy, &Telepathy::accountRemoved, [this] { this->onDeterminePage(); });
   connect(m_ctx->telepathy, &Telepathy::accountManagerReady, this, &MainWindow::onDeterminePage);
+  connect(m_ctx->telepathy, &Telepathy::onlinenessChanged, this, &MainWindow::onTPAccountOnlinenessChanged);
 
   this->onDeterminePage();
 }
@@ -370,7 +371,7 @@ void MainWindow::onSetupUIAccounts() {
     this->addProtocol(acc->title, acc->protocol);
 }
 
-QAction *MainWindow::addProtocol(const QString title, const QString service) {
+QAction *MainWindow::addProtocol(const QString &title, const QString &service) {
   if(m_filterProtocols.contains(service))
     return nullptr;
 
@@ -378,6 +379,17 @@ QAction *MainWindow::addProtocol(const QString title, const QString service) {
   item->title = title;
   item->filterKey = service;
   item->action = new QAction(title, m_filters);
+
+  if (service != "*") {
+    bool isOnline = false;
+    for (const auto &acc: m_ctx->telepathy->accounts) {
+      isOnline = acc->isOnline && acc->protocolName() == service;
+      if (isOnline) break;
+    }
+    const auto icon = isOnline ? ":/presence_online.png" : ":/presence_offline.png";
+    item->action->setIcon(QIcon(icon));
+  }
+
   item->action ->setCheckable(true);
   m_filterProtocols[service] = item;
 
@@ -388,6 +400,17 @@ QAction *MainWindow::addProtocol(const QString title, const QString service) {
   ui->menu->addAction(item->action);
 
   return item->action;
+}
+
+// update filter protocols online icons
+void MainWindow::onTPAccountOnlinenessChanged(const TelepathyAccountPtr &account, const bool online) const {
+  for (auto it = m_filterProtocols.constBegin(); it != m_filterProtocols.constEnd(); ++it) {
+    FilterProtocolItem* item = it.value();
+    if (item->filterKey == account->protocolName()) {
+      const auto icon = online ? ":/presence_online.png" : ":/presence_offline.png";
+      item->action->setIcon(QIcon(icon));
+    }
+  }
 }
 
 void MainWindow::onProtocolFilterClicked(const QString service) {

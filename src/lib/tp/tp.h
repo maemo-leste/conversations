@@ -125,6 +125,7 @@ signals:
   void channelLeft(QString local_uid, QString remote_uid);
   void accountReady(TelepathyAccount *account);
   void errorMessage(const QString &errorMsg);
+  void onlinenessChanged(bool online);
 
 public slots:
   void sendMessage(QString remote_uid, const QString &message);
@@ -132,6 +133,7 @@ public slots:
   void leaveChannel(const QString &remote_uid);
   void removeChannel(const QString &remote_uid);
   void setChatState(const QString &remote_uid, Tp::ChannelChatState state);
+  void onOnline(bool online);
 
   /* TODO: make these private again and use connect/emit */
   void onMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
@@ -155,7 +157,6 @@ public slots:
   QString getLocalUid() const;
 
 private slots:
-  void onOnline(bool online);
   void onAccReady(Tp::PendingOperation *op);
   void onChannelJoined(const Tp::ChannelRequestPtr &channelRequest, const QString &channel);
   void onChannelJoinedOrLeft(bool joined, QString channel);
@@ -255,6 +256,7 @@ signals:
   void errorMessage(const QString &errorMsg);
   void contactsChanged();
   void rosterChanged();
+  void onlinenessChanged(TelepathyAccountPtr account, bool online);
 
 public slots:
   void sendMessage(const QString &local_uid, const QString &remote_uid, const QString &message);

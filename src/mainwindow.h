@@ -74,6 +74,7 @@ public slots:
     void onTPAccountManagerReady();
     void onNotificationClicked(const QSharedPointer<ChatMessage> &msg);
     void onFriendRequest(QSharedPointer<ContactItem> item);
+    void onTPAccountOnlinenessChanged(const TelepathyAccountPtr &account, bool online) const;
 
 private slots:
     void onProtocolFilterClicked(const QString service);
@@ -102,5 +103,5 @@ private:
     QMap<QString, FilterProtocolItem*> m_filterProtocols;
     QActionGroup *m_filters;
     void onSetupUIAccounts();
-    QAction *addProtocol(const QString title, const QString service);
+    QAction *addProtocol(const QString &title, const QString &service);
 };

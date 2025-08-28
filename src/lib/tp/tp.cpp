@@ -262,8 +262,15 @@ void Telepathy::onNewAccount(const Tp::AccountPtr &account) {
   connect(telepathyAccount, &TelepathyAccount::removed, [this](TelepathyAccount *ptr) {
     this->onAccountRemoved(ptr->local_uid);
   });
+  connect(telepathyAccount, &TelepathyAccount::onlinenessChanged, [this, accountPtr](bool online) {
+    emit onlinenessChanged(accountPtr, online);
+  });
 
   emit accountAdded(accountPtr);
+
+  // set initial online state
+  const auto online = telepathyAccount->acc->isOnline();
+  telepathyAccount->onOnline(online);
 }
 
 void Telepathy::onAccountRemoved(const QString &local_uid) {
@@ -492,6 +499,7 @@ TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc, QObject *parent) :
   connect(acc.data(), &Tp::Account::onlinenessChanged, this, &TelepathyAccount::onOnline);
   connect(acc.data(), &Tp::Account::connectionChanged, this, &TelepathyAccount::onConnectionChanged);
   connect(acc->becomeReady(), &Tp::PendingReady::finished, this, &TelepathyAccount::onAccReady);
+  isOnline = acc->isOnline();
 }
 
 void TelepathyAccount::onConnectionChanged(const Tp::ConnectionPtr &conn) {
@@ -734,9 +742,10 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
   }
 }
 
-void TelepathyAccount::onOnline(bool online) {
+void TelepathyAccount::onOnline(const bool online) {
   qDebug() << "onOnline: " << online;
   isOnline = online;
+  emit onlinenessChanged(online);
 
   if (online)
     this->joinSavedGroupChats();

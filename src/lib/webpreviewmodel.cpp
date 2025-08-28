@@ -161,13 +161,13 @@ PreviewModel::PreviewModel(const unsigned int event_id, QObject *parent) :
       setState(RESULT);
   });
 
-  connect(ctx, &Conversations::enableLinkPreviewImageEnabledToggled, [=](bool enabled) {
+  connect(ctx, &Conversations::enableLinkPreviewImageEnabledToggled, [this](bool enabled) {
     m_inlineImages = enabled;
     emit inlineImagesChanged();
     setState(USER_WAIT);
   });
 
-  connect(ctx, &Conversations::enableLinkPreviewRequiresUserInteractionToggled, [=](bool enabled) {
+  connect(ctx, &Conversations::enableLinkPreviewRequiresUserInteractionToggled, [this](bool enabled) {
     m_requires_user_interaction = enabled;
     if (m_state != RESULT) {
       m_displayButton = true;
