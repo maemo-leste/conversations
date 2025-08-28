@@ -1,3 +1,9 @@
+conversations (0.7.75) unstable; urgency=medium
+
+  * lib/tp: set initial onlineness *after* we have a connection
+
+ -- Sander <sander@sanderf.nl>  Thu, 28 Aug 2025 08:20:41 +0300
+
 conversations (0.7.74) unstable; urgency=medium
 
   * mainwindow: avatar painting inside the content column delegate on the overview table. Previously content would be cut-off depending on screen size. In addition, re-align some of the other columns.
