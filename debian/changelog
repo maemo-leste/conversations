@@ -1,3 +1,9 @@
+conversations (0.7.76) unstable; urgency=medium
+
+  * mainwindow: CM 'ring' is special, consider this Tp account online=true for the filter protocol button icons
+
+ -- Sander <sander@sanderf.nl>  Thu, 28 Aug 2025 08:51:48 +0300
+
 conversations (0.7.75) unstable; urgency=medium
 
   * lib/tp: set initial onlineness *after* we have a connection
