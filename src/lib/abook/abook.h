@@ -45,7 +45,7 @@ namespace abookqt {
   AbookContactAvatar* get_avatar(const std::string& local_uid, const std::string& remote_uid);
   void contacts_changed_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer user_data);
   void contacts_added_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer data);
-  void contacts_removed_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer data);
+  void contacts_removed_cb(OssoABookRoster *roster, const char **uids, gpointer data);
   void parse_vcard(OssoABookContact *contact);
 
   void notify_avatar_image_cb(GObject *gobject, GParamSpec *pspec, gpointer user_data);

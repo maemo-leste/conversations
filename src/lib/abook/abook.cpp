@@ -310,7 +310,7 @@ namespace abookqt {
     CLOCK_MEASURE_END(start, "abookqt::parse_vcard()");
   }
 
-  void contacts_removed_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer data) {
+  void contacts_removed_cb(OssoABookRoster *roster, const char **uids, gpointer data) {
     if (!ensure_aggregator_rdy(__func__)) return;
 
     // while (*contacts) {
