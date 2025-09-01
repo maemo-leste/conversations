@@ -66,7 +66,7 @@ public:
       const auto local_uid_str = local_uid().toStdString();
       const auto remote_uid_str = remote_uid().toStdString();
 
-      const std::string avatar_token = abook_qt::get_avatar_token(local_uid_str, remote_uid_str);
+      const std::string avatar_token = abook_qt::get_avatar_token(remote_uid_str);
       if (!avatar_token.empty() && avatar_token != "0") {
         QPixmap pixmap;
         auto result = Utils::get_avatar(local_uid_str, remote_uid_str, avatar_token, pixmap);

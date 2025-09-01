@@ -599,27 +599,28 @@ QSharedPointer<ChatMessage> TelepathyAccount::log_event(time_t epoch, const QStr
 
   const QByteArray group_uid = getGroupUid(channel).toLocal8Bit();
 
-  std::string remote_name;
-  const QString abook_uid = this->local_uid + "-" + remote_uid;
-  const auto abook_uid_str = abook_uid.toStdString();
-
-  if (abook_qt::ROSTER.contains(abook_uid_str) && !abook_qt::ROSTER[abook_uid_str]->display_name.empty()) {
-    remote_name = abook_qt::ROSTER[abook_uid.toStdString()]->display_name;
-  } else if (remote_alias != nullptr && !remote_alias.isEmpty()) {
-    remote_name = remote_alias.toStdString();
-  } else {
-    remote_name = remote_uid.toStdString();
-  }
-
   const auto self_name_str = m_nickname.toStdString();
   const auto protocol_str = m_protocol_name.toStdString();
+  const auto remote_uid_str = remote_uid.toStdString();
+
+  const std::string abook_uid = abook_qt::get_abook_uid(protocol_str, remote_uid_str);
+  std::string display_name = abook_qt::get_display_name(remote_uid_str);
+
+  if (display_name.empty()) {
+    if (remote_alias != nullptr && !remote_alias.isEmpty()) {
+      display_name = remote_alias.toStdString();
+    } else {
+      display_name = remote_uid.toStdString();
+    }
+  }
+
   const auto local_uid_str = local_uid.toStdString();
 
   const auto service = getServiceName();
 
   rtcom_qt::ChatMessageEntry *new_message = rtcom_qt::register_message(
       epoch, epoch, self_name_str, local_uid_str,
-      remote_uid.toStdString(), remote_name, abook_uid.toStdString(),
+      remote_uid.toStdString(), display_name, abook_uid,
       text.toStdString(), outgoing, protocol_str,
       channel_str, group_uid.toStdString(), flags);
 
@@ -789,9 +790,9 @@ void TelepathyAccount::onChannelJoined(const Tp::ChannelRequestPtr &channelReque
 void TelepathyAccount::onChannelJoinedOrLeft(bool joined, QString channel) {
   const std::string local_uid_str = local_uid.toStdString();
   const std::string remote_uid_str = m_nickname.toStdString();
-  const std::string abook_uid = this->local_uid.toStdString() + "-" + remote_uid_str;
   const std::string channel_str = channel.toStdString();
   const std::string protocol_str = m_protocol_name.toStdString();
+  const std::string abook_uid = abook_qt::get_abook_uid(protocol_str, remote_uid_str);
   const auto group_uid = QString("%1-%2").arg(local_uid, channel);
   const std::string group_uid_str = group_uid.toStdString();
   const std::string text_content = joined ? "!joined!" : "!left!";

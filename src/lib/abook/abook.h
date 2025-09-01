@@ -36,13 +36,14 @@ namespace abookqt {
   void new_dialog_contact_chooser(const std::function<void(std::string)> &cb);
   void dialog_contact_chooser_cb(OssoABookContactChooser *chooser, gint response_id, const uintptr_t *data);
 
-  OssoABookContact* get_tel_contact(const char* telno);
-  OssoABookContact* get_sip_contact(const char* sipno);
-  OssoABookContact* get_im_contact(const char* local_uid, const char* userid);
+  OssoABookContact* get_tel_contact(const char* remote_uid);
+  OssoABookContact* get_sip_contact(const char* remote_uid);
+  OssoABookContact* get_im_contact(const char* remote_uid);
 
-  std::string get_avatar_token(const std::string& local_uid, const std::string& remote_uid);
-  std::string get_display_name(const std::string& local_uid, const std::string& remote_uid);
-  AbookContactAvatar* get_avatar(const std::string& local_uid, const std::string& remote_uid);
+  std::string get_avatar_token(const std::string& remote_uid);
+  std::string get_display_name(const std::string& remote_uid);
+  AbookContactAvatar* get_avatar(const std::string& remote_uid);
+  std::string get_abook_uid(const std::string& protocol, const std::string& remote_uid);
   void contacts_changed_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer user_data);
   void contacts_added_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer data);
   void contacts_removed_cb(OssoABookRoster *roster, const char **uids, gpointer data);

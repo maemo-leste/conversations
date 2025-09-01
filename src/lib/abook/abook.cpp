@@ -63,24 +63,21 @@ namespace abookqt {
     return res;
   }
 
-  OssoABookContact* get_im_contact(const char* local_uid, const char* userid) {
+  OssoABookContact* get_im_contact(const char* remote_uid) {
     if (!ensure_aggregator_rdy(__func__)) return nullptr;
 
     CLOCK_MEASURE_START(start);
     OssoABookContact *res = NULL;
     GList *l = NULL;
-    l = osso_abook_aggregator_find_contacts_for_im_contact(CONV_ABOOK_AGGREGATOR, userid, NULL);
+    l = osso_abook_aggregator_find_contacts_for_im_contact(CONV_ABOOK_AGGREGATOR, remote_uid, NULL);
 
     const GList *v = l;
     while (v) {
       OssoABookContact *contact = OSSO_ABOOK_CONTACT(v->data);
-
-      std::string persistent_uid = osso_abook_contact_get_persistent_uid(contact);
-      if (std::string(local_uid) + "-" + std::string(userid) == persistent_uid) {
+      if (contact) {
         res = contact;
         break;
       }
-
       v = v->next;
     }
 
@@ -89,14 +86,14 @@ namespace abookqt {
     return res;
   }
 
-  OssoABookContact* get_tel_contact(const char *telno) {
+  OssoABookContact* get_tel_contact(const char *remote_uid) {
     if (!ensure_aggregator_rdy(__func__)) return nullptr;
 
     CLOCK_MEASURE_START(start);
     OssoABookContact *res = NULL;
     GList *l = NULL;
 
-    l = osso_abook_aggregator_find_contacts_for_phone_number(CONV_ABOOK_AGGREGATOR, telno, TRUE);
+    l = osso_abook_aggregator_find_contacts_for_phone_number(CONV_ABOOK_AGGREGATOR, remote_uid, TRUE);
 
     GList *v = l;
     while (v) {
@@ -110,11 +107,11 @@ namespace abookqt {
     return res;
   }
 
-  std::string get_display_name(const std::string& local_uid, const std::string& remote_uid) {
+  std::string get_display_name(const std::string& remote_uid) {
     if (!ensure_aggregator_rdy(__func__)) return {};
 
     CLOCK_MEASURE_START(start);
-    OssoABookContact* contact = get_im_contact(local_uid.c_str(), remote_uid.c_str());
+    OssoABookContact* contact = get_im_contact(remote_uid.c_str());
     if (contact == NULL)
       return {};
 
@@ -123,11 +120,11 @@ namespace abookqt {
     return name_cstr ? std::string(name_cstr) : std::string();
   }
 
-  std::string get_avatar_token(const std::string& local_uid, const std::string& remote_uid) {
+  std::string get_avatar_token(const std::string& remote_uid) {
     if (!ensure_aggregator_rdy(__func__)) return {};
 
     CLOCK_MEASURE_START(start);
-    OssoABookContact* contact = get_im_contact(local_uid.c_str(), remote_uid.c_str());
+    OssoABookContact* contact = get_im_contact(remote_uid.c_str());
     if (contact == NULL) {
       CLOCK_MEASURE_END(start, "abookqt::get_avatar_token()");
       return {};
@@ -151,11 +148,30 @@ namespace abookqt {
     return tokenHex;
   }
 
-  AbookContactAvatar* get_avatar(const std::string& local_uid, const std::string &remote_uid) {
+  std::string get_abook_uid(const std::string& protocol, const std::string& remote_uid) {
+    OssoABookContact* contact;
+    if (protocol == "tel") {
+      contact = get_tel_contact(remote_uid.c_str());
+    } else if (protocol == "sip") {
+      contact = get_sip_contact(remote_uid.c_str());
+    } else {
+      contact = get_im_contact(remote_uid.c_str());
+    }
+
+    if (!contact) {
+      fprintf(stderr, "abookqt::get_abook_uid(): could not find contact for protocol %s, remote_uid %s\n", protocol.c_str(), remote_uid.c_str());
+      return {};
+    }
+
+    const char* abook_uid = osso_abook_contact_get_uid(contact);
+    return std::string(abook_uid);
+  }
+
+  AbookContactAvatar* get_avatar(const std::string &remote_uid) {
     if (!ensure_aggregator_rdy(__func__)) return nullptr;
 
     CLOCK_MEASURE_START(start);
-    OssoABookContact* contact = get_im_contact(local_uid.c_str(), remote_uid.c_str());
+    OssoABookContact* contact = get_im_contact(remote_uid.c_str());
     if (contact == NULL) {
       CLOCK_MEASURE_END(start, "abookqt::get_avatar()");
       return NULL;

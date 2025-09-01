@@ -291,7 +291,7 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
       case OverviewModel::AvatarIcon: {
         const auto local_uid = message->local_uid().toStdString();
         const auto remote_uid = message->remote_uid().toStdString();
-        const std::string avatar_token = abook_qt::get_avatar_token(local_uid, remote_uid);
+        const std::string avatar_token = abook_qt::get_avatar_token(remote_uid);
 
         if (!avatar_token.empty() && avatar_token != "0") {
           QPixmap pixmap;

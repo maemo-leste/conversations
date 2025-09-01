@@ -73,7 +73,7 @@ public:
     const auto cache_key = QString::fromStdString(local_uid + "-" + remote_uid + "-" + token);
 
     if (!QPixmapCache::find(cache_key, &pixmap)) {
-      const AbookContactAvatar* avatar = abook_qt::abook_get_avatar(local_uid, remote_uid);
+      const AbookContactAvatar* avatar = abook_qt::abook_get_avatar(remote_uid);
       if (avatar == nullptr)
         return false;
 
@@ -123,7 +123,7 @@ public:
     const auto remote_uid_str = spl.at(1).toStdString();
 
     if(abook_qt::ROSTER.contains(persistent_uid.toStdString())) {
-      const std::string avatar_token = abook_qt::get_avatar_token(local_uid_str, remote_uid_str);
+      const std::string avatar_token = abook_qt::get_avatar_token(remote_uid_str);
       if (!avatar_token.empty() && avatar_token != "0") {
         QPixmap pixmap;
         auto result = Utils::get_avatar(local_uid_str, remote_uid_str, avatar_token, pixmap);
