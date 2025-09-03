@@ -1,3 +1,20 @@
+conversations (0.7.77) unstable; urgency=medium
+
+  * lib/abook
+  * - remove manually construction of abook uid, use get_tel_contact(), get_sip_contact(), get_im_contact() with remote_uid
+  * - try to operate on the master contact if there is one
+  * - properly update the avatar in all places where its used
+  * - properly handle contact merges / removals / additions
+  * - table cell delegate for centering presence icon in overview table
+  * - support all presence icons
+  * - simplify caching mechanism
+  * - properly update the assoicated overview table row (all columns)
+  * abook: dont manually construct an uid, use get_tel_contact(), get_sip_contact(), get_im_contact() with remote_uid
+  * abook: change contacts_removed_cb callback signature, const char **uids is correct (faulty documentation)
+  * Add build workflow
+
+ -- Sander <sander@sanderf.nl>  Wed, 03 Sep 2025 15:24:48 +0300
+
 conversations (0.7.76) unstable; urgency=medium
 
   * mainwindow: CM 'ring' is special, consider this Tp account online=true for the filter protocol button icons
