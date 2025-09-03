@@ -2,15 +2,19 @@
 #include "abook_public.h"
 #include "../logger_std/logger_std.h"
 
+#include "abook_roster.h"
+
 #include <chrono>
 
 using namespace abook_qt;
 
 namespace abookqt {
+  OssoABookContact* get_contact(const std::string& protocol, const char *remote_uid);
+
   bool init() {
     CLOCK_MEASURE_START(start_total);
     GError *err = nullptr;
-    if (!CONV_ABOOK_INITED) {
+    if (!AGGREGATOR_READY) {
       osso_abook_init_with_name("conversations", nullptr);
 
       CLOCK_MEASURE_START(start_aggregator_get);
@@ -38,80 +42,63 @@ namespace abookqt {
     g_signal_connect(CONV_ABOOK_AGGREGATOR, "contacts-added", G_CALLBACK(contacts_added_cb), nullptr);
     g_signal_connect(CONV_ABOOK_AGGREGATOR, "contacts-removed", G_CALLBACK(contacts_removed_cb), nullptr);
     g_signal_connect(CONV_ABOOK_AGGREGATOR, "contacts-changed", G_CALLBACK(contacts_changed_cb), nullptr);
-    CONV_ABOOK_INITED = true;
+    AGGREGATOR_READY = true;
     if (func_initReadySignal != nullptr)
       func_initReadySignal();  // let Qt know
   }
 
-  OssoABookContact* get_sip_contact(const char *address) {
-    if (!ensure_aggregator_rdy(__func__)) return nullptr;
-
-    CLOCK_MEASURE_START(start);
-    OssoABookContact *res = NULL;
-    GList *l = NULL;
-    l = osso_abook_aggregator_find_contacts_for_sip_address(CONV_ABOOK_AGGREGATOR, address);
-
-    GList *v = l;
-    while (v) {
-      OssoABookContact *contact = OSSO_ABOOK_CONTACT(v->data);
-      res = contact;
-      break;
+  bool ensure_aggregator_rdy(const char* func_name) {
+    if (!AGGREGATOR_READY) {
+#ifdef DEBUG
+      const char* caller = func_name ? func_name : "unknown";
+      fputs("abookqt: ", stderr);
+      fputs(caller, stderr);
+      fputs("(): error, aggregator not ready\n", stderr);
+#endif
+      return false;
     }
-
-    g_list_free(l);
-    CLOCK_MEASURE_END(start, "abookqt::get_sip_contact()");
-    return res;
+    return true;
   }
 
-  OssoABookContact* get_im_contact(const char* remote_uid) {
-    if (!ensure_aggregator_rdy(__func__)) return nullptr;
+  PresenceInfo get_presence(const std::string& protocol, const std::string& remote_uid) {
+    if (!ensure_aggregator_rdy(__func__))
+      return {};
 
     CLOCK_MEASURE_START(start);
-    OssoABookContact *res = NULL;
-    GList *l = NULL;
-    l = osso_abook_aggregator_find_contacts_for_im_contact(CONV_ABOOK_AGGREGATOR, remote_uid, NULL);
+    OssoABookContact* contact = get_contact(protocol, remote_uid.c_str());
+    if (contact == NULL)
+      return {};
 
-    const GList *v = l;
-    while (v) {
-      OssoABookContact *contact = OSSO_ABOOK_CONTACT(v->data);
-      if (contact) {
-        res = contact;
-        break;
-      }
-      v = v->next;
-    }
+    OssoABookPresence *abook_presence = OSSO_ABOOK_PRESENCE(contact);
+    PresenceInfo abook_presence_info = get_presence_info(abook_presence);
 
-    g_list_free(l);
-    CLOCK_MEASURE_END(start, "abookqt::get_im_contact()");
-    return res;
+    CLOCK_MEASURE_END(start, "abookqt::get_presence()");
+    return abook_presence_info;
   }
 
-  OssoABookContact* get_tel_contact(const char *remote_uid) {
-    if (!ensure_aggregator_rdy(__func__)) return nullptr;
+  PresenceInfo get_presence_info(OssoABookPresence *abook_presence) {
+    if (!ensure_aggregator_rdy(__func__))
+      return {};
 
-    CLOCK_MEASURE_START(start);
-    OssoABookContact *res = NULL;
-    GList *l = NULL;
+    const char *icon_name = osso_abook_presence_get_icon_name(abook_presence);
 
-    l = osso_abook_aggregator_find_contacts_for_phone_number(CONV_ABOOK_AGGREGATOR, remote_uid, TRUE);
+    const TpConnectionPresenceType presenceType = osso_abook_presence_get_presence_type(abook_presence);
+    const std::string presence = presence_type_to_string(presenceType);
 
-    GList *v = l;
-    while (v) {
-      OssoABookContact *contact = OSSO_ABOOK_CONTACT(v->data);
-      res = contact;
-      break;
-    }
+    PresenceInfo result;
+    if (icon_name != NULL)
+      result.icon_name = icon_name;
 
-    g_list_free(l);
-    CLOCK_MEASURE_END(start, "abookqt::get_tel_contact()");
-    return res;
+    // current presence: [detailed-name;]{available,away,...}[;custom-message]
+    result.presence = presence;
+    return result;
   }
 
-  std::string get_display_name(const std::string& remote_uid) {
+  std::string get_display_name(const std::string& protocol, const std::string& remote_uid) {
     if (!ensure_aggregator_rdy(__func__)) return {};
 
     CLOCK_MEASURE_START(start);
-    OssoABookContact* contact = get_im_contact(remote_uid.c_str());
+    OssoABookContact* contact = get_contact(protocol, remote_uid.c_str());
     if (contact == NULL)
       return {};
 
@@ -120,11 +107,11 @@ namespace abookqt {
     return name_cstr ? std::string(name_cstr) : std::string();
   }
 
-  std::string get_avatar_token(const std::string& remote_uid) {
+  std::string get_avatar_token(const std::string& protocol, const std::string& remote_uid) {
     if (!ensure_aggregator_rdy(__func__)) return {};
 
     CLOCK_MEASURE_START(start);
-    OssoABookContact* contact = get_im_contact(remote_uid.c_str());
+    OssoABookContact* contact = get_contact(protocol, remote_uid.c_str());
     if (contact == NULL) {
       CLOCK_MEASURE_END(start, "abookqt::get_avatar_token()");
       return {};
@@ -149,29 +136,21 @@ namespace abookqt {
   }
 
   std::string get_abook_uid(const std::string& protocol, const std::string& remote_uid) {
-    OssoABookContact* contact;
-    if (protocol == "tel") {
-      contact = get_tel_contact(remote_uid.c_str());
-    } else if (protocol == "sip") {
-      contact = get_sip_contact(remote_uid.c_str());
-    } else {
-      contact = get_im_contact(remote_uid.c_str());
-    }
-
+    OssoABookContact* contact = get_contact(protocol, remote_uid.c_str());
     if (!contact) {
       fprintf(stderr, "abookqt::get_abook_uid(): could not find contact for protocol %s, remote_uid %s\n", protocol.c_str(), remote_uid.c_str());
       return {};
     }
 
     const char* abook_uid = osso_abook_contact_get_uid(contact);
-    return std::string(abook_uid);
+    return {abook_uid};
   }
 
-  AbookContactAvatar* get_avatar(const std::string &remote_uid) {
+  AbookContactAvatar* get_avatar(const std::string& protocol, const std::string &remote_uid) {
     if (!ensure_aggregator_rdy(__func__)) return nullptr;
 
     CLOCK_MEASURE_START(start);
-    OssoABookContact* contact = get_im_contact(remote_uid.c_str());
+    OssoABookContact* contact = get_contact(protocol, remote_uid.c_str());
     if (contact == NULL) {
       CLOCK_MEASURE_END(start, "abookqt::get_avatar()");
       return NULL;
@@ -204,55 +183,20 @@ namespace abookqt {
   void contacts_changed_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer user_data) {
     if (!ensure_aggregator_rdy(__func__)) return;
 
-    // CLOCK_MEASURE_START(start);
-    std::map<std::string, std::shared_ptr<AbookContact>> updated_contacts;
+    CLOCK_MEASURE_START(start);
+    std::vector<std::shared_ptr<AbookContact>> updated_contacts;
 
     while (*contacts) {
       OssoABookContact *contact = *contacts;
+      contact = try_ensure_master_contact(contact);
 
       bool updated = false;
-      GList *rc = osso_abook_contact_get_roster_contacts(contact);
-      std::string persistent_uid = osso_abook_contact_get_persistent_uid(contact);
+      auto cached_contact = update_roster_cache(contact, updated);
 
-      for (const GList *l = rc; l; l = l->next) {
-        OssoABookPresence *abook_presence = OSSO_ABOOK_PRESENCE(l->data);
-        const TpConnectionPresenceType presenceType = osso_abook_presence_get_presence_type(abook_presence);
-        const OssoABookPresenceState published = osso_abook_presence_get_published(abook_presence);
-        const OssoABookPresenceState subscribed = osso_abook_presence_get_subscribed(abook_presence);
-        const char* display_name_cstr = osso_abook_contact_get_name(contact);
-        std::string display_name = display_name_cstr ? std::string(display_name_cstr) : std::string();
-
-        if (!ROSTER.contains(persistent_uid))
-          ROSTER[persistent_uid] = std::make_shared<AbookContact>(persistent_uid);
-
-        if (ROSTER[persistent_uid]->display_name != display_name) {
-          ROSTER[persistent_uid]->display_name = display_name;
-          updated = true;
-        }
-
-        if (ROSTER[persistent_uid]->published != presence_to_string(published)) {
-          ROSTER[persistent_uid]->published = presence_to_string(published);
-          updated = true;
-        }
-
-        if (ROSTER[persistent_uid]->subscribed != presence_to_string(subscribed)) {
-          ROSTER[persistent_uid]->subscribed = presence_to_string(subscribed);
-          updated = true;
-        }
-
-        if (ROSTER[persistent_uid]->presence != presence_type_to_string(presenceType)) {
-          ROSTER[persistent_uid]->presence = presence_type_to_string(presenceType);
-          updated = true;
-        }
-
-        if (updated) {
-          updated_contacts[persistent_uid] = ROSTER[persistent_uid];
-        }
-
-        break;
+      if (updated) {
+        updated_contacts.emplace_back(cached_contact);
       }
 
-      g_list_free(rc);
       contacts++;
     }
 
@@ -260,7 +204,22 @@ namespace abookqt {
     if (!updated_contacts.empty() && func_contactsChangedSignal != nullptr)
       func_contactsChangedSignal(updated_contacts);
 
-    // CLOCK_MEASURE_END(start, "abookqt::contacts_changed_cb()");
+    CLOCK_MEASURE_END(start, "abookqt::contacts_changed_cb()");
+  }
+
+  OssoABookContact* try_ensure_master_contact(OssoABookContact* contact) {
+    if (!ensure_aggregator_rdy(__func__)) return contact;
+    const bool is_roster_contact = osso_abook_contact_is_roster_contact(contact);
+    if (!is_roster_contact) return contact;
+
+    GList *it = osso_abook_aggregator_resolve_master_contacts(CONV_ABOOK_AGGREGATOR, contact);
+    for (const GList *l = it; l;) {
+      contact = static_cast<OssoABookContact *>(l->data);
+      break;
+    }
+
+    g_list_free(it);
+    return contact;
   }
 
   void contacts_added_cb(OssoABookRoster *roster, OssoABookContact **contacts, gpointer data) {
@@ -269,7 +228,9 @@ namespace abookqt {
     bool dirty = false;
     while (*contacts) {
       OssoABookContact *contact = *contacts;
-      upsert_abook_roster_cache(contact, dirty);
+      contact = try_ensure_master_contact(contact);
+
+      update_roster_cache(contact, dirty);
       contacts++;
     }
   }
@@ -329,19 +290,16 @@ namespace abookqt {
   void contacts_removed_cb(OssoABookRoster *roster, const char **uids, gpointer data) {
     if (!ensure_aggregator_rdy(__func__)) return;
 
-    // while (*contacts) {
-    //   OssoABookContact *contact = *contacts;
-    //   if (!contact) {
-    //     fprintf(stderr, "contacts_removed_cb: null contact\n");
-    //     break;
-    //   }
-    //
-    //   // @todo: segfault here during `mc-tool disable <gabble xmpp acc>`
-    //   std::string persistent_uid = osso_abook_contact_get_persistent_uid(contact);
-    //   if (!persistent_uid.empty())
-    //     ROSTER.erase(persistent_uid);
-    //
-    //   contacts++;
+    // this returns tmp osso uids, but our cache
+    // may have contacts whose uids changed
+    // nuke the cache
+
+    CONTACTS_NOT_FOUND.clear();
+    CONTACTS_CACHE_ABOOK_UID.clear();
+    CONTACTS_CACHE_REMOTE_UID.clear();
+
+    // for (const char **p = uids; p && *p; p++) {
+    //   std::string abook_uid = *p;
     // }
   }
 
@@ -352,13 +310,9 @@ namespace abookqt {
     if (!contact)
       return;
 
-    std::string persistent_uid = osso_abook_contact_get_persistent_uid(contact);
-    const size_t pos = persistent_uid.rfind('-');
-    auto local_uid = persistent_uid.substr(0, pos);
-    auto remote_uid = persistent_uid.substr(pos + 1);
-
+    const std::string uid = osso_abook_contact_get_persistent_uid(contact);
     if (func_avatarChangedSignal != nullptr)
-      func_avatarChangedSignal(local_uid, remote_uid);
+      func_avatarChangedSignal(uid);
   }
 
   void init_contact_roster() {
@@ -392,77 +346,89 @@ namespace abookqt {
       OssoABookContact *contact = OSSO_ABOOK_CONTACT(l->data);
       EContact *e_contact = E_CONTACT(contact);
 
-      // @TODO: connect avatar change
+      contact = try_ensure_master_contact(contact);
+
       g_signal_connect(contact, "notify::avatar-image", G_CALLBACK(abookqt::notify_avatar_image_cb), nullptr);
 
-      upsert_abook_roster_cache(contact, dirty);
-
-      // avatar updated
-      // if(upsert_abook_roster_avatar(contact))
-      //     emit contact_item->avatarChanged();
+      update_roster_cache(contact, dirty);
     }
     CLOCK_MEASURE_END(start_loop, "abookqt: loop done");
 
     CLOCK_MEASURE_END(start_total, "abookqt: total done");
     g_list_free(contacts);
-
-    // if (dirty)
-    //   conv_abook_func_roster_updated();
   }
 
-  std::shared_ptr<AbookContact> upsert_abook_roster_cache(OssoABookContact *contact, bool &dirty) {
+  std::shared_ptr<AbookContact> update_roster_cache(OssoABookContact *contact, bool &dirty) {
     if (!ensure_aggregator_rdy(__func__)) return nullptr;
 
     std::string persistent_uid = osso_abook_contact_get_persistent_uid(contact);
+    std::string abook_uid = osso_abook_contact_get_uid(contact);
+
+    if (!CONTACTS_CACHE_ABOOK_UID.contains(abook_uid)) {
+      return nullptr;
+    }
+
+    const auto ptr = CONTACTS_CACHE_ABOOK_UID[abook_uid];
+    CONTACTS_NOT_FOUND.erase(ptr->remote_uid);
 
     const bool is_blocked = osso_abook_contact_get_blocked(contact);
     const bool can_block = osso_abook_contact_can_block(contact, NULL);
     const bool can_auth = osso_abook_contact_can_request_auth(contact, NULL);
 
-    TpAccount *acc = osso_abook_contact_get_account(contact);
-    TpConnection *connection = tp_account_get_connection(acc);
-    std::string tp_account_cm_name;
-    std::string tp_protocol_name;
-    std::string tp_account_display_name;
+    if (ptr->is_blocked != is_blocked) {
+      ptr->is_blocked = is_blocked;
+      dirty = true;
+    }
 
-    if (acc && connection) {
-      tp_account_cm_name = std::string(tp_account_get_cm_name(acc));
-      tp_protocol_name = std::string(tp_connection_get_protocol_name(connection));
-      tp_account_display_name = std::string(tp_account_get_display_name(acc));
+    if (ptr->can_block != can_block) {
+      ptr->can_block = can_block;
+      dirty = true;
+    }
+
+    if (ptr->can_auth != can_auth) {
+      ptr->can_auth = can_auth;
+      dirty = true;
     }
 
     OssoABookPresence *abook_presence = OSSO_ABOOK_PRESENCE(contact);
-    const TpConnectionPresenceType presenceType = osso_abook_presence_get_presence_type(abook_presence);
+    PresenceInfo abook_presence_info = get_presence_info(abook_presence);
 
-    // current presence: [detailed-name;]{available,away,...}[;custom-message]
-    // @TODO: this gives warning: 'e_vcard_attribute_get_value called on multivalued attribute'
-    const std::string presence = presence_type_to_string(presenceType);
+    if (ptr->presence.icon_name != abook_presence_info.icon_name) {
+      ptr->presence.icon_name = abook_presence_info.icon_name;
+      dirty = true;
+    }
+
+    if (ptr->presence.presence != abook_presence_info.presence) {
+      ptr->presence.presence = abook_presence_info.presence;
+      dirty = true;
+    }
 
     // values: yes, no, local-pending, remote-pending
     const std::string subscribed = presence_to_string(osso_abook_presence_get_subscribed(abook_presence));
     const std::string published = presence_to_string(osso_abook_presence_get_published(abook_presence));
 
-    if (!ROSTER.contains(persistent_uid))
-      ROSTER[persistent_uid] = std::make_shared<AbookContact>(persistent_uid);
+    if (ptr->subscribed != subscribed) {
+      ptr->subscribed = subscribed;
+      dirty = true;
+    }
+
+    if (ptr->published != published) {
+      ptr->published = published;
+      dirty = true;
+    }
 
     const char* display_name_cstr = osso_abook_contact_get_name(contact);
     const std::string display_name = display_name_cstr ? std::string(display_name_cstr) : std::string();
+    if (ptr->display_name != display_name) {
+      ptr->display_name = display_name;
+      dirty = true;
+    }
 
-    ROSTER[persistent_uid]->display_name = display_name;
-    ROSTER[persistent_uid]->published = published;
-    ROSTER[persistent_uid]->subscribed = subscribed;
-    ROSTER[persistent_uid]->presence = presence;
-    ROSTER[persistent_uid]->is_blocked = is_blocked;
-    ROSTER[persistent_uid]->can_block = can_block;
-    ROSTER[persistent_uid]->can_auth = can_auth;
-    ROSTER[persistent_uid]->tp_account_cm_name = tp_account_cm_name;
-    ROSTER[persistent_uid]->tp_protocol_name = tp_protocol_name;
-    ROSTER[persistent_uid]->tp_account_display_name = tp_account_display_name;
-    return ROSTER[persistent_uid];
+    return ptr;
   }
 
   void new_dialog_contact_chooser(const std::function<void(std::string)> &cb) {
-    if (!CONV_ABOOK_INITED) {
+    if (!AGGREGATOR_READY) {
       fprintf(stderr, "abook not initialized yet\n");
       return;
     }
@@ -496,13 +462,13 @@ namespace abookqt {
 
   std::string presence_to_string(OssoABookPresenceState presence) {
     switch (presence) {
-      case OssoABookPresenceState::OSSO_ABOOK_PRESENCE_STATE_YES:
+      case OSSO_ABOOK_PRESENCE_STATE_YES:
         return "yes";
-      case OssoABookPresenceState::OSSO_ABOOK_PRESENCE_STATE_NO:
+      case OSSO_ABOOK_PRESENCE_STATE_NO:
         return "no";
-      case OssoABookPresenceState::OSSO_ABOOK_PRESENCE_STATE_LOCAL_PENDING:
+      case OSSO_ABOOK_PRESENCE_STATE_LOCAL_PENDING:
         return "local-pending";
-      case OssoABookPresenceState::OSSO_ABOOK_PRESENCE_STATE_REMOTE_PENDING:
+      case OSSO_ABOOK_PRESENCE_STATE_REMOTE_PENDING:
         return "remote-pending";
       default: {
         return "";
@@ -534,5 +500,84 @@ namespace abookqt {
         return "Unknown";
       }
     }
+  }
+
+  OssoABookContact* get_contact(const std::string& protocol, const char *remote_uid) {
+    if (!ensure_aggregator_rdy(__func__)) return nullptr;
+    OssoABookContact* contact;
+
+    CLOCK_MEASURE_START(start);
+    if (protocol == "tel") {
+      contact = get_tel_contact(remote_uid);
+    } else if (protocol == "sip") {
+      contact = get_sip_contact(remote_uid);
+    } else {
+      contact = get_im_contact(remote_uid);
+    }
+
+    if (contact)
+      contact = try_ensure_master_contact(contact);
+
+    CLOCK_MEASURE_END(start, "abookqt::get_contact()");
+
+    return contact;
+  }
+
+  OssoABookContact* get_sip_contact(const char *address) {
+    if (!ensure_aggregator_rdy(__func__)) return nullptr;
+
+    OssoABookContact *res = NULL;
+    GList *l = NULL;
+    l = osso_abook_aggregator_find_contacts_for_sip_address(CONV_ABOOK_AGGREGATOR, address);
+
+    GList *v = l;
+    while (v) {
+      OssoABookContact *contact = OSSO_ABOOK_CONTACT(v->data);
+      res = contact;
+      break;
+    }
+
+    g_list_free(l);
+    return res;
+  }
+
+  OssoABookContact* get_im_contact(const char* remote_uid) {
+    if (!ensure_aggregator_rdy(__func__)) return nullptr;
+
+    OssoABookContact *res = NULL;
+    GList *l = NULL;
+    l = osso_abook_aggregator_find_contacts_for_im_contact(CONV_ABOOK_AGGREGATOR, remote_uid, NULL);
+
+    const GList *v = l;
+    while (v) {
+      OssoABookContact *contact = OSSO_ABOOK_CONTACT(v->data);
+      if (contact) {
+        res = contact;
+        break;
+      }
+      v = v->next;
+    }
+
+    g_list_free(l);
+    return res;
+  }
+
+  OssoABookContact* get_tel_contact(const char *remote_uid) {
+    if (!ensure_aggregator_rdy(__func__)) return nullptr;
+
+    OssoABookContact *res = NULL;
+    GList *l = NULL;
+
+    l = osso_abook_aggregator_find_contacts_for_phone_number(CONV_ABOOK_AGGREGATOR, remote_uid, TRUE);
+
+    GList *v = l;
+    while (v) {
+      OssoABookContact *contact = OSSO_ABOOK_CONTACT(v->data);
+      res = contact;
+      break;
+    }
+
+    g_list_free(l);
+    return res;
   }
 }

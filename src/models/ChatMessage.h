@@ -63,13 +63,11 @@ public:
     bool hasAvatar();
     QString avatar();
     QPixmap __attribute__((always_inline)) avatarImage() const {
-      const auto local_uid_str = local_uid().toStdString();
-      const auto remote_uid_str = remote_uid().toStdString();
 
-      const std::string avatar_token = abook_qt::get_avatar_token(remote_uid_str);
+      const std::string avatar_token = abook_qt::get_avatar_token(m_raw->protocol, m_raw->remote_uid);
       if (!avatar_token.empty() && avatar_token != "0") {
         QPixmap pixmap;
-        auto result = Utils::get_avatar(local_uid_str, remote_uid_str, avatar_token, pixmap);
+        auto result = Utils::get_avatar(m_raw->protocol, m_raw->remote_uid, avatar_token, pixmap);
 
         if (!result)
           return {};
@@ -92,6 +90,8 @@ public:
 
     QSharedPointer<ChatMessage> previous = nullptr;
     QSharedPointer<ChatMessage> next = nullptr;
+
+    [[nodiscard]] rtcom_qt::ChatMessageEntry* raw() const { return m_raw; }
 
 private slots:
     void onMessageFlagsChanged(unsigned int event_id, unsigned int flag);

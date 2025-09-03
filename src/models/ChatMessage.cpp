@@ -58,7 +58,7 @@ QString ChatMessage::name() const {
     return "me";
 
   // 1. ask abook
-  if (auto result = abook_qt::get_display_name(m_raw->remote_uid); !result.empty())
+  if (auto result = abook_qt::get_display_name(m_raw->protocol, m_raw->remote_uid); !result.empty())
     return QString::fromStdString(result);
   // 2. rtcom db remote name
   if(!m_raw->remote_name.empty())
@@ -68,7 +68,7 @@ QString ChatMessage::name() const {
 }
 
 bool ChatMessage::matchesName(const QString& name) const {
-  const auto display_name = abook_qt::get_display_name(m_raw->remote_uid);
+  const auto display_name = abook_qt::get_display_name(m_raw->protocol, m_raw->remote_uid);
   if (QString::fromStdString(display_name).toLower().contains(name))
     return true;
   if(m_raw->remote_name.empty() && QString::fromStdString(m_raw->remote_name).toLower().contains(name))
@@ -84,7 +84,7 @@ QString ChatMessage::name_counterparty() const {
   if (const auto group_uid_str = QString::fromStdString(m_raw->group_uid); group_uid_str.contains("-")) {
     const auto _remote_uid = group_uid_str.split("-").at(1);
     auto _remote_uid_str = _remote_uid.toStdString();
-    if (auto result = abook_qt::get_display_name(_remote_uid_str); !result.empty())
+    if (auto result = abook_qt::get_display_name(m_raw->protocol, _remote_uid_str); !result.empty())
       return QString::fromStdString(result);
   }
   // 2. rtcom db remote name
@@ -124,15 +124,14 @@ bool ChatMessage::hasAvatar() {
     return false;
 
   const auto uid = local_remote_uid();
-  const std::string avatar_token = abook_qt::get_avatar_token(remote_uid().toStdString());
+  const std::string avatar_token = abook_qt::get_avatar_token(m_raw->protocol, m_raw->remote_uid);
   auto has = !avatar_token.empty() && avatar_token != "0";
   return has;
 }
 
 QString ChatMessage::avatar() {
-  const auto persistent_uid = local_remote_uid();
-  if (abook_qt::ROSTER.contains(persistent_uid.toStdString())) {
-    const auto token = abook_qt::get_avatar_token(remote_uid().toStdString());
+  if (abook_qt::CONTACTS_CACHE_REMOTE_UID.contains(m_raw->remote_uid)) {
+    const auto token = abook_qt::get_avatar_token(m_raw->protocol, m_raw->remote_uid);
     auto url = "image://avatar/" + m_persistent_uid + "?token=" + QString::fromStdString(token);
     return url;
   }

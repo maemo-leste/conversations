@@ -106,7 +106,7 @@ signals:
     void hideApplication();
     void openChatWindow(QString remote_uid);
     void reloadOverview();
-    void contactsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts);
+    void contactsChanged(std::vector<std::shared_ptr<abook_qt::AbookContact>> contacts);
     void databaseAddition(const QSharedPointer<ChatMessage> &msg);
     void notificationClicked(const QSharedPointer<ChatMessage> &msg);
     void autoCloseChatWindowsChanged(bool enabled);
@@ -116,22 +116,22 @@ signals:
     void displayChatGradientChanged(bool enabled);
     void enterKeySendsChatToggled(bool enabled);
     void hildonThemeChanged();
-    void avatarChanged(std::string local_uid, std::string remote_uid);
+    void avatarChanged(const std::string &abook_uid);
     void abookReady();
     void enableLinkPreviewEnabledToggled(bool enabled);
     void enableLinkPreviewImageEnabledToggled(bool enabled);
     void enableLinkPreviewRequiresUserInteractionToggled(bool enabled);
 
 public slots:
-    void onContactsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts);
-    void onAvatarChanged(std::string local_uid, std::string remote_uid);
+    void onContactsChanged(std::vector<std::shared_ptr<abook_qt::AbookContact>> contacts);
+    void onAvatarChanged(const std::string &abook_uid);
     void onSendOutgoingMessage(const QString &local_uid, const QString &remote_uid, const QString &message);
     void onTextScalingChanged();
     void onIPCReceived(const QString &cmd);
     void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
     void onNotificationClicked(const QSharedPointer<ChatMessage> &msg);
     void onGetAvailableServiceAccounts();
-    void onAbookReady() const;
+    void onAbookReady();
 
 private slots:
     void onApplicationLog(QString msg);

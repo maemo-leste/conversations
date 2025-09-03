@@ -604,7 +604,7 @@ QSharedPointer<ChatMessage> TelepathyAccount::log_event(time_t epoch, const QStr
   const auto remote_uid_str = remote_uid.toStdString();
 
   const std::string abook_uid = abook_qt::get_abook_uid(protocol_str, remote_uid_str);
-  std::string display_name = abook_qt::get_display_name(remote_uid_str);
+  std::string display_name = abook_qt::get_display_name(protocol_str, remote_uid_str);
 
   if (display_name.empty()) {
     if (remote_alias != nullptr && !remote_alias.isEmpty()) {

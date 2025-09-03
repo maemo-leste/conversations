@@ -180,34 +180,33 @@ void OverviewModel::onDatabaseAddition(QSharedPointer<ChatMessage> &msg) {
 }
 
 // slot: abook contact avatar changed, update table row entry
-void OverviewModel::onAvatarChanged(std::string local_uid_str, std::string remote_uid_str) {
+void OverviewModel::onAvatarChanged(const std::string &abook_uid) {
   for (size_t row = 0; row < messages.size(); ++row) {
-    auto &m = messages[row];
-    auto row_remote_uid = m->remote_uid().toStdString();
-    auto row_local_uid = m->local_uid().toStdString();
-    auto abook_local_uid = local_uid_str;
-    auto abook_remote_uid = remote_uid_str;
+    const auto &m = messages[row];
+    const auto *raw = m->raw();
+    auto row_abook_uid = abook_qt::get_abook_uid(raw->protocol, raw->remote_uid);
 
-    if (row_local_uid == abook_local_uid && row_remote_uid == abook_remote_uid) {
-      QModelIndex index = this->index(row);
-      emit dataChanged(index, index);
+    if (row_abook_uid == abook_uid) {
+      const int lastColumn = this->columnCount() - 1;
+      const QModelIndex topLeft = this->index(row, 0);
+      const QModelIndex bottomRight = this->index(row, lastColumn);
+      emit dataChanged(topLeft, bottomRight);
     }
   }
 }
 
 // slot: abook contact attributes changed, update table row entry
-void OverviewModel::onContacsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts) {
+void OverviewModel::onContacsChanged(std::vector<std::shared_ptr<abook_qt::AbookContact>> contacts) {
   for (const auto &contact: contacts) {
     for (size_t row = 0; row < messages.size(); ++row) {
-      auto &m = messages[row];
+      const auto &m = messages[row];
       auto row_remote_uid = m->remote_uid().toStdString();
-      auto row_local_uid = m->local_uid().toStdString();
-      auto abook_remote_uid = contact.second->remote_uid;
-      auto abook_local_uid = contact.second->local_uid;
 
-      if (row_local_uid == abook_local_uid && row_remote_uid == abook_remote_uid) {
-        QModelIndex index = this->index(row);
-        emit dataChanged(index, index);
+      if (row_remote_uid == contact->remote_uid) {
+        const int lastColumn = this->columnCount() - 1;
+        const QModelIndex topLeft = this->index(row, 0);
+        const QModelIndex bottomRight = this->index(row, lastColumn);
+        emit dataChanged(topLeft, bottomRight);
       }
     }
   }
@@ -249,7 +248,7 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
       case OverviewModel::MsgStatusIcon:
       case OverviewModel::ChatTypeIcon:
       case OverviewModel::AvatarIcon:
-          return Qt::AlignHCenter;
+          return Qt::AlignHCenter; // horizontal alignment in Qt::TextAlignmentRole only affects text
       default:
         return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
     }
@@ -257,54 +256,45 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
 
   if (role == Qt::DecorationRole) {
     switch (index.column()) {
-      case OverviewModel::MsgStatusIcon: {
+      case MsgStatusIcon: {
         const QString icon = message->icon_name();
         const QString fallback = "general_chat";
         if (!icon.isEmpty()) {
-          if (m_pixmaps.contains(icon))
-            return m_pixmaps[icon];
+          if (m_icons.contains(icon))
+            return m_icons[icon];
 
           qWarning() << "icon" << icon << "does not exist";
         }
-        return m_pixmaps.value(fallback, {});
+        return m_icons.value(fallback, {});
       }
-      case OverviewModel::PresenceIcon: {
-        const QString uid = message->local_remote_uid();
-        const auto &roster = abook_qt::ROSTER;
-        auto it = roster.find(uid.toStdString());
-
-        if (it != roster.end()) {
-          static const std::map<std::string, QString> presenceToPixmap{
-            {"Available", "presence_online"},
-            {"Unset",     "presence_unset"},
-            {"Offline",   "presence_offline"},
-          };
-
-          const std::string &presence = it->second->presence;
-          const auto presence_pixmap = presenceToPixmap.find(presence);
-          return presence_pixmap != presenceToPixmap.end()
-                     ? m_pixmaps.value(presence_pixmap->second, {})
-                     : m_pixmaps.value("presence_unset", {});
+      case PresenceIcon: {
+        auto *raw = message->raw();
+        const auto presence = abook_qt::get_presence(raw->protocol, raw->remote_uid);
+        if (!presence.isNull()) {
+          auto icon_name = QString::fromStdString(presence.icon_name);
+          if (m_icons.contains(icon_name))
+            return m_icons[icon_name];
+          return icon_name;
         }
         return {};
       }
-      case OverviewModel::AvatarIcon: {
-        const auto local_uid = message->local_uid().toStdString();
+      case AvatarIcon: {
+        const auto protocol = message->protocol().toStdString();
         const auto remote_uid = message->remote_uid().toStdString();
-        const std::string avatar_token = abook_qt::get_avatar_token(remote_uid);
+        const std::string avatar_token = abook_qt::get_avatar_token(protocol, remote_uid);
 
         if (!avatar_token.empty() && avatar_token != "0") {
           QPixmap pixmap;
-          if (Utils::get_avatar(local_uid, remote_uid, avatar_token, pixmap))
+          if (Utils::get_avatar(protocol, remote_uid, avatar_token, pixmap))
             return pixmap;
         }
         return {};
       }
-      case OverviewModel::ChatTypeIcon: {
+      case ChatTypeIcon: {
         const QString icon = message->channel().isEmpty()
                                  ? "general_default_avatar"
                                  : "general_conference_avatar";
-        return m_pixmaps.value(icon, {});
+        return m_icons.value(icon, {});
       }
       default:
         return {};
@@ -313,11 +303,11 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
 
   if (role == Qt::SizeHintRole) {
     switch (index.column()) {
-      case OverviewModel::MsgStatusIcon:
-      case OverviewModel::ChatTypeIcon:
+      case MsgStatusIcon:
+      case ChatTypeIcon:
         return QSize(58, 54);
-      case OverviewModel::PresenceIcon:
-        return QSize(18, 54);
+      case PresenceIcon:
+        return QSize(24, 24);
       default:
         return {};
     }
@@ -476,8 +466,8 @@ QHash<int, QByteArray> OverviewModel::roleNames() const {
   return roles;
 }
 
+// cached, because used inside a potentially busy table
 void OverviewModel::preloadPixmaps() {
-  // const auto basepath = QDir::currentPath() + "/src/assets/icons/";
   const auto basepath = "/usr/share/icons/hicolor/48x48/hildon/";
   const QStringList icons = {
     "chat_enter",
@@ -491,22 +481,49 @@ void OverviewModel::preloadPixmaps() {
     "chat_unread_sms",
     "general_chat",
     "general_sms",
-    "presence_online",
-    "presence_offline",
-    "presence_away",
-    "presence_empty",
-    "presence_unset"
+    "general_presence_sports",
+    "general_presence_home",
+    "general_presence_out",
+    "general_presence_travel",
+    "statusarea_presence_away_error",
+    "general_presence_cultural_activities",
+    "general_presence_online",
+    "general_presence_invisible",
+    "statusarea_presence_busy_error",
+    "general_presence_work_error",
+    "general_presence_busy",
+    "general_presence_offline",
+    "general_presence_work",
+    "general_presence_home_error",
+    "general_presence_away",
+    "control_presence",
+    "general_presence_out_error",
+    "general_presence_travel_error",
+    "statusarea_presence_online_error",
+    "general_presence_cultural_activities_error",
+    "general_presence_sports_error"
   };
 
   for(const auto &icon: icons) {
     const auto fn = QString("%1/%2.png").arg(basepath, icon);
     const auto fn_qrc = QString(":/%1.png").arg(icon);
 
-    if(Utils::fileExists(fn_qrc)) {
-      m_pixmaps[icon] = QPixmap(fn_qrc);
-    } else if(Utils::fileExists(fn)) {
-      m_pixmaps[icon] = QPixmap(fn);
-    } else {
+    QPixmap pixmap;
+    if (Utils::fileExists(fn_qrc)) {
+      pixmap = QPixmap(fn_qrc);
+    } else if (Utils::fileExists(fn)) {
+      pixmap = QPixmap(fn);
+    }
+
+    if (!pixmap.isNull()) {
+      QPixmap scaledPixmap;
+      if (fn.contains("presence")) {
+        scaledPixmap = pixmap.scaled(26, 26, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+      } else {
+        scaledPixmap = pixmap;
+      }
+
+      m_icons[icon] = QIcon(scaledPixmap);
     }
   }
 }

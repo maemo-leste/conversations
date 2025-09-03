@@ -2,6 +2,7 @@ add_library(abook_qt STATIC
     abook_public.h
     abook_public.cpp
     abook_roster.h
+    abook_roster.cpp
     abook_contact.h
     abook.h
     abook.cpp)

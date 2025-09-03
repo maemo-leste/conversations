@@ -91,8 +91,8 @@ private slots:
     void onChatRequestDelete();
     void onShowMessageContextMenu(int event_id, QVariant test);
     void onSetupAuthorizeActions();
-    void onContactsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts);
-    void onAvatarChanged(std::string local_uid_str, std::string remote_uid_str);
+    void onContactsChanged(std::vector<std::shared_ptr<abook_qt::AbookContact>> contacts);
+    void onAvatarChanged(const std::string& abook_uid);
     void onAddFriend();
     void onRemoveFriend();
     void onAcceptFriend();

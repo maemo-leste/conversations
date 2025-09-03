@@ -245,7 +245,7 @@ void ChatWindow::dynamicInputTextHeight(QTextEdit *edit) const {
   edit->setFixedHeight(h);
 }
 
-void ChatWindow::onContactsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts) {
+void ChatWindow::onContactsChanged(std::vector<std::shared_ptr<abook_qt::AbookContact>> contacts) {
   int wegweg = 1;
 }
 
@@ -293,11 +293,16 @@ void ChatWindow::onSetupAuthorizeActions() {
   // }
 }
 
-void ChatWindow::onAvatarChanged(std::string local_uid_str, std::string remote_uid_str) {
-  QString _local_uid = QString::fromStdString(local_uid_str);
-  QString _remote_uid = QString::fromStdString(remote_uid_str);
-  if (_local_uid == local_uid && _remote_uid == remote_uid) {
-    emit avatarChanged();  // @TODO: emit local/remote too, for groupchats
+void ChatWindow::onAvatarChanged(const std::string& abook_uid) {
+  const TelepathyAccountPtr acc = Conversations::instance()->telepathy->accountByName(local_uid);
+  if (acc.isNull())
+    return;
+
+  const auto remote_uid_str = remote_uid.toStdString();
+  const auto protocol = acc->protocolName().toStdString();
+
+  if (abook_qt::get_abook_uid(protocol, remote_uid_str) == abook_uid) {
+    emit avatarChanged();
   }
 }
 
@@ -524,8 +529,10 @@ void ChatWindow::onChannelJoinedOrLeft(const QString &_local_uid, const QString 
 void ChatWindow::onSetWindowTitle() {
   QStringList parts;
 
-  const auto tp = Conversations::instance()->telepathy;
-  const TelepathyAccountPtr acc = tp->accountByName(local_uid);
+  const TelepathyAccountPtr acc = Conversations::instance()->telepathy->accountByName(local_uid);
+  if (acc.isNull())
+    return;
+
   parts << acc->protocolName();
 
   if (!channel.isEmpty()) {

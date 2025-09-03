@@ -68,12 +68,12 @@ public:
   static QString escapeHtml(const QString& text);
   static QList<QMap<QString, QString>> parseDebianChangelog(const QString &text);
 
-  static __attribute__((always_inline)) bool get_avatar(const std::string& local_uid, const std::string& remote_uid, const std::string& token, QPixmap& pixmap) {
+  static __attribute__((always_inline)) bool get_avatar(const std::string& protocol, const std::string& remote_uid, const std::string& token, QPixmap& pixmap) {
     // check cache
-    const auto cache_key = QString::fromStdString(local_uid + "-" + remote_uid + "-" + token);
+    const auto cache_key = QString::fromStdString(remote_uid + "-" + token);
 
     if (!QPixmapCache::find(cache_key, &pixmap)) {
-      const AbookContactAvatar* avatar = abook_qt::abook_get_avatar(remote_uid);
+      const abook_qt::AbookContactAvatar* avatar = abook_qt::abook_get_avatar(protocol, remote_uid);
       if (avatar == nullptr)
         return false;
 
@@ -83,7 +83,7 @@ public:
       } else if (avatar->n_channels == 4 && avatar->has_alpha) {
         format = QImage::Format_RGBA8888;
       } else {
-        qWarning() << "Unsupported avatar format for" << QString::fromStdString(local_uid);
+        qWarning() << "Unsupported avatar format for" << QString::fromStdString(remote_uid);
         return false;
       }
 
@@ -119,14 +119,14 @@ public:
     const QString persistent_uid = id.left(last_slash);
 
     const auto spl = persistent_uid.split("-");
-    const auto local_uid_str = spl.at(0).toStdString();
+    const auto protocol_str = spl.at(0).toStdString();
     const auto remote_uid_str = spl.at(1).toStdString();
 
-    if(abook_qt::ROSTER.contains(persistent_uid.toStdString())) {
-      const std::string avatar_token = abook_qt::get_avatar_token(remote_uid_str);
+    if(abook_qt::CONTACTS_CACHE_REMOTE_UID.contains(remote_uid_str)) {
+      const std::string avatar_token = abook_qt::get_avatar_token(protocol_str, remote_uid_str);
       if (!avatar_token.empty() && avatar_token != "0") {
         QPixmap pixmap;
-        auto result = Utils::get_avatar(local_uid_str, remote_uid_str, avatar_token, pixmap);
+        auto result = Utils::get_avatar(protocol_str, remote_uid_str, avatar_token, pixmap);
 
         if (!result)
           return {};

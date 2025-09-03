@@ -14,6 +14,7 @@
 
 #include "conversations.h"
 #include "lib/utils.h"
+#include "overview/QCenteredIconDelegate.h"
 #include "overview/OverviewModel.h"
 #include "overviewbtnwidget.h"
 
@@ -39,7 +40,8 @@ public slots:
 
 private:
   void setupUITable();
-  RichItemDelegate *m_richItemDelegate = nullptr;
+  RichItemDelegate *m_richContentDelegate = nullptr;
+  CenteredIconDelegate *m_centeredIconDelegate = nullptr;
   Ui::OverviewWidget *ui;
   OverviewProxyModel *m_proxyModel = nullptr;
   Conversations *m_ctx;

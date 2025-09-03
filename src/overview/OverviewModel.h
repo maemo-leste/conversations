@@ -92,8 +92,8 @@ public slots:
   void loadOverviewMessages();
   void onClear();
   void onDatabaseAddition(QSharedPointer<ChatMessage> &msg);
-  void onContacsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts);
-  void onAvatarChanged(std::string local_uid_str, std::string remote_uid_str);
+  void onContacsChanged(std::vector<std::shared_ptr<abook_qt::AbookContact>> contacts);
+  void onAvatarChanged(const std::string &abook_uid);
 
 signals:
   void overviewRowClicked(const QSharedPointer<ChatMessage> &ptr);
@@ -106,5 +106,5 @@ private:
 private:
   Telepathy *m_tp = nullptr;
   ConfigState *m_state = nullptr;
-  QMap<QString, QPixmap> m_pixmaps;
+  QMap<QString, QIcon> m_icons;
 };

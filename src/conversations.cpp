@@ -129,7 +129,7 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   abook_qt::func_contactsChangedSignal =
     std::bind(&Conversations::onContactsChanged, this, std::placeholders::_1);
   abook_qt::func_avatarChangedSignal =
-    std::bind(&Conversations::onAvatarChanged, this, std::placeholders::_1, std::placeholders::_2);
+    std::bind(&Conversations::onAvatarChanged, this, std::placeholders::_1);
 
   // save config whilst quiting
   connect(qApp, &QCoreApplication::aboutToQuit, config(), &Config::sync);
@@ -207,11 +207,11 @@ void Conversations::onIPCReceived(const QString &cmd) {
     emit openChatWindow(cmd);
 }
 
-void Conversations::onAvatarChanged(std::string local_uid, std::string remote_uid) {
-  emit avatarChanged(local_uid, remote_uid);
+void Conversations::onAvatarChanged(const std::string &abook_uid) {
+  emit avatarChanged(abook_uid);
 }
 
-void Conversations::onContactsChanged(std::map<std::string, std::shared_ptr<AbookContact>> contacts) {
+void Conversations::onContactsChanged(std::vector<std::shared_ptr<abook_qt::AbookContact>> contacts) {
   emit contactsChanged(contacts);
 }
 
@@ -268,7 +268,7 @@ void Conversations::createConfigDirectory(const QString &dir) {
   }
 }
 
-void Conversations::onAbookReady() const {
+void Conversations::onAbookReady() {
   abook_qt::abook_init_contact_roster();
   this->overviewModel->loadOverviewMessages();
 }

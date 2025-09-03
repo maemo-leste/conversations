@@ -60,7 +60,7 @@ void OverviewWidget::setupUITable() {
   header->setSectionResizeMode(proxyColumn(OverviewModel::ChatTypeIcon), QHeaderView::ResizeToContents);
   header->setSectionResizeMode(proxyColumn(OverviewModel::MsgStatusIcon), QHeaderView::ResizeToContents);
   header->setSectionResizeMode(proxyColumn(OverviewModel::PresenceIcon), QHeaderView::Fixed);
-  table->setColumnWidth(proxyColumn(OverviewModel::PresenceIcon), 32);
+  table->setColumnWidth(proxyColumn(OverviewModel::PresenceIcon), 48);
   header->setSectionResizeMode(proxyColumn(OverviewModel::ContentRole), QHeaderView::Stretch);
 
   table->setFocusPolicy(Qt::NoFocus);
@@ -99,10 +99,14 @@ void OverviewWidget::onSetTableHeight() {
 }
 
 void OverviewWidget::onSetColumnStyleDelegate() {
-  if (m_richItemDelegate != nullptr)
-    m_richItemDelegate->deleteLater();
+  if (m_richContentDelegate != nullptr)
+    m_richContentDelegate->deleteLater();
+  if (m_centeredIconDelegate != nullptr)
+    m_centeredIconDelegate->deleteLater();
 
-  m_richItemDelegate = new RichItemDelegate(this);
+  m_centeredIconDelegate = new CenteredIconDelegate(this);
+  m_centeredIconDelegate->setIconSize(QSize(24, 24));
+  m_richContentDelegate = new RichItemDelegate(this);
   auto css_tmpl = QString(Utils::fileOpen(":/overviewRichDelegate.css"));
 
   //auto systemFontSize = QApplication::font().pointSize();  // @TODO: returns 18?!
@@ -115,8 +119,9 @@ void OverviewWidget::onSetColumnStyleDelegate() {
   css_tmpl = css_tmpl.replace("{{ font_size }}", QString::number(systemFontSizeScaled));
   css_tmpl = css_tmpl.replace("{{ font_size_small }}", QString::number(systemFontSizeScaled - 2));
   css_tmpl = css_tmpl.replace("{{ font_size_big }}", QString::number(systemFontSizeScaled + 2));
-  m_richItemDelegate->setStyleSheet(css_tmpl);
-  ui->tableOverview->setItemDelegateForColumn(OverviewModel::ContentRole, m_richItemDelegate);
+  m_richContentDelegate->setStyleSheet(css_tmpl);
+  ui->tableOverview->setItemDelegateForColumn(OverviewModel::ContentRole, m_richContentDelegate);
+  ui->tableOverview->setItemDelegateForColumn(OverviewModel::PresenceIcon, m_centeredIconDelegate);
 }
 
 OverviewWidget::~OverviewWidget() {
