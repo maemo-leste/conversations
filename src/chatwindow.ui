@@ -165,11 +165,8 @@
    </property>
   </action>
   <action name="actionParticipants">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
    <property name="text">
-    <string>Participants</string>
+    <string>Room participants</string>
    </property>
   </action>
   <action name="actionAuto_join_groupchat">

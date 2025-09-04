@@ -59,6 +59,7 @@
 #include <TelepathyQt/ConnectionLowlevel>
 #include <TelepathyQt/ClientRegistrar>
 #include <TelepathyQt/TextChannel>
+#include <TelepathyQt/PendingVariant>
 #include <TelepathyQt/ChannelClassSpecList>
 #include <TelepathyQt/Types>
 
@@ -190,16 +191,22 @@ public:
   explicit TelepathyChannel(const QString &remote_uid, TelepathyAccountPtr accountPtr, const Tp::ChannelPtr channelPtr,
                             Tp::HandleType handleType);
   ~TelepathyChannel() override;
+  void isRoomCreator(const Tp::ContactPtr &contact) const;
 
   QString remote_uid;
   QString room_name;
   Tp::HandleType handleType;
   bool isRoom;
 
+  QList<Tp::ContactPtr> room_contacts;
+
   void setChannelPtr(Tp::ChannelPtr channel);
 
 public slots:
   void sendMessage(const QString &message) const;
+
+signals:
+  void room_contact_count_changed();
 
 private slots:
   void onGroupAddContacts(Tp::PendingOperation *op);
@@ -213,6 +220,8 @@ private slots:
 public:
   TelepathyAccountPtr m_account;
   Tp::ChannelPtr m_channel;
+  Tp::Client::ChannelInterface mainIface;
+  Tp::Client::ChannelInterfaceRoomInterface roomIface;
 };
 
 

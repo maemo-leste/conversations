@@ -130,6 +130,7 @@ ChatWindow::ChatWindow(
   connect(ui->actionIgnore_notifications, &QAction::triggered, this, &ChatWindow::onIgnoreNotificationsToggled);
   connect(m_ctx->telepathy, &Telepathy::channelJoined, this, &ChatWindow::onChannelJoinedOrLeft);
   connect(m_ctx->telepathy, &Telepathy::channelLeft, this, &ChatWindow::onChannelJoinedOrLeft);
+  connect(ui->actionParticipants, &QAction::triggered, this, &ChatWindow::onOpenTpContactsWindow);
 
   connect(ui->actionExportChatToCsv, &QAction::triggered, this, &ChatWindow::onExportToCsv);
   connect(ui->actionSearchChat, &QAction::triggered, this, &ChatWindow::onOpenSearchWindow);
@@ -422,6 +423,32 @@ void ChatWindow::onOpenPreviewWindow(QSharedPointer<PreviewItem> item) {
   m_previewWindow->show();
 }
 
+void ChatWindow::onOpenTpContactsWindow() {
+  const auto acc = m_ctx->telepathy->accountByName(local_uid);
+  const TelepathyChannelPtr ptr = acc->hasChannel(channel);
+  if (!ptr.isNull()) {
+    m_tpContactsWindow = new TpContactsWindow(ptr, this);
+
+    connect(m_tpContactsWindow, &TpContactsWindow::contactClicked, [this](const Tp::ContactPtr &contact) {
+      auto _remote_uid = contact->id();
+
+      // note: Tp's ContactPtr->id is unparsed
+      // Tp source (contact.h) has: // TODO filter: exact, prefix, substring match
+      if (_remote_uid.contains("/")) {
+        _remote_uid = _remote_uid.split("/").at(1);
+      }
+
+      openChatWindowForDirectChat(local_uid, _remote_uid);
+    });
+
+    m_tpContactsWindow->show();
+  }
+}
+
+void ChatWindow::onCloseTpContactsWindow() {
+  m_tpContactsWindow->close();
+  m_tpContactsWindow->deleteLater();
+}
 
 void ChatWindow::onSearchResultClicked(const QSharedPointer<ChatMessage> &msg) {
   this->setHighlight(msg->event_id());

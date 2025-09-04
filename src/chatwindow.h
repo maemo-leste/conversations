@@ -28,6 +28,7 @@
 #include "lib/rtcom/rtcom_public.h"
 #include "lib/mainwindow.h"
 #include "lib/webpreviewmodel.h"
+#include "contacts/TpContactsWindow.h"
 #include "searchwindow.h"
 #include "previewwindow.h"
 #include "models/ChatModel.h"
@@ -75,6 +76,8 @@ private slots:
     void onGatherMessage();
     void onOpenSearchWindow();
     void onOpenPreviewWindow(QSharedPointer<PreviewItem> item);
+    void onOpenTpContactsWindow();
+    void onCloseTpContactsWindow();
     void onExportToCsv();
     void onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg);
     void onClosePreviewWindow(const QSharedPointer<ChatMessage> &msg);
@@ -110,6 +113,7 @@ signals:
     void chatCleared();
     void avatarChanged();
     void groupchatChanged();
+    void openChatWindowForDirectChat(const QString& local_uid, const QString& remote_uid);
 
 private:
     Conversations *m_ctx;
@@ -117,6 +121,7 @@ private:
     static ChatWindow *pChatWindow;
     SearchWindow *m_searchWindow = nullptr;
     PreviewWindow *m_previewWindow = nullptr;
+    TpContactsWindow *m_tpContactsWindow = nullptr;
     bool m_auto_join = false;
     bool m_ignore_notifications = false;
     QSharedPointer<ContactItem> m_abook_contact;

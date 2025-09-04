@@ -962,6 +962,10 @@ TelepathyChannel::TelepathyChannel(const QString &remote_uid, TelepathyAccountPt
   m_account(accountPtr),
   m_channel(channelPtr),
   handleType(handleType),
+  mainIface(channelPtr->dbusConnection(),
+    channelPtr->busName(),
+    channelPtr->objectPath()),
+  roomIface(mainIface),
   isRoom(handleType == Tp::HandleTypeRoom),
   QObject(nullptr) {
 
@@ -973,6 +977,43 @@ TelepathyChannel::TelepathyChannel(const QString &remote_uid, TelepathyAccountPt
   connect(m_channel->becomeReady(),
           SIGNAL(finished(Tp::PendingOperation*)),
           SLOT(onChannelReady(Tp::PendingOperation*)));
+
+  QObject::connect(channelPtr.data(), &Tp::Channel::groupMembersChanged, [this](
+    const Tp::Contacts &groupMembersAdded,
+    const Tp::Contacts &groupLocalPendingMembersAdded,
+    const Tp::Contacts &groupRemotePendingMembersAdded,
+    const Tp::Contacts &groupMembersRemoved,
+    const Tp::Channel::GroupMemberChangeDetails &details) {
+      foreach (const Tp::ContactPtr &c, groupMembersAdded) {
+        room_contacts << c;
+      }
+
+      foreach (const Tp::ContactPtr &c, groupMembersRemoved) {
+        room_contacts.removeAll(c);
+      }
+
+      emit room_contact_count_changed();
+  });
+}
+
+// does not seem to work on telepathy-gabble, so we are not using it for now
+void TelepathyChannel::isRoomCreator(const Tp::ContactPtr &contact) const {
+  Tp::PendingVariant *op = roomIface.requestPropertyCreator();
+  connect(op, &Tp::PendingOperation::finished, m_channel.data(), [op, contact](Tp::PendingOperation *) {
+    if (op->isError()) {
+      qWarning() << "Room2.Creator not available:" << op->errorName() << op->errorMessage();
+      return;
+    }
+
+    const auto creator_id = op->result().value<QString>();
+    if (creator_id.isEmpty()) {
+      qWarning() << "room creator unknown";
+      return;
+    }
+
+    const bool is_creator = (contact && contact->id() == creator_id);
+    qDebug() << "room creator is" << creator_id << "- contact" << (is_creator ? "is" : "is not") << "the creator/owner.";
+  });
 }
 
 void TelepathyChannel::onChannelReady(Tp::PendingOperation *op) {
@@ -998,6 +1039,12 @@ void TelepathyChannel::onChannelReady(Tp::PendingOperation *op) {
   } else {
     auto pending = channel->groupAddContacts(QList<Tp::ContactPtr>() << channel->connection()->selfContact());
     connect(pending, &Tp::PendingOperation::finished, this, &TelepathyChannel::onGroupAddContacts);
+  }
+
+  if (isRoom) {
+    for (const auto &c: m_channel->groupContacts()) {
+      room_contacts << c;
+    }
   }
 }
 

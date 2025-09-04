@@ -36,6 +36,8 @@ file(GLOB SOURCE_FILES
         "lib/utils_c.c"
         "lib/tp/*.h"
         "lib/tp/*.cpp"
+        "contacts/*.h"
+        "contacts/*.cpp"
         "models/*.h"
         "models/*.cpp"
         "overview/*.cpp"

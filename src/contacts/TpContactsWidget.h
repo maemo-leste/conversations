@@ -9,40 +9,39 @@
 #include <QTimer>
 #include <QEasingCurve>
 #include <QMessageBox>
+#include <QTableView>
+#include <QHeaderView>
 #include <QWidget>
 #include <QMenu>
 
 #include "conversations.h"
 #include "lib/utils.h"
 #include "lib/QCenteredIconDelegate.h"
-#include "overview/OverviewModel.h"
-#include "overviewbtnwidget.h"
+#include "contacts/TpContactsModel.h"
 
 namespace Ui {
-  class OverviewWidget;
+  class TpContactsWidget;
 }
 
-class OverviewWidget : public QWidget
-{
+class TpContactsWidget : public QWidget {
 Q_OBJECT
 
 public:
-  explicit OverviewWidget(Conversations *ctx, OverviewProxyModel *proxyModel, QWidget *parent = nullptr);
-  ~OverviewWidget() override;
+  explicit TpContactsWidget(TpContactsProxyModel *proxyModel, QWidget *parent = nullptr);
+  int proxyColumn(QSortFilterProxyModel *proxy, int sourceColumn);
+  ~TpContactsWidget() override;
 
 signals:
-  void overviewRowClicked(int idx);
+  void contactClicked(int idx);
 
 public slots:
   void onSetColumnStyleDelegate();
   void onSetTableHeight();
-  void onAvatarDisplayChanged();
 
 private:
   void setupUITable();
   RichItemDelegate *m_richContentDelegate = nullptr;
   CenteredIconDelegate *m_centeredIconDelegate = nullptr;
-  Ui::OverviewWidget *ui;
-  OverviewProxyModel *m_proxyModel = nullptr;
-  Conversations *m_ctx;
+  Ui::TpContactsWidget *ui;
+  TpContactsProxyModel *m_proxyModel = nullptr;
 };
