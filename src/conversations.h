@@ -9,7 +9,6 @@
 #include <QTimer>
 
 #include "lib/colors.h"
-#include "lib/http.h"
 #include "lib/config.h"
 #include "lib/ipc.h"
 #include "lib/tp/tp.h"
