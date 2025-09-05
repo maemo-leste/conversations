@@ -429,16 +429,17 @@ void ChatWindow::onOpenTpContactsWindow() {
   if (!ptr.isNull()) {
     m_tpContactsWindow = new TpContactsWindow(ptr, this);
 
-    connect(m_tpContactsWindow, &TpContactsWindow::contactClicked, [this](const Tp::ContactPtr &contact) {
-      auto _remote_uid = contact->id();
-
+    connect(m_tpContactsWindow, &TpContactsWindow::contactClicked, [this, acc](const Tp::ContactPtr &contact) {
       // note: Tp's ContactPtr->id is unparsed
       // Tp source (contact.h) has: // TODO filter: exact, prefix, substring match
-      if (_remote_uid.contains("/")) {
-        _remote_uid = _remote_uid.split("/").at(1);
-      }
+      // auto _remote_uid = contact->id();
+      // if (_remote_uid.contains("/"))
+      //   _remote_uid = _remote_uid.split("/").at(1);
 
-      openChatWindowForDirectChat(local_uid, _remote_uid);
+      // note: XMPP MUCs (rooms) have different user IDs (JIDs) for participants.
+      // starting a chat against this user ID works, but the remote ID is off.
+      // https://git.maemo.org/leste/conversations/issues/37
+      acc->ensureTextChat(contact);
     });
 
     m_tpContactsWindow->show();

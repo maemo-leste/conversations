@@ -195,19 +195,6 @@ void MainWindow::onOpenChatWindow(QString local_uid, QString remote_uid, QString
   connect(window, &ChatWindow::sendMessage, this->m_ctx, &Conversations::onSendOutgoingMessage);
   connect(window, &ChatWindow::closed, this, &MainWindow::onChatWindowClosed);
   connect(window, &ChatWindow::chatCleared, m_ctx->overviewModel, &OverviewModel::loadOverviewMessages);
-  connect(window, &ChatWindow::openChatWindowForDirectChat, [=](const QString& _local_uid, const QString& _remote_uid) {
-    // direct DM to room participant, from TpContactsWindow
-    const auto acc = m_ctx->telepathy->accountByName(_local_uid);
-    if (!acc.isNull()) {
-      if (acc->protocolName() == "jabber") {
-        // https://git.maemo.org/leste/conversations/issues/37
-        const auto msg = "initiating direct chats to a room participant is currently not implemented for XMPP";
-        emit m_ctx->telepathy->errorMessage(msg);
-        return;
-      }
-    }
-    this->onOpenChatWindow(_local_uid, _remote_uid, _local_uid + "-" + _remote_uid, "", "RTCOM_EL_SERVICE_CHAT");
-  });
 }
 
 void MainWindow::onOpenChatWindow(const QSharedPointer<ChatMessage> &msg) {

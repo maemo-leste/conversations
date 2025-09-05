@@ -115,6 +115,7 @@ public:
   QString getServiceName();
   QString getServerHost();
   unsigned int getServerPort();
+  void ensureTextChat(const Tp::ContactPtr& ptr);
 
   bool isOnline = false;
   bool has_feature_friends() const { return m_feature_friends; };

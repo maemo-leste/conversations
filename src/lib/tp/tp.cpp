@@ -862,6 +862,22 @@ void TelepathyAccount::removeChannel(const QString &remote_uid) {
   emit channelLeft(local_uid, remote_uid);
 }
 
+void TelepathyAccount::ensureTextChat(const Tp::ContactPtr& ptr) {
+  // set a 'null' datetime on this channel request, so that it
+  // spawns a new chatwindow after the channel is established
+  // (see handleChannels())
+  const auto dt = QDateTime();
+  const auto *pending = acc->ensureTextChat(ptr, dt);
+
+  connect(pending, &Tp::PendingChannelRequest::finished, [this](const Tp::PendingOperation *op) {
+    if (op->isError()) {
+      const auto err_msg = QString("ensureTextChat(contactptr) failed: %1").arg(op->errorMessage());
+      qWarning() << err_msg;
+      emit errorMessage(err_msg);
+    }
+  });
+}
+
 void TelepathyAccount::sendMessage(QString remote_uid, const QString &message) {
   qDebug() << "sendMessage: remote_uid:" << remote_uid;
   auto chan = hasChannel(remote_uid);

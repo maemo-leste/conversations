@@ -113,7 +113,6 @@ signals:
     void chatCleared();
     void avatarChanged();
     void groupchatChanged();
-    void openChatWindowForDirectChat(const QString& local_uid, const QString& remote_uid);
 
 private:
     Conversations *m_ctx;
