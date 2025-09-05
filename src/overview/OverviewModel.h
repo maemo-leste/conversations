@@ -94,6 +94,7 @@ public:
   int columnCount(const QModelIndex &parent = QModelIndex()) const override;
   QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
   void updateMessage(int row, QSharedPointer<ChatMessage> &msg);
+  void _dataChanged(const size_t row);
 public:
   QList<QSharedPointer<ChatMessage>> messages;
 

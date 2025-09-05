@@ -162,10 +162,7 @@ void OverviewModel::onDatabaseAddition(QSharedPointer<ChatMessage> &msg) {
         return;
       messages[row] = msg;
 
-      const int lastColumn = this->columnCount() - 1;
-      const QModelIndex topLeft = this->index(row, 0);
-      const QModelIndex bottomRight = this->index(row, lastColumn);
-      emit dataChanged(topLeft, bottomRight);
+      _dataChanged(row);
 
       found = true;
       break;
@@ -184,12 +181,8 @@ void OverviewModel::onAvatarChanged(const std::string &abook_uid) {
     const auto *raw = m->raw();
     auto row_abook_uid = abook_qt::get_abook_uid(raw->protocol, raw->remote_uid);
 
-    if (row_abook_uid == abook_uid) {
-      const int lastColumn = this->columnCount() - 1;
-      const QModelIndex topLeft = this->index(row, 0);
-      const QModelIndex bottomRight = this->index(row, lastColumn);
-      emit dataChanged(topLeft, bottomRight);
-    }
+    if (row_abook_uid == abook_uid)
+      _dataChanged(row);
   }
 }
 
@@ -200,12 +193,8 @@ void OverviewModel::onContacsChanged(std::vector<std::shared_ptr<abook_qt::Abook
       const auto &m = messages[row];
       auto row_remote_uid = m->remote_uid().toStdString();
 
-      if (row_remote_uid == contact->remote_uid) {
-        const int lastColumn = this->columnCount() - 1;
-        const QModelIndex topLeft = this->index(row, 0);
-        const QModelIndex bottomRight = this->index(row, lastColumn);
-        emit dataChanged(topLeft, bottomRight);
-      }
+      if (row_remote_uid == contact->remote_uid)
+        _dataChanged(row);
     }
   }
 }
@@ -216,8 +205,7 @@ void OverviewModel::updateMessage(int row, QSharedPointer<ChatMessage> &msg) {
 
   messages[row] = msg;
 
-  QModelIndex index = this->index(row);
-  emit dataChanged(index, index);
+  _dataChanged(row);
 }
 
 QVariant OverviewModel::data(const QModelIndex &index, int role) const {
@@ -291,8 +279,11 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
     return {};
   }
 
-  // optional: sorting/filtering roles
-  // switch (role) {}
+  // sorting/filtering roles
+  switch (role) {
+    case static_cast<int>(OverviewModelRoles::TimeRole):
+      return msg->date();
+  }
   return {};
 }
 
@@ -514,6 +505,27 @@ void OverviewModel::preloadPixmaps() {
       m_icons[icon] = QIcon(scaledPixmap);
     }
   }
+}
+
+void OverviewModel::_dataChanged(const size_t row) {
+  const int lastColumn = this->columnCount() - 1;
+  const QModelIndex topLeft = this->index(row, 0);
+  const QModelIndex bottomRight = this->index(row, lastColumn);
+
+  const QVector<int> roles = {
+    Qt::UserRole,
+    Qt::DisplayRole,
+    static_cast<int>(OverviewModelRoles::MsgStatusIcon),
+    static_cast<int>(OverviewModelRoles::ContentRole),
+    static_cast<int>(OverviewModelRoles::OverviewNameRole),
+    static_cast<int>(OverviewModelRoles::ProtocolRole),
+    static_cast<int>(OverviewModelRoles::AvatarIcon),
+    static_cast<int>(OverviewModelRoles::PresenceIcon),
+    static_cast<int>(OverviewModelRoles::ChatTypeIcon),
+    static_cast<int>(OverviewModelRoles::TimeRole)
+  };
+
+  emit dataChanged(topLeft, bottomRight, roles);
 }
 
 void OverviewModel::onClear() {
