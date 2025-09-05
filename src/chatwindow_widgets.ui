@@ -163,10 +163,16 @@ p, li { white-space: pre-wrap; }
        <number>14</number>
       </property>
       <item>
-       <widget class="QLineEdit" name="chatBox_line"/>
-      </item>
-      <item>
        <widget class="QTextEdit" name="chatBox_multi">
+        <property name="verticalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QAbstractScrollArea::AdjustToContents</enum>
+        </property>
         <property name="acceptRichText">
          <bool>false</bool>
         </property>
