@@ -1,3 +1,9 @@
+conversations (0.7.79) unstable; urgency=medium
+
+  * overviewmodel: fix proxy date sort
+
+ -- Sander <sander@sanderf.nl>  Fri, 05 Sep 2025 12:52:15 +0300
+
 conversations (0.7.78) unstable; urgency=medium
 
   * overviewmodel: switch to seperate roles, columns enums, and implement date sort (newest first) on the proxy model
