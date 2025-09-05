@@ -42,8 +42,17 @@ SearchWindow::SearchWindow(Conversations *ctx, QString group_uid, QWidget *paren
   setProperty("X-Maemo-StackedWindow", 1);
   setProperty("X-Maemo-Orientation", 2);
 
-  // contacts view is default
-  drawContactsSearch();
+  // setup overview, re-use model from mainwindow
+  m_overviewWidget = new OverviewWidget(m_ctx, m_overviewProxyModel, this);
+  ui->centralWidget->layout()->addWidget(m_overviewWidget);
+  m_overviewWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+  if (group_uid.isEmpty()) {
+    drawContactsSearch();
+  } else {
+    ui->radio_contacts->hide();
+    drawContentSearch();
+  }
 
   connect(ui->radio_contacts, &QRadioButton::pressed, [this]() {
       drawContactsSearch();
@@ -53,54 +62,78 @@ SearchWindow::SearchWindow(Conversations *ctx, QString group_uid, QWidget *paren
       drawContentSearch();
   });
 
-  connect(ui->line_search, &QLineEdit::textChanged, [this](const QString &text) {
-    QString term = text;
-    term = term.replace("%", "");
-    emit search_termChanged();
+  connect(ui->line_search, &QLineEdit::textChanged, this, &SearchWindow::onSearch);
+  setInfoLabel();
+}
 
-    search_term = term;
-    const bool search_contents = ui->radio_content->isChecked();
-    const auto mininum_characters = search_contents ? 3 : 1;
+void SearchWindow::onSearch(const QString& text) {
+  QString term = text;
+  term = term.toLower();
+  term = term.replace("%", "");
+  emit search_termChanged();
 
-    if(search_term.length() >= mininum_characters) {
-      if(search_contents)
-        if (m_group_uid.isEmpty())
-          this->m_overviewModel->loadSearchMessages("%%" + search_term + "%%");
-        else
-          this->m_overviewModel->loadSearchMessages("%%" + search_term + "%%", m_group_uid);
-      else
-        m_overviewProxyModel->setNameFilter(search_term);
-    } else {  // clear
-      if(search_contents)
-        m_overviewModel->onClear();
-      else
-        m_overviewProxyModel->setNameFilter("");
+  search_term = "%%" + term + "%%";
+  const bool search_contents = ui->radio_content->isChecked();
+  const auto mininum_characters = search_contents ? 2 : 1;
+
+  if (term.length() < mininum_characters) {
+    this->m_overviewModel->onClear();
+    setInfoLabel();
+    return;
+  }
+
+  if (search_contents) {
+    this->m_overviewModel->loadSearchMessages(search_term, m_group_uid.isEmpty() ? "" : m_group_uid);
+  } else {
+    // contact search
+    auto messages = this->m_overviewModel->getOverviewMessages();
+    QList<ChatMessage*> filtered_messages;
+    for (const auto& message: messages) {
+      const auto *raw = message->raw();
+      QString name = !raw->channel.empty() ? message->name_channel() : message->name_counterparty();
+      if (name.toLower().contains(term)) {
+        qDebug() << "hit" << name << ":" << term;
+        filtered_messages.append(message);
+      }
     }
-  });
+    m_overviewModel->setMessages(filtered_messages);
+  }
 
-  // setup overview, re-use model from mainwindow
-  m_overviewWidget = new OverviewWidget(m_ctx, m_overviewProxyModel, this);
-  ui->centralWidget->layout()->addWidget(m_overviewWidget);
-  m_overviewWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  setInfoLabel();
+}
+
+void SearchWindow::setInfoLabel() {
+  const bool search_contents = ui->radio_content->isChecked();
+  const auto mininum_characters = search_contents ? 2 : 1;
+  auto term = ui->line_search->text();
+  term = term.replace("%", "");
+
+  if (term.length() < mininum_characters) {
+    ui->lbl_info->setText(QString("Minimum search characters: %1").arg(QString::number(mininum_characters)));
+    ui->lbl_info->show();
+    return;
+  }
+
+  if (m_overviewModel->rowCount() == 0) {
+    ui->lbl_info->setText("No results");
+    ui->lbl_info->show();
+  } else {
+    ui->lbl_info->hide();
+  }
 }
 
 void SearchWindow::drawContactsSearch() {
   ui->radio_contacts->setChecked(true);
   ui->radio_content->setChecked(false);
-  resetSearch();
+  m_overviewModel->onClear();
+  setInfoLabel();
 }
 
 void SearchWindow::drawContentSearch() {
   ui->radio_contacts->setChecked(false);
   ui->radio_content->setChecked(true);
-  resetSearch();
-}
-
-void SearchWindow::resetSearch() {
-  ui->line_search->setText("");
-  emit search_termChanged();
-  m_overviewProxyModel->setNameFilter("");
-  m_overviewModel->loadOverviewMessages();
+  m_overviewModel->onClear();
+  setInfoLabel();
 }
 
 Conversations *SearchWindow::getContext(){
@@ -114,7 +147,7 @@ void SearchWindow::closeEvent(QCloseEvent *event) {
 
 SearchWindow::~SearchWindow() {
   qDebug() << "destroying SearchWindow";
-  resetSearch();
+  m_overviewModel->onClear();
   m_overviewModel->deleteLater();
   m_overviewProxyModel->deleteLater();
   delete ui;

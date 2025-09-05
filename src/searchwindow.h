@@ -33,6 +33,7 @@ class SearchWindow : public QMainWindow {
 public:
     Ui::SearchWindow *ui;
     explicit SearchWindow(Conversations *ctx, QString group_uid, QWidget *parent = nullptr);
+    void setInfoLabel();
     static Conversations *getContext();
    ~SearchWindow() override;
 
@@ -47,10 +48,12 @@ signals:
 protected:
   void closeEvent(QCloseEvent *event) override;
 
+private slots:
+  void onSearch(const QString &text);
+
 private:
     void drawContactsSearch();
     void drawContentSearch();
-    void resetSearch();
     Conversations *m_ctx;
     static SearchWindow *pSearchWindow;
     QString m_group_uid = "";

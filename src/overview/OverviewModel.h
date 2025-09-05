@@ -89,6 +89,8 @@ public:
 
 public slots:
   void loadSearchMessages(const QString& needle, const QString& group_uid = "");
+  QList<ChatMessage*> getOverviewMessages();
+  void setMessages(QList<ChatMessage*> lst);
   void loadOverviewMessages();
   void onClear();
   void onDatabaseAddition(QSharedPointer<ChatMessage> &msg);

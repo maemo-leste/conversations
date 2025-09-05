@@ -333,7 +333,7 @@ void OverviewModel::loadSearchMessages(const QString& needle, const QString& gro
   endInsertRows();
 }
 
-void OverviewModel::loadOverviewMessages() {
+QList<ChatMessage*> OverviewModel::getOverviewMessages() {
   CLOCK_MEASURE_START(start_total);
   // The overview screen has 3 sources:
   // 1. rtcom-db
@@ -448,12 +448,22 @@ void OverviewModel::loadOverviewMessages() {
   }
 
   CLOCK_MEASURE_END(start_config_state, "OverviewModel::loadOverviewMessages ConfigState");
-
-  beginInsertRows(QModelIndex(), 0, results.size());
-  for (const auto &message: results)
-    messages << QSharedPointer<ChatMessage>(message);
-  endInsertRows();
   CLOCK_MEASURE_END(start_total, "OverviewModel::loadOverviewMessages total");
+
+  return results;
+}
+
+void OverviewModel::loadOverviewMessages() {
+  auto results = getOverviewMessages();
+  setMessages(results);
+}
+
+void OverviewModel::setMessages(QList<ChatMessage*> lst) {
+  beginInsertRows(QModelIndex(), 0, lst.size());
+  for (const auto &message: lst) {
+    messages << QSharedPointer<ChatMessage>(message);
+  }
+  endInsertRows();
 }
 
 QHash<int, QByteArray> OverviewModel::roleNames() const {

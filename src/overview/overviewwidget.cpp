@@ -25,7 +25,8 @@ void OverviewWidget::setupUITable() {
   QScroller::grabGesture(table, QScroller::LeftMouseButtonGesture);
   QScroller *scroller = QScroller::scroller(table);
   QScrollerProperties properties = QScroller::scroller(scroller)->scrollerProperties();
-  QVariant overshootPolicy = QVariant::fromValue<QScrollerProperties::OvershootPolicy>(QScrollerProperties::OvershootAlwaysOff);
+  QVariant overshootPolicy = QVariant::fromValue<QScrollerProperties::OvershootPolicy>(
+      QScrollerProperties::OvershootAlwaysOff);
   properties.setScrollMetric(QScrollerProperties::VerticalOvershootPolicy, overshootPolicy);
   scroller->setScrollerProperties(properties);
   table->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -39,37 +40,60 @@ void OverviewWidget::setupUITable() {
 
   table->setModel(m_proxyModel);
 
+  // map source->proxy column
   auto proxyColumn = [proxy = m_proxyModel](const int sourceColumn) {
-    return proxy->mapFromSource(proxy->sourceModel()->index(0, sourceColumn)).column();
+    QModelIndex src;
+    if (proxy->sourceModel() && proxy->sourceModel()->rowCount() > 0)
+      src = proxy->sourceModel()->index(0, sourceColumn);
+    return proxy->mapFromSource(src).column();
   };
 
-  // hidden columns
-  for (const int col: {
-      OverviewModel::COUNT,
-      // OverviewModel::MsgStatusIcon,
-      OverviewModel::OverviewNameRole,
-      // OverviewModel::ChatTypeIcon,
-      OverviewModel::ProtocolRole,
-      OverviewModel::TimeRole,
-      OverviewModel::AvatarIcon}) {
-    table->setColumnHidden(proxyColumn(col), true);
-  }
+  auto applyHeaderConfig = [this, table, header, proxyColumn] {
+    // hidden columns
+    for (const int col: {
+        OverviewModel::COUNT,
+        // OverviewModel::MsgStatusIcon,
+        OverviewModel::OverviewNameRole,
+        // OverviewModel::ChatTypeIcon,
+        OverviewModel::ProtocolRole,
+        OverviewModel::TimeRole,
+        OverviewModel::AvatarIcon}) {
+      if (const int pcol = proxyColumn(col); pcol >= 0)
+        table->setColumnHidden(pcol, true);
+    }
+
+    int col;
+    col = proxyColumn(OverviewModel::ChatTypeIcon);
+    if (col >= 0)
+      header->setSectionResizeMode(col, QHeaderView::ResizeToContents);
+
+    col = proxyColumn(OverviewModel::MsgStatusIcon);
+    if (col >= 0)
+      header->setSectionResizeMode(col, QHeaderView::ResizeToContents);
+
+    col = proxyColumn(OverviewModel::PresenceIcon);
+    if (col >= 0) {
+      header->setSectionResizeMode(col, QHeaderView::Fixed);
+      table->setColumnWidth(col, 48);
+    }
+
+    col = proxyColumn(OverviewModel::ContentRole);
+    if (col >= 0)
+      header->setSectionResizeMode(col, QHeaderView::Stretch);
+  };
 
   this->onSetColumnStyleDelegate();
+  applyHeaderConfig();
 
-  header->setSectionResizeMode(proxyColumn(OverviewModel::ChatTypeIcon), QHeaderView::ResizeToContents);
-  header->setSectionResizeMode(proxyColumn(OverviewModel::MsgStatusIcon), QHeaderView::ResizeToContents);
-  header->setSectionResizeMode(proxyColumn(OverviewModel::PresenceIcon), QHeaderView::Fixed);
-  table->setColumnWidth(proxyColumn(OverviewModel::PresenceIcon), 48);
-  header->setSectionResizeMode(proxyColumn(OverviewModel::ContentRole), QHeaderView::Stretch);
+  if (m_proxyModel->sourceModel()) {
+    connect(m_proxyModel->sourceModel(), &QAbstractItemModel::modelReset, this, applyHeaderConfig);
+    connect(m_proxyModel->sourceModel(), &QAbstractItemModel::rowsInserted, this, applyHeaderConfig);
+  }
 
   table->setFocusPolicy(Qt::NoFocus);
 
-  // table click handler
   connect(table, &QAbstractItemView::clicked, this, [this](const QModelIndex &idx) {
-    // need to go through the proxy model to figure out the underlying 
-    // item in the base model. Register to OverviewModel::overviewRowClicked for 
-    // the actual signal.
+    // go through proxy model to figure out underlying item
     m_proxyModel->onOverviewRowClicked(idx.row());
   });
 

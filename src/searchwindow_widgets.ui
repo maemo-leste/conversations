@@ -78,6 +78,13 @@
       </property>
      </widget>
     </item>
+    <item>
+     <widget class="QLabel" name="lbl_info">
+      <property name="text">
+       <string>Info label</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
  </widget>
