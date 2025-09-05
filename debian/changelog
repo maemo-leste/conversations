@@ -1,3 +1,16 @@
+conversations (0.7.78) unstable; urgency=medium
+
+  * overviewmodel: switch to seperate roles, columns enums, and implement date sort (newest first) on the proxy model
+  * chatwindow: fix double input boxes when using conversations-slim
+  * searchwindow: fix regressions and make chat message searching work again:
+  * - global search (search contact, and message contents)
+  * - global search on a specific contact (search message contents)
+  * lib/tp: ensureTextChat via Tp::ContactPtr
+  * lib/http: remove unused HTTP class
+  * contactswindow: initial implementation of a group chat participant listing, and initiating a 1:1 chats with a room participant
+
+ -- Sander <sander@sanderf.nl>  Fri, 05 Sep 2025 12:21:03 +0300
+
 conversations (0.7.77) unstable; urgency=medium
 
   * lib/abook
