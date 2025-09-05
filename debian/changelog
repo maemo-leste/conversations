@@ -1,3 +1,10 @@
+conversations (0.7.80) unstable; urgency=medium
+
+  * lib/tp: datetime should be non-null to spawn chatwindows
+  * chatwindow: enable room participants menu option for -slim
+
+ -- Sander <sander@sanderf.nl>  Fri, 05 Sep 2025 15:55:00 +0300
+
 conversations (0.7.79) unstable; urgency=medium
 
   * overviewmodel: fix proxy date sort
