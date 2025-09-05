@@ -35,7 +35,7 @@ void RichItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
   QRect clip(0, 0, options.rect.width() + iconSize.width(), options.rect.height());
 
   // avatar rectangle
-  QModelIndex avatarIndex = index.sibling(index.row(), OverviewModel::AvatarIcon);
+  QModelIndex avatarIndex = index.sibling(index.row(), static_cast<int>(OverviewModel::Columns::AvatarColumn));
   QPixmap avatarPixmap = avatarIndex.data(Qt::DecorationRole).value<QPixmap>();
 
   QRect avatarRect;

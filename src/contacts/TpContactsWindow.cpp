@@ -40,8 +40,6 @@ TpContactsWindow::TpContactsWindow(const TelepathyChannelPtr& channel, QWidget *
 
   m_proxyModel = new TpContactsProxyModel(this);
   m_proxyModel->setSourceModel(m_model);
-  m_proxyModel->setSortRole(OverviewModel::TimeRole);
-  m_proxyModel->sort(OverviewModel::TimeRole, Qt::DescendingOrder);
   m_proxyModel->setDynamicSortFilter(true);
   m_widgetContacts = new TpContactsWidget(m_proxyModel, nullptr);
 

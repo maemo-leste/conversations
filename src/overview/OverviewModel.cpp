@@ -46,17 +46,19 @@ void ServiceAccount::setName(const QString &protocol) {
   this->title = this->title.left(1).toUpper() + this->title.mid(1);
 }
 
-OverviewProxyModel::OverviewProxyModel(QObject *parent) : QSortFilterProxyModel(parent) {
-  // @TODO: table wont update, not sure
-  // connect(Conversations::instance()->overviewModel, &OverviewModel::dataChanged, this, [=](const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) {
-  //   // Map the source indexes to proxy indexes
-  //   QModelIndex proxyTopLeft = mapFromSource(topLeft);
-  //   QModelIndex proxyBottomRight = mapFromSource(bottomRight);
-  //
-  //   if (proxyTopLeft.isValid() && proxyBottomRight.isValid()) {
-  //     emit dataChanged(proxyTopLeft, proxyBottomRight, roles);
-  //   }
-  // });
+OverviewProxyModel::OverviewProxyModel(QObject *parent) :
+    QSortFilterProxyModel(parent) {
+  setDynamicSortFilter(true);
+  setSortRole(static_cast<int>(OverviewModel::OverviewModelRoles::TimeRole));
+  QSortFilterProxyModel::sort(0, Qt::DescendingOrder); // newest first
+}
+
+bool OverviewProxyModel::lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const {
+  const QVariant data_l  = sourceModel()->data(source_left, static_cast<int>(OverviewModel::OverviewModelRoles::TimeRole));
+  const QVariant data_r = sourceModel()->data(source_right, static_cast<int>(OverviewModel::OverviewModelRoles::TimeRole));
+  const QDateTime time_l  = data_l.toDateTime();
+  const QDateTime time_r = data_r.toDateTime();
+  return time_l < time_r;
 }
 
 void OverviewProxyModel::setNameFilter(QString name) {
@@ -146,7 +148,7 @@ int OverviewModel::rowCount(const QModelIndex & parent) const {
 int OverviewModel::columnCount(const QModelIndex &parent) const {
   if (parent.isValid())
     return 0;
-  return OverviewModelRoles::COUNT;
+  return static_cast<int>(Columns::COUNT);
 }
 
 void OverviewModel::onDatabaseAddition(QSharedPointer<ChatMessage> &msg) {
@@ -159,10 +161,6 @@ void OverviewModel::onDatabaseAddition(QSharedPointer<ChatMessage> &msg) {
       if (row < 0 || row >= messages.size())
         return;
       messages[row] = msg;
-
-      const QModelIndex index = this->index(row);
-      QVector<int> roles;
-      roles << ContentRole << MsgStatusIcon << OverviewNameRole;
 
       const int lastColumn = this->columnCount() - 1;
       const QModelIndex topLeft = this->index(row, 0);
@@ -223,66 +221,42 @@ void OverviewModel::updateMessage(int row, QSharedPointer<ChatMessage> &msg) {
 }
 
 QVariant OverviewModel::data(const QModelIndex &index, int role) const {
-  const int row = index.row();
-  if (row < 0 || row >= messages.count())
+  if (!index.isValid() || index.row() >= messages.size())
     return {};
 
-  const auto &message = messages[row];
+  const auto &msg = messages[index.row()];
+  const int col = index.column();
 
-  if (role == Qt::DisplayRole) {
-    switch (index.column()) {
-      case OverviewModel::ContentRole:
-        return message->generateOverviewItemDelegateRichText();
-      case OverviewModel::ProtocolRole:
-        return message->protocol();
-      case OverviewModel::TimeRole:
-        return message->date();
-      default:
-        return {};
-    }
-  }
+  // column based display
+  if (role == Qt::DisplayRole || role == Qt::DecorationRole) {
+    switch (col) {
+      case static_cast<int>(Columns::ContentColumn):
+        return msg->generateOverviewItemDelegateRichText();
 
-  if (role == Qt::TextAlignmentRole) {
-    switch (index.column()) {
-      case OverviewModel::PresenceIcon:
-      case OverviewModel::MsgStatusIcon:
-      case OverviewModel::ChatTypeIcon:
-      case OverviewModel::AvatarIcon:
-          return Qt::AlignHCenter; // horizontal alignment in Qt::TextAlignmentRole only affects text
-      default:
-        return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-    }
-  }
-
-  if (role == Qt::DecorationRole) {
-    switch (index.column()) {
-      case MsgStatusIcon: {
-        const QString icon = message->icon_name();
-        const QString fallback = "general_chat";
-        if (!icon.isEmpty()) {
-          if (m_icons.contains(icon))
-            return m_icons[icon];
-
-          qWarning() << "icon" << icon << "does not exist";
-        }
-        return m_icons.value(fallback, {});
+      case static_cast<int>(Columns::MsgStatusColumn): {
+        const QString icon = msg->icon_name();
+        return (!icon.isEmpty() && m_icons.contains(icon)) ? m_icons[icon] : m_icons.value("general_chat");
       }
-      case PresenceIcon: {
-        auto *raw = message->raw();
+
+      case static_cast<int>(Columns::PresenceColumn): {
+        auto *raw = msg->raw();
         const auto presence = abook_qt::get_presence(raw->protocol, raw->remote_uid);
         if (!presence.isNull()) {
-          auto icon_name = QString::fromStdString(presence.icon_name);
-          if (m_icons.contains(icon_name))
-            return m_icons[icon_name];
-          return icon_name;
+          QString icon_name = QString::fromStdString(presence.icon_name);
+          return m_icons.contains(icon_name) ? m_icons[icon_name] : QVariant();
         }
         return {};
       }
-      case AvatarIcon: {
-        const auto protocol = message->protocol().toStdString();
-        const auto remote_uid = message->remote_uid().toStdString();
-        const std::string avatar_token = abook_qt::get_avatar_token(protocol, remote_uid);
 
+      case static_cast<int>(Columns::ChatTypeColumn): {
+        const QString icon = msg->channel().isEmpty() ? "general_default_avatar" : "general_conference_avatar";
+        return m_icons.value(icon, {});
+      }
+
+      case static_cast<int>(Columns::AvatarColumn): {
+        const auto protocol = msg->protocol().toStdString();
+        const auto remote_uid = msg->remote_uid().toStdString();
+        const auto avatar_token = abook_qt::get_avatar_token(protocol, remote_uid);
         if (!avatar_token.empty() && avatar_token != "0") {
           QPixmap pixmap;
           if (Utils::get_avatar(protocol, remote_uid, avatar_token, pixmap))
@@ -290,34 +264,35 @@ QVariant OverviewModel::data(const QModelIndex &index, int role) const {
         }
         return {};
       }
-      case ChatTypeIcon: {
-        const QString icon = message->channel().isEmpty()
-                                 ? "general_default_avatar"
-                                 : "general_conference_avatar";
-        return m_icons.value(icon, {});
-      }
+
+      case static_cast<int>(Columns::TimeColumn):
+        return msg->date();
+
       default:
         return {};
     }
+  }
+
+  if (role == Qt::TextAlignmentRole) {
+    if (col == static_cast<int>(Columns::MsgStatusColumn) ||
+        col == static_cast<int>(Columns::PresenceColumn) ||
+        col == static_cast<int>(Columns::ChatTypeColumn)) {
+      return Qt::AlignHCenter;
+    }
+    return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
   }
 
   if (role == Qt::SizeHintRole) {
-    switch (index.column()) {
-      case MsgStatusIcon:
-      case ChatTypeIcon:
-        return QSize(58, 54);
-      case PresenceIcon:
-        return QSize(24, 24);
-      default:
-        return {};
-    }
+    if (col == static_cast<int>(Columns::MsgStatusColumn) ||
+        col == static_cast<int>(Columns::ChatTypeColumn))
+      return QSize(58, 54);
+    if (col == static_cast<int>(Columns::PresenceColumn))
+      return QSize(24, 24);
+    return {};
   }
 
-  // Custom role for sorting
-  if (role == OverviewModel::TimeRole) {
-    return message->date();
-  }
-
+  // optional: sorting/filtering roles
+  // switch (role) {}
   return {};
 }
 
@@ -468,11 +443,14 @@ void OverviewModel::setMessages(QList<ChatMessage*> lst) {
 
 QHash<int, QByteArray> OverviewModel::roleNames() const {
   QHash<int, QByteArray> roles;
-  roles[OverviewNameRole] = "overview_name";
-  roles[ProtocolRole] = "protocol";
-  roles[MsgStatusIcon] = "msg_status_icon";
-  roles[ChatTypeIcon] = "chat_type_icon";
-  roles[AvatarIcon] = "avatar_icon";
+  roles[static_cast<int>(OverviewModelRoles::OverviewNameRole)] = "overview_name";
+  roles[static_cast<int>(OverviewModelRoles::ProtocolRole)]     = "protocol";
+  roles[static_cast<int>(OverviewModelRoles::MsgStatusIcon)]    = "msg_status_icon";
+  roles[static_cast<int>(OverviewModelRoles::ChatTypeIcon)]     = "chat_type_icon";
+  roles[static_cast<int>(OverviewModelRoles::AvatarIcon)]       = "avatar_icon";
+  roles[static_cast<int>(OverviewModelRoles::PresenceIcon)]     = "presence_icon";
+  roles[static_cast<int>(OverviewModelRoles::ContentRole)]      = "content";
+  roles[static_cast<int>(OverviewModelRoles::TimeRole)]         = "time";
   return roles;
 }
 

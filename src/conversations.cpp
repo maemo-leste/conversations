@@ -90,8 +90,6 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
 
   overviewProxyModel = new OverviewProxyModel(this);
   overviewProxyModel->setSourceModel(overviewModel);
-  overviewProxyModel->setSortRole(OverviewModel::TimeRole);
-  overviewProxyModel->sort(OverviewModel::TimeRole, Qt::DescendingOrder);
   overviewProxyModel->setDynamicSortFilter(true);
   CLOCK_MEASURE_END(start_models, "ctx::models");
 

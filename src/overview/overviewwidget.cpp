@@ -40,54 +40,33 @@ void OverviewWidget::setupUITable() {
 
   table->setModel(m_proxyModel);
 
-  // map source->proxy column
-  auto proxyColumn = [proxy = m_proxyModel](const int sourceColumn) {
-    QModelIndex src;
-    if (proxy->sourceModel() && proxy->sourceModel()->rowCount() > 0)
-      src = proxy->sourceModel()->index(0, sourceColumn);
-    return proxy->mapFromSource(src).column();
-  };
-
-  auto applyHeaderConfig = [this, table, header, proxyColumn] {
-    // hidden columns
-    for (const int col: {
-        OverviewModel::COUNT,
-        // OverviewModel::MsgStatusIcon,
-        OverviewModel::OverviewNameRole,
-        // OverviewModel::ChatTypeIcon,
-        OverviewModel::ProtocolRole,
-        OverviewModel::TimeRole,
-        OverviewModel::AvatarIcon}) {
-      if (const int pcol = proxyColumn(col); pcol >= 0)
-        table->setColumnHidden(pcol, true);
-    }
-
-    int col;
-    col = proxyColumn(OverviewModel::ChatTypeIcon);
-    if (col >= 0)
-      header->setSectionResizeMode(col, QHeaderView::ResizeToContents);
-
-    col = proxyColumn(OverviewModel::MsgStatusIcon);
-    if (col >= 0)
-      header->setSectionResizeMode(col, QHeaderView::ResizeToContents);
-
-    col = proxyColumn(OverviewModel::PresenceIcon);
-    if (col >= 0) {
-      header->setSectionResizeMode(col, QHeaderView::Fixed);
-      table->setColumnWidth(col, 48);
-    }
-
-    col = proxyColumn(OverviewModel::ContentRole);
-    if (col >= 0)
-      header->setSectionResizeMode(col, QHeaderView::Stretch);
-  };
-
   this->onSetColumnStyleDelegate();
-  applyHeaderConfig();
 
-  if (m_proxyModel->sourceModel()) {
-    connect(m_proxyModel->sourceModel(), &QAbstractItemModel::modelReset, this, applyHeaderConfig);
-    connect(m_proxyModel->sourceModel(), &QAbstractItemModel::rowsInserted, this, applyHeaderConfig);
+  // show
+  table->setColumnHidden(static_cast<int>(OverviewModel::Columns::MsgStatusColumn), false);
+  table->setColumnHidden(static_cast<int>(OverviewModel::Columns::ContentColumn), false);
+  // hide
+  table->setColumnHidden(static_cast<int>(OverviewModel::Columns::TimeColumn), true);
+  table->setColumnHidden(static_cast<int>(OverviewModel::Columns::AvatarColumn), true);
+  // resize
+  header->setSectionResizeMode(static_cast<int>(OverviewModel::Columns::ChatTypeColumn), QHeaderView::ResizeToContents);
+  header->setSectionResizeMode(static_cast<int>(OverviewModel::Columns::MsgStatusColumn), QHeaderView::ResizeToContents);
+  header->setSectionResizeMode(static_cast<int>(OverviewModel::Columns::PresenceColumn), QHeaderView::Fixed);
+  table->setColumnWidth(static_cast<int>(OverviewModel::Columns::PresenceColumn), 48);
+  header->setSectionResizeMode(static_cast<int>(OverviewModel::Columns::ContentColumn), QHeaderView::Stretch);
+  // order
+  table->horizontalHeader()->setSectionsMovable(true);
+  QVector column_order = {
+    OverviewModel::Columns::MsgStatusColumn,
+    OverviewModel::Columns::ContentColumn,
+    OverviewModel::Columns::PresenceColumn,
+    OverviewModel::Columns::ChatTypeColumn
+  };
+
+  for (int i = 0; i < column_order.size(); ++i) {
+    const int logical = static_cast<int>(column_order[i]);
+    const int currentVisual = header->visualIndex(logical);
+    header->moveSection(currentVisual, i);
   }
 
   table->setFocusPolicy(Qt::NoFocus);
@@ -144,8 +123,9 @@ void OverviewWidget::onSetColumnStyleDelegate() {
   css_tmpl = css_tmpl.replace("{{ font_size_small }}", QString::number(systemFontSizeScaled - 2));
   css_tmpl = css_tmpl.replace("{{ font_size_big }}", QString::number(systemFontSizeScaled + 2));
   m_richContentDelegate->setStyleSheet(css_tmpl);
-  ui->tableOverview->setItemDelegateForColumn(OverviewModel::ContentRole, m_richContentDelegate);
-  ui->tableOverview->setItemDelegateForColumn(OverviewModel::PresenceIcon, m_centeredIconDelegate);
+
+  ui->tableOverview->setItemDelegateForColumn(static_cast<int>(OverviewModel::Columns::ContentColumn), m_richContentDelegate);
+  ui->tableOverview->setItemDelegateForColumn(static_cast<int>(OverviewModel::Columns::PresenceColumn), m_centeredIconDelegate);
 }
 
 OverviewWidget::~OverviewWidget() {

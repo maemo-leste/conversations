@@ -48,6 +48,7 @@ public slots:
 protected:
   bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
   int rowCount(const QModelIndex &parent) const override;
+  bool lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const override;
   QHash<int, QByteArray> roleNames() const {
      return sourceModel()->roleNames();
   }
@@ -63,15 +64,24 @@ class OverviewModel : public QAbstractListModel
 Q_OBJECT
 
 public:
-  enum OverviewModelRoles {
-    MsgStatusIcon = 0,
+  enum class OverviewModelRoles {
+    MsgStatusIcon = Qt::UserRole + 1,
     ContentRole,
     OverviewNameRole,
     ProtocolRole,
     AvatarIcon,
     PresenceIcon,
     ChatTypeIcon,
-    TimeRole,
+    TimeRole
+  };
+
+  enum class Columns {
+    MsgStatusColumn = 0,
+    ChatTypeColumn,
+    ContentColumn,
+    PresenceColumn,
+    AvatarColumn,
+    TimeColumn,
     COUNT
   };
 
