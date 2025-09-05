@@ -118,9 +118,11 @@ ChatWindow::ChatWindow(
   // groupchat
   if(groupchat) {
     this->onSetupGroupchat();
+    ui->actionParticipants->setEnabled(true);
   } else {
     ui->actionLeave_channel->setVisible(false);
     ui->actionAuto_join_groupchat->setVisible(false);
+    ui->actionParticipants->setEnabled(false);
   }
 
   connect(ui->actionAuto_join_groupchat, &QAction::triggered, this, &ChatWindow::onAutoJoinToggled);
