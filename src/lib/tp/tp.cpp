@@ -863,10 +863,10 @@ void TelepathyAccount::removeChannel(const QString &remote_uid) {
 }
 
 void TelepathyAccount::ensureTextChat(const Tp::ContactPtr& ptr) {
-  // set a 'null' datetime on this channel request, so that it
+  // set a non 'null' datetime on this channel request, so that it
   // spawns a new chatwindow after the channel is established
   // (see handleChannels())
-  const auto dt = QDateTime();
+  const auto dt = QDateTime::currentDateTime();
   const auto *pending = acc->ensureTextChat(ptr, dt);
 
   connect(pending, &Tp::PendingChannelRequest::finished, [this](const Tp::PendingOperation *op) {
