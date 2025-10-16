@@ -20,7 +20,6 @@
 #include "conversations.h"
 #include "chatwindow.h"
 #include "searchwindow.h"
-#include "settings.h"
 #include "composewindow.h"
 #include "window_joinchannel.h"
 #include "overview/overviewwidget.h"
@@ -62,6 +61,7 @@ public slots:
     void onOpenChatWindow(const QSharedPointer<ChatMessage> &msg);
     void onOpenChatWindowWithHighlight(const QSharedPointer<ChatMessage> &msg);
     void onOpenSettingsWindow();
+    void onOpenAboutWindow();
     void onOpenComposeWindow();
     void onOpenSearchWindow();
     void onOpenJoinChatWindow();
@@ -95,7 +95,8 @@ private:
     Conversations *m_ctx;
     static MainWindow *pMainWindow;
     QMap<QString, ChatWindow*> m_chatWindows;
-    Settings *m_settings = nullptr;
+    QDialog *m_settingsDialog = nullptr;
+    QDialog *m_aboutDialog = nullptr;
     Compose *m_compose = nullptr;
     JoinChannel *m_joinchannel = nullptr;
     SearchWindow *m_searchWindow = nullptr;

@@ -7,6 +7,8 @@
 #include <QFileDialog>
 
 #include "mainwindow.h"
+#include "settingswidget.h"
+#include "aboutwidget.h"
 #include "config-conversations.h"
 #include "lib/globals.h"
 #include "logger_std/logger_std.h"
@@ -83,6 +85,7 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx, &Conversations::notificationClicked, this, &MainWindow::onNotificationClicked);
   connect(m_ctx, &Conversations::openChatWindow, this, QOverload<QString>::of(&MainWindow::onOpenChatWindow));
   connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::onOpenSettingsWindow);
+  connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::onOpenAboutWindow);
   connect(ui->actionQuit_application, &QAction::triggered, this, &MainWindow::onAskQuitApplication);
   connect(ui->actionCompose, &QAction::triggered, this, &MainWindow::onOpenComposeWindow);
   connect(ui->actionJoinChatRoom, &QAction::triggered, this, &MainWindow::onOpenJoinChatWindow);
@@ -282,34 +285,74 @@ void MainWindow::onFriendRequest(QSharedPointer<ContactItem> item) {
   // }
 }
 
-void MainWindow::onOpenSettingsWindow() {
-  m_settings = new Settings(m_ctx, this);
-  m_settings->show();
+void MainWindow::onOpenAboutWindow() {
+  // enforce opening once
+  if (m_aboutDialog) {
+    m_aboutDialog->raise();
+    m_aboutDialog->activateWindow();
+    return;
+  }
 
-  connect(m_settings, &Settings::textScalingChanged, this->m_ctx, &Conversations::onTextScalingChanged);
-  connect(m_settings, &Settings::autoCloseChatWindowsChanged, this->m_ctx, &Conversations::autoCloseChatWindowsChanged);
-  connect(m_settings, &Settings::inheritSystemThemeToggled, this, [this](bool toggled){
+  m_aboutDialog = new QDialog(this);
+  m_aboutDialog->setWindowTitle("About");
+  m_aboutDialog->setAttribute(Qt::WA_DeleteOnClose);
+
+  connect(m_aboutDialog, &QObject::destroyed, this, [this] {
+    m_aboutDialog = nullptr;
+  });
+
+  const auto about = new AboutWidget(m_ctx, m_aboutDialog);
+  const auto layout = new QVBoxLayout(m_aboutDialog);
+  layout->addWidget(about);
+  m_aboutDialog->show();
+}
+
+void MainWindow::onOpenSettingsWindow() {
+  // enforce opening once
+  if (m_settingsDialog) {
+    m_settingsDialog->raise();
+    m_settingsDialog->activateWindow();
+    return;
+  }
+
+  m_settingsDialog = new QDialog(this);
+  m_settingsDialog->setWindowTitle("Settings");
+  m_settingsDialog->setAttribute(Qt::WA_DeleteOnClose);
+
+  connect(m_settingsDialog, &QObject::destroyed, this, [this] {
+    m_settingsDialog = nullptr;
+  });
+
+  const auto settings = new SettingsWidget(m_ctx, m_settingsDialog);
+
+  connect(settings, &SettingsWidget::textScalingChanged, this->m_ctx, &Conversations::onTextScalingChanged);
+  connect(settings, &SettingsWidget::autoCloseChatWindowsChanged, this->m_ctx, &Conversations::autoCloseChatWindowsChanged);
+  connect(settings, &SettingsWidget::inheritSystemThemeToggled, this, [this](bool toggled){
     m_ctx->inheritSystemTheme = toggled;
     emit m_ctx->inheritSystemThemeChanged(toggled);
   });
-  connect(m_settings, &Settings::enableDisplayGroupchatJoinLeaveToggled, this, [this](bool toggled){
+  connect(settings, &SettingsWidget::enableDisplayGroupchatJoinLeaveToggled, this, [this](bool toggled){
     m_ctx->displayGroupchatJoinLeave = toggled;
     emit m_ctx->displayGroupchatJoinLeaveChanged(toggled);
   });
-  connect(m_settings, &Settings::enableDisplayAvatarsToggled, this, [this](bool toggled){
+  connect(settings, &SettingsWidget::enableDisplayAvatarsToggled, this, [this](bool toggled){
     m_ctx->displayAvatars = toggled;
     emit m_ctx->displayAvatarsChanged(toggled);
   });
-  connect(m_settings, &Settings::enableDisplayChatGradientToggled, this, [this](bool toggled){
+  connect(settings, &SettingsWidget::enableDisplayChatGradientToggled, this, [this](bool toggled){
     m_ctx->displayChatGradient = toggled;
     emit m_ctx->displayChatGradientChanged(toggled);
   });
 
-  connect(m_settings, &Settings::enableLinkPreviewEnabledToggled, m_ctx, &Conversations::enableLinkPreviewEnabledToggled);
-  connect(m_settings, &Settings::enableLinkPreviewImageEnabledToggled, m_ctx, &Conversations::enableLinkPreviewImageEnabledToggled);
-  connect(m_settings, &Settings::enableLinkPreviewRequiresUserInteractionToggled, m_ctx, &Conversations::enableLinkPreviewRequiresUserInteractionToggled);
+  connect(settings, &SettingsWidget::enableLinkPreviewEnabledToggled, m_ctx, &Conversations::enableLinkPreviewEnabledToggled);
+  connect(settings, &SettingsWidget::enableLinkPreviewImageEnabledToggled, m_ctx, &Conversations::enableLinkPreviewImageEnabledToggled);
+  connect(settings, &SettingsWidget::enableLinkPreviewRequiresUserInteractionToggled, m_ctx, &Conversations::enableLinkPreviewRequiresUserInteractionToggled);
 
-  connect(m_settings, &Settings::enterKeySendsChatToggled, m_ctx, &Conversations::enterKeySendsChatToggled);
+  connect(settings, &SettingsWidget::enterKeySendsChatToggled, m_ctx, &Conversations::enterKeySendsChatToggled);
+
+  const auto layout = new QVBoxLayout(m_settingsDialog);
+  layout->addWidget(settings);
+  m_settingsDialog->show();
 }
 
 void MainWindow::onNotificationClicked(const QSharedPointer<ChatMessage> &msg) {
