@@ -1,3 +1,9 @@
+conversations (0.7.81) unstable; urgency=medium
+
+  * settings: replace the settings window with a dialog, and introduce a new dialog for about.
+
+ -- Sander <sander@sanderf.nl>  Thu, 16 Oct 2025 23:07:29 +0300
+
 conversations (0.7.80) unstable; urgency=medium
 
   * lib/tp: datetime should be non-null to spawn chatwindows
