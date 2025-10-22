@@ -47,7 +47,7 @@ private:
   void swipeTriggered(QSwipeGesture*);
 
   void loadImage();
-  QImage loadImage(QSharedPointer<PreviewItem> item) const;
+  QImage loadImage(const QSharedPointer<PreviewItem> &item);
 
   QString path;
 

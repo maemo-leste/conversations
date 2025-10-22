@@ -145,7 +145,7 @@ void ImageWidget::appendImage(QSharedPointer<PreviewItem> item, bool goto_image)
   update();
 }
 
-QImage ImageWidget::loadImage(QSharedPointer<PreviewItem> item) const {
+QImage ImageWidget::loadImage(const QSharedPointer<PreviewItem> &item) {
   const auto info = QFileInfo(item->filePath);
   const QString filename = info.fileName();
 
@@ -164,6 +164,22 @@ QImage ImageWidget::loadImage(QSharedPointer<PreviewItem> item) const {
   const QSize maximumSize(2000, 2000);
   if (image.size().width() > maximumSize.width() || image.height() > maximumSize.height())
       image = image.scaled(maximumSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+  // initial scale factor based on image size
+  auto sz = image.size();
+  auto _width = sz.width();
+  auto _height = sz.height();
+  if (_width > 1500 || _height > 1500)
+    scaleFactor = 0.5;
+  else if (_width > 1000 || _height > 1000)
+    scaleFactor = 0.75;
+  else if (_width > 750 || _height > 750)
+    scaleFactor = 1.0;
+  else if (_width > 500 || _height > 500)
+    scaleFactor = 1.5;
+  else
+    scaleFactor = 2.0;
+
   return image;
 }
 
