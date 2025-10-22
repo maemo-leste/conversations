@@ -11,7 +11,14 @@ import "."
 RowLayout {
     id: item
     width: ListView.view.width
-    property int itemMaxWidth: width / 6 * 3
+    property int itemMaxWidth: {
+        let segment_width = width / 6;
+        if(width < 600) {  // we are probably in landscape
+            return segment_width * 5;
+        } else {
+            return segment_width * 3;
+        }
+    }
     spacing: 0
 
     signal showMessageContextMenu(int event_id, var point);
