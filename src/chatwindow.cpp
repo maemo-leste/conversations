@@ -646,6 +646,9 @@ void ChatWindow::onPreviewItemClicked(const QSharedPointer<PreviewItem> &item, c
     item->state == PreviewItem::State::Downloaded &&
     item->itemType != PreviewItem::ItemType::Html;
 
+  if (preview_window && open_from_disk)
+    return this->onOpenPreviewWindow(item);
+
   QString ref_type = item->itemType == PreviewItem::ItemType::Html ? "link" : "file";
   if (ref_type == "file" && item->state != PreviewItem::State::Downloaded)
     ref_type = "link";

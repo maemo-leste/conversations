@@ -33,7 +33,7 @@ class PreviewWindow : public QMainWindow {
 
 public:
   Ui::PreviewWindow *ui;
-  explicit PreviewWindow(Conversations *ctx, QSharedPointer<PreviewItem>, QWidget *parent = nullptr);
+  explicit PreviewWindow(Conversations *ctx, QSharedPointer<PreviewItem> item, QWidget *parent = nullptr);
   static Conversations *getContext();
   ~PreviewWindow() override;
 
@@ -49,6 +49,8 @@ protected:
 public slots:
   void onMenuClickedSaveFile();
   void onMenuClickedSaveFile(const QSharedPointer<PreviewItem> &item);
+  void onMenuClickedCopyURL();
+  void onMenuClickedCopyURL(const QSharedPointer<PreviewItem> &item);
 
 private:
   Conversations *m_ctx;

@@ -37,6 +37,10 @@ PreviewWindow::PreviewWindow(Conversations *ctx, QSharedPointer<PreviewItem> ite
     onMenuClickedSaveFile();
   });
 
+  connect(ui->actionCopy_url, &QAction::triggered, this, [this] {
+    onMenuClickedCopyURL();
+  });
+
   m_imageWidget = new ImageWidget(this);
   m_imageWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
@@ -50,6 +54,15 @@ PreviewWindow::PreviewWindow(Conversations *ctx, QSharedPointer<PreviewItem> ite
   if (m_item && !m_item->filePath.isEmpty()) {
     m_imageWidget->appendImage(m_item);
   }
+}
+
+void PreviewWindow::onMenuClickedCopyURL(const QSharedPointer<PreviewItem> &item) {
+  QClipboard *clipboard = QGuiApplication::clipboard();
+  clipboard->setText(item->url.toString());
+
+  QMessageBox _msgBox;
+  _msgBox.setText(QString("URL copied."));
+  _msgBox.exec();
 }
 
 void PreviewWindow::onMenuClickedSaveFile(const QSharedPointer<PreviewItem> &item) {
@@ -83,6 +96,11 @@ void PreviewWindow::onMenuClickedSaveFile(const QSharedPointer<PreviewItem> &ite
   } else {
     QMessageBox::warning(this, "Error", item->lastError());
   }
+}
+
+void PreviewWindow::onMenuClickedCopyURL() {
+  const auto item = m_imageWidget->items.at(m_imageWidget->pos);
+  onMenuClickedCopyURL(item);
 }
 
 void PreviewWindow::onMenuClickedSaveFile() {

@@ -40,12 +40,18 @@
      <string>-</string>
     </property>
     <addaction name="actionSave_file"/>
+    <addaction name="actionCopy_url"/>
    </widget>
    <addaction name="menuSave_file"/>
   </widget>
   <action name="actionSave_file">
    <property name="text">
     <string>Save file</string>
+   </property>
+  </action>
+  <action name="actionCopy_url">
+   <property name="text">
+    <string>Copy URL</string>
    </property>
   </action>
  </widget>
