@@ -10,6 +10,13 @@
 WebPreviewHTTP::WebPreviewHTTP(QObject *parent) :
   QObject(parent) {
   connect(&m_timeoutTimer, &QTimer::timeout, this, &WebPreviewHTTP::onTimeout);
+
+  const auto *ctx = Conversations::instance();
+  connect(ctx, &Conversations::attachmentMaxDownloadSizeChanged, [this](int max_bytes) {
+    m_maxDownloadSize = max_bytes;
+  });
+  int attachmentMaxDownloadSize = config()->get(ConfigKeys::LinkPreviewMaxDownloadSize).toInt();
+  m_maxDownloadSize = attachmentMaxDownloadSize * 1024 * 1024;
 }
 
 void WebPreviewHTTP::head(const QSharedPointer<PreviewItem> item) {

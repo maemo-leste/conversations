@@ -28,7 +28,8 @@ namespace ConfigKeys {
         EnableLogSyslog,
         LinkPreviewEnabled,
         LinkPreviewRequiresUserInteraction,
-        LinkPreviewImageEnabled
+        LinkPreviewImageEnabled,
+        LinkPreviewMaxDownloadSize,
     };
     Q_ENUM_NS(ConfigKey)
 }

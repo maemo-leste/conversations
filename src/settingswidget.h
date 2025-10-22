@@ -28,6 +28,7 @@ public:
   ~SettingsWidget() override;
 signals:
   void textScalingChanged();
+  void attachmentMaxDownloadSizeChanged(int val);
   void autoCloseChatWindowsChanged(bool enabled);
   void inheritSystemThemeToggled(bool enabled);
   void enableDisplayGroupchatJoinLeaveToggled(bool enabled);
@@ -40,7 +41,8 @@ signals:
   void enableLinkPreviewImageEnabledToggled(bool enabled);
   void enableLinkPreviewRequiresUserInteractionToggled(bool enabled);
 private slots:
-    void onTextScalingValueChanged(int val);
+  void onTextScalingValueChanged(int val);
+  void onAttachmentMaxDownloadSize(float val);
 private:
   Ui::SettingsWidget *ui;
   Conversations *m_ctx;

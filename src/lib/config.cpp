@@ -32,7 +32,8 @@ static QHash<ConfigKeys::ConfigKey, ConfigDirective> configStrings = {
   {ConfigKeys::EnableLogSyslog, {QS("EnableLogSyslog"), false}},
   {ConfigKeys::LinkPreviewEnabled, {QS("LinkPreviewEnabled"), true}},
   {ConfigKeys::LinkPreviewRequiresUserInteraction, {QS("LinkPreviewRequiresUserInteraction"), true}},
-  {ConfigKeys::LinkPreviewImageEnabled, {QS("LinkPreviewImageEnabled"), true}}
+  {ConfigKeys::LinkPreviewImageEnabled, {QS("LinkPreviewImageEnabled"), true}},
+  {ConfigKeys::LinkPreviewMaxDownloadSize, {QS("LinkPreviewMaxDownloadSize"), 2}}
 };
 
 QPointer<Config> Config::m_instance(nullptr);

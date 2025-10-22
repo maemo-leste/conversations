@@ -141,6 +141,19 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
     emit enableLinkPreviewRequiresUserInteractionToggled(toggled);
   });
 
+  // attachment max download size
+  int attachmentMaxDownloadSize = config()->get(ConfigKeys::LinkPreviewMaxDownloadSize).toInt();
+  QString maxAttachmentDownloadSize_text = "Max. download size: " + QString::number(attachmentMaxDownloadSize) + "mb";
+  ui->label_attachmentMaxDownloadSize->setText(maxAttachmentDownloadSize_text);
+  ui->sliderMaxAttachmentSize->setValue(attachmentMaxDownloadSize);
+  connect(ui->sliderMaxAttachmentSize, &QSlider::valueChanged, [this, attachmentMaxDownloadSize](int value) {
+    config()->set(ConfigKeys::LinkPreviewMaxDownloadSize, value);
+    QString _maxAttachmentDownloadSize_text = "Max. download size: " + QString::number(value) + "mb";
+    ui->label_attachmentMaxDownloadSize->setText(_maxAttachmentDownloadSize_text);
+    emit attachmentMaxDownloadSizeChanged(attachmentMaxDownloadSize * 1024 * 1024);
+  });
+  emit attachmentMaxDownloadSizeChanged(attachmentMaxDownloadSize * 1024 * 1024);
+
   // chat bg gradient shader
   ui->checkBox_enableDisplayChatGradient->setChecked(config()->get(ConfigKeys::EnableDisplayChatGradient).toBool());
   connect(ui->checkBox_enableDisplayChatGradient, &QCheckBox::toggled, [this](bool toggled) {
@@ -180,6 +193,10 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
   ui->sliderTextScaling->setValue(round(textScaling / 0.25 - 4.0));
   connect(ui->sliderTextScaling, &QSlider::valueChanged, this, &SettingsWidget::onTextScalingValueChanged);
   emit textScalingChanged();
+}
+
+void SettingsWidget::onAttachmentMaxDownloadSize(float val) {
+
 }
 
 void SettingsWidget::onTextScalingValueChanged(int val) {
