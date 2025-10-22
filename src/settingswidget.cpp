@@ -146,11 +146,11 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
   QString maxAttachmentDownloadSize_text = "Max. download size: " + QString::number(attachmentMaxDownloadSize) + "mb";
   ui->label_attachmentMaxDownloadSize->setText(maxAttachmentDownloadSize_text);
   ui->sliderMaxAttachmentSize->setValue(attachmentMaxDownloadSize);
-  connect(ui->sliderMaxAttachmentSize, &QSlider::valueChanged, [this, attachmentMaxDownloadSize](int value) {
+  connect(ui->sliderMaxAttachmentSize, &QSlider::valueChanged, [this](const int value) {
     config()->set(ConfigKeys::LinkPreviewMaxDownloadSize, value);
     QString _maxAttachmentDownloadSize_text = "Max. download size: " + QString::number(value) + "mb";
     ui->label_attachmentMaxDownloadSize->setText(_maxAttachmentDownloadSize_text);
-    emit attachmentMaxDownloadSizeChanged(attachmentMaxDownloadSize * 1024 * 1024);
+    emit attachmentMaxDownloadSizeChanged(value * 1024 * 1024);
   });
   emit attachmentMaxDownloadSizeChanged(attachmentMaxDownloadSize * 1024 * 1024);
 
