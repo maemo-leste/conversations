@@ -41,6 +41,7 @@
 Q_DECLARE_METATYPE(PreviewModel*)
 
 int main(int argc, char *argv[]) {
+#ifndef DEBUG
   // do not run twice
   const int qml_count = active_proc_count_by_path(PATH_CONV);
   const int slim_count = active_proc_count_by_path(PATH_CONV_SLIM);
@@ -50,6 +51,7 @@ int main(int argc, char *argv[]) {
     const char *ipc_message = argc > 1 ? argv[1] : "makeActive";
     return ipc_try_wakeup(ipc_message);  // regardless, exit and refuse to run twice
   }
+#endif
 
 #ifdef ENABLE_DEBUG_TIMINGS
   globals::logger_std_init();

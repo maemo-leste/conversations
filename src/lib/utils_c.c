@@ -53,6 +53,7 @@ int ipc_try_wakeup(const char* ipc_message) {
 int active_proc_count_by_path(const char* abs_path) {
 #ifdef DEBUG
   printf("checking running instances count of %s\n", abs_path);
+  fflush(stdout);
 #endif
 
   DIR *proc = opendir("/proc");
