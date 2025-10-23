@@ -138,13 +138,6 @@ RowLayout {
         item.calculateItemHeight()
 
     Rectangle {
-        visible: outgoing
-        color: "transparent"
-        Layout.preferredWidth: itemWidth
-        Layout.fillHeight: true
-    }
-
-    Rectangle {
         id: textContainer
         property string bgColor: outgoing ? root.chatBackgroundSelf : root.chatBackgroundThem
         color: bgColor
@@ -274,6 +267,7 @@ RowLayout {
                         font.pointSize: 14 * ctx.scaleFactor
                         wrapMode: hardWordWrap ? Text.WrapAnywhere : Text.WordWrap
                         Layout.fillWidth: true
+                        horizontalAlignment: outgoing ? Text.AlignRight : Text.AlignLeft
 
                         MouseArea {
                             anchors.fill: parent
