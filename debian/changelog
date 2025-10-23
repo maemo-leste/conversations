@@ -1,3 +1,16 @@
+conversations (0.7.82) unstable; urgency=medium
+
+  * qml: improve auto-scrolling (pinning to bottom), and fix toggling the attachment user interaction required option while some preview items were already partially rendered
+  * qml/whatsthat: increased chat bubble width when in landscape
+  * preview: configurable attachment preview max size: fix new values
+  * previewWindow: dynamic scaling based on image size
+  * previewWindow: always open with inline images
+  * qml/preview: dynamic heights for inline images
+  * preview: configurable attachment preview max download size
+  * main: disable double-running check in DEBUG
+
+ -- Sander <sander@sanderf.nl>  Thu, 23 Oct 2025 20:14:21 +0300
+
 conversations (0.7.81) unstable; urgency=medium
 
   * settings: replace the settings window with a dialog, and introduce a new dialog for about.
