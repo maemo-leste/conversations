@@ -610,7 +610,7 @@ void ChatWindow::setChatState(Tp::ChannelChatState state) const {
 
 bool ChatWindow::eventFilter(QObject *watched, QEvent *event) {
   const auto event_type = event->type();
-
+#ifdef QUICK
   if (watched == ui->quick) {
     if (event_type == QEvent::MouseButtonPress || event_type == QEvent::TouchBegin) {
       emit isPressed();
@@ -620,7 +620,7 @@ bool ChatWindow::eventFilter(QObject *watched, QEvent *event) {
 
     return QObject::eventFilter(watched, event);
   }
-
+#endif
   switch (event_type) {
     case QEvent::KeyPress: {
       auto *ke = static_cast<QKeyEvent*>(event);

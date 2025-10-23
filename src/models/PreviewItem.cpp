@@ -29,6 +29,7 @@ int PreviewItem::height(const unsigned int relative_width) const {
     return 0;
 
   // dynamic heights for images
+#ifdef QUICK
   const bool inlineImages = config()->get(ConfigKeys::LinkPreviewImageEnabled).toBool();
   if (displayType == DisplayType::Image && inlineImages) {
     auto size = Conversations::instance()->previewImageProvider->getSize(filePath);
@@ -44,6 +45,6 @@ int PreviewItem::height(const unsigned int relative_width) const {
       return 220;
     }
   }
-
+#endif
   return m_defaultHeight;
 }
