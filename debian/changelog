@@ -1,3 +1,9 @@
+conversations (0.7.83) unstable; urgency=medium
+
+  * ifdef guard for QUICK (slim vs qml)
+
+ -- Sander <sander@sanderf.nl>  Thu, 23 Oct 2025 20:40:53 +0300
+
 conversations (0.7.82) unstable; urgency=medium
 
   * qml: improve auto-scrolling (pinning to bottom), and fix toggling the attachment user interaction required option while some preview items were already partially rendered
