@@ -154,13 +154,13 @@ ChatWindow::ChatWindow(
   // menu: add/remove friend
   connect(m_ctx->telepathy, &Telepathy::contactsChanged, this, &ChatWindow::onSetupAuthorizeActions);
   connect(m_ctx->telepathy, &Telepathy::rosterChanged, this, &ChatWindow::onSetupAuthorizeActions);
-  connect(ui->actionAddFriend, &QAction::triggered, this, &ChatWindow::onAddFriend);
+  // @TODO: should add/remove friends be handled by conversations or osso-abook?
+  // connect(ui->actionAddFriend, &QAction::triggered, this, &ChatWindow::onAddFriend);
   // connect(ui->actionRemoveFriend, &QAction::triggered, this, &ChatWindow::onRemoveFriend);
   // connect(ui->actionAcceptFriendRequest, &QAction::triggered, this, &ChatWindow::onAcceptFriend);
   // connect(ui->actionRejectFriendRequest, &QAction::triggered, this, &ChatWindow::onRejectFriend);
 
   connect(m_ctx, &Conversations::avatarChanged, this, &ChatWindow::onAvatarChanged);
-  connect(m_ctx, &Conversations::contactsChanged, this, &ChatWindow::onContactsChanged);
 
   // ignore notifications
   m_ignore_notifications = m_ctx->state->getNotificationsIgnore(local_uid, !channel.isEmpty() ? channel : remote_uid);
@@ -190,7 +190,7 @@ ChatWindow::ChatWindow(
   ui->chatBox_multi->setText("");
   //
   connect(ui->chatBox_multi, &QTextEdit::textChanged, this, [this] {
-      dynamicInputTextHeight(ui->chatBox_multi);
+    dynamicInputTextHeight(ui->chatBox_multi);
   });
   // manually handle keys: enter, and shift+enter
   ui->chatBox_multi->installEventFilter(this);
@@ -249,54 +249,6 @@ void ChatWindow::dynamicInputTextHeight(QTextEdit *edit) const {
 
   h = qBound(min_h, h, max_h);
   edit->setFixedHeight(h);
-}
-
-void ChatWindow::onContactsChanged(std::vector<std::shared_ptr<abook_qt::AbookContact>> contacts) {
-  int wegweg = 1;
-}
-
-// void ChatWindow::onTrySubscribeAvatarChanged() {
-//   auto persistent_uid = local_uid + "-" + remote_uid;
-//   if(abook_roster_cache.contains(persistent_uid)) {
-//     m_abook_contact = abook_roster_cache[persistent_uid];
-//     disconnect(m_abook_contact.data(), &ContactItem::avatarChanged, nullptr, nullptr);
-//     connect(m_abook_contact.data(), &ContactItem::avatarChanged, this, &ChatWindow::avatarChanged);
-//   }
-// }
-
-void ChatWindow::onAddFriend() {
-  m_ctx->telepathy->authorizeContact(local_uid, remote_uid);
-}
-
-void ChatWindow::onRemoveFriend() {
-  m_ctx->telepathy->removeContact(local_uid, remote_uid);
-}
-
-void ChatWindow::onAcceptFriend() {
-  m_ctx->telepathy->authorizeContact(local_uid, remote_uid);
-}
-
-void ChatWindow::onRejectFriend() {
-  m_ctx->telepathy->removeContact(local_uid, remote_uid);
-}
-
-void ChatWindow::onSetupAuthorizeActions() {
-  // if(m_ctx->telepathy->has_feature_friends(local_uid)) {
-  //   qDebug() << "this protocol does not support roster friends";
-  //   return;
-  // }
-  //
-  // // @TODO: avatar
-  // const auto persistent_uid = (local_uid + "-" + remote_uid).toStdString();
-  // if(abook_qt::ROSTER.contains(persistent_uid)) {
-  //   const QSharedPointer<ContactItem> item = abook_roster_cache[persistent_uid];
-  //
-  //   if(item->subscribed() == "yes") {
-  //     ui->menuAuthorize->setEnabled(false);
-  //   } else {
-  //     ui->menuAuthorize->setEnabled(true);
-  //   }
-  // }
 }
 
 void ChatWindow::onAvatarChanged(const std::string& abook_uid) {
@@ -831,6 +783,41 @@ void ChatWindow::resizeEvent(QResizeEvent *event) {
   m_windowHeight = this->height();
   dynamicInputTextHeight(ui->chatBox_multi);
   QMainWindow::resizeEvent(event);
+}
+
+void ChatWindow::onAddFriend() {
+  m_ctx->telepathy->authorizeContact(local_uid, remote_uid);
+}
+
+void ChatWindow::onRemoveFriend() {
+  m_ctx->telepathy->removeContact(local_uid, remote_uid);
+}
+
+void ChatWindow::onAcceptFriend() {
+  m_ctx->telepathy->authorizeContact(local_uid, remote_uid);
+}
+
+void ChatWindow::onRejectFriend() {
+  m_ctx->telepathy->removeContact(local_uid, remote_uid);
+}
+
+void ChatWindow::onSetupAuthorizeActions() {
+  // if(m_ctx->telepathy->has_feature_friends(local_uid)) {
+  //   qDebug() << "this protocol does not support roster friends";
+  //   return;
+  // }
+  //
+  // // @TODO: avatar
+  // const auto persistent_uid = (local_uid + "-" + remote_uid).toStdString();
+  // if(abook_qt::ROSTER.contains(persistent_uid)) {
+  //   const QSharedPointer<ContactItem> item = abook_roster_cache[persistent_uid];
+  //
+  //   if(item->subscribed() == "yes") {
+  //     ui->menuAuthorize->setEnabled(false);
+  //   } else {
+  //     ui->menuAuthorize->setEnabled(true);
+  //   }
+  // }
 }
 
 ChatWindow::~ChatWindow() {

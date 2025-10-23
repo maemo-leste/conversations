@@ -35,7 +35,7 @@
 #include "models/ChatMessage.h"
 
 namespace Ui {
-    class ChatWindow;
+  class ChatWindow;
 }
 
 class ChatWindow : public QConversationsMainWindow {
@@ -47,109 +47,107 @@ Q_PROPERTY(bool linkPreviewRequiresUserInteraction MEMBER linkPreviewRequiresUse
 Q_PROPERTY(bool isPinned MEMBER is_pinned NOTIFY isPinnedChanged)  // pinned to the bottom (auto-scroll)
 
 public:
-    Ui::ChatWindow *ui;
-    explicit ChatWindow(Conversations *ctx, const QString &local_uid, const QString &remote_uid, const QString &group_uid, const QString &channel, const QString &service_uid, QWidget *parent = nullptr);
+  Ui::ChatWindow *ui;
+  explicit ChatWindow(Conversations *ctx, const QString &local_uid, const QString &remote_uid, const QString &group_uid, const QString &channel, const QString &service_uid, QWidget *parent = nullptr);
 
-    static Conversations *getContext();
-    ~ChatWindow() override;
+  static Conversations *getContext();
+  ~ChatWindow() override;
 public:
-    QString local_uid;
-    QString group_uid;
-    QString remote_uid;
-    QString channel;
-    QString service_uid;
-    bool groupchat;
+  QString local_uid;
+  QString group_uid;
+  QString remote_uid;
+  QString channel;
+  QString service_uid;
+  bool groupchat;
 public:
 #ifndef QUICK
-    void setupChatWidget();
-    static QString generateChatHTML(const QSharedPointer<ChatMessage> &chats);
+  void setupChatWidget();
+  static QString generateChatHTML(const QSharedPointer<ChatMessage> &chats);
 #endif
-    void setHighlight(const unsigned int event_id);
-    void fillBufferUntil(const unsigned int event_id) const;
-    Q_INVOKABLE void showMessageContextMenu(unsigned int event_id, QPoint point);
+  void setHighlight(const unsigned int event_id);
+  void fillBufferUntil(const unsigned int event_id) const;
+  Q_INVOKABLE void showMessageContextMenu(unsigned int event_id, QPoint point);
 
 public slots:
-    void onChatClear();
-    void onChatDelete();
-    void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
+  void onChatClear();
+  void onChatDelete();
+  void onDatabaseAddition(const QSharedPointer<ChatMessage> &msg);
 
 private slots:
-    void onChatPreReady();
-    void onGatherMessage();
-    void onOpenSearchWindow();
-    void onOpenPreviewWindow(QSharedPointer<PreviewItem> item);
-    void onOpenTpContactsWindow();
-    void onCloseTpContactsWindow();
-    void onExportToCsv();
-    void onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg);
-    void onClosePreviewWindow(const QSharedPointer<ChatMessage> &msg);
-    void onAutoCloseChatWindowsChanged(bool enabled);
-    void onSearchResultClicked(const QSharedPointer<ChatMessage> &msg);
-    void onGroupchatJoinLeaveRequested();
-    void onChannelJoinedOrLeft(const QString &_local_uid, const QString &_channel);
-    void onEnterKeySendsChatToggled(bool enabled);
-    void onIgnoreNotificationsToggled();
-    void onSetupGroupchat();
-    void onAutoJoinToggled();
-    void onSetWindowTitle();
-    void onChatRequestClear();
-    void onChatRequestDelete();
-    void onShowMessageContextMenu(int event_id, QVariant test);
-    void onSetupAuthorizeActions();
-    void onContactsChanged(std::vector<std::shared_ptr<abook_qt::AbookContact>> contacts);
-    void onAvatarChanged(const std::string& abook_uid);
-    void onAddFriend();
-    void onRemoveFriend();
-    void onAcceptFriend();
-    void onRejectFriend();
-    void onDisplayChatBox();
-    void onPreviewItemClicked(const QSharedPointer<PreviewItem> &item, const QPoint point);
+  void onChatPreReady();
+  void onGatherMessage();
+  void onOpenSearchWindow();
+  void onOpenPreviewWindow(QSharedPointer<PreviewItem> item);
+  void onOpenTpContactsWindow();
+  void onCloseTpContactsWindow();
+  void onExportToCsv();
+  void onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg);
+  void onClosePreviewWindow(const QSharedPointer<ChatMessage> &msg);
+  void onAutoCloseChatWindowsChanged(bool enabled);
+  void onSearchResultClicked(const QSharedPointer<ChatMessage> &msg);
+  void onGroupchatJoinLeaveRequested();
+  void onChannelJoinedOrLeft(const QString &_local_uid, const QString &_channel);
+  void onEnterKeySendsChatToggled(bool enabled);
+  void onIgnoreNotificationsToggled();
+  void onSetupGroupchat();
+  void onAutoJoinToggled();
+  void onSetWindowTitle();
+  void onChatRequestClear();
+  void onChatRequestDelete();
+  void onShowMessageContextMenu(int event_id, QVariant test);
+  void onSetupAuthorizeActions();
+  void onAvatarChanged(const std::string& abook_uid);
+  void onAddFriend();
+  void onRemoveFriend();
+  void onAcceptFriend();
+  void onRejectFriend();
+  void onDisplayChatBox();
+  void onPreviewItemClicked(const QSharedPointer<PreviewItem> &item, const QPoint point);
 
 signals:
-    void closed(const QString &remote_uid);
-    void sendMessage(const QString &_local_uid, const QString &_remote_uid, const QString &message);
-    void jumpToMessage(int event_id);
-    void scrollDown();
-    void chatPostReady();
-    void chatPreReady();
-    void chatCleared();
-    void avatarChanged();
-    void groupchatChanged();
-    void linkPreviewRequiresUserInteractionChanged();
-    void isPinnedChanged();
-    void isPressed();
-    void isReleased();
+  void closed(const QString &remote_uid);
+  void sendMessage(const QString &_local_uid, const QString &_remote_uid, const QString &message);
+  void jumpToMessage(int event_id);
+  void scrollDown();
+  void chatPostReady();
+  void chatPreReady();
+  void chatCleared();
+  void avatarChanged();
+  void groupchatChanged();
+  void linkPreviewRequiresUserInteractionChanged();
+  void isPinnedChanged();
+  void isPressed();
+  void isReleased();
 
 private:
-    bool linkPreviewRequiresUserInteraction = true;
-    bool is_pinned = true;
-    Conversations *m_ctx;
-    ChatModel *chatModel = nullptr;
-    static ChatWindow *pChatWindow;
-    SearchWindow *m_searchWindow = nullptr;
-    PreviewWindow *m_previewWindow = nullptr;
-    TpContactsWindow *m_tpContactsWindow = nullptr;
-    bool m_auto_join = false;
-    bool m_ignore_notifications = false;
-    QSharedPointer<ContactItem> m_abook_contact;
+  bool linkPreviewRequiresUserInteraction = true;
+  bool is_pinned = true;
+  Conversations *m_ctx;
+  ChatModel *chatModel = nullptr;
+  static ChatWindow *pChatWindow;
+  SearchWindow *m_searchWindow = nullptr;
+  PreviewWindow *m_previewWindow = nullptr;
+  TpContactsWindow *m_tpContactsWindow = nullptr;
+  bool m_auto_join = false;
+  bool m_ignore_notifications = false;
+  QSharedPointer<ContactItem> m_abook_contact;
 protected:
-  void resizeEvent(QResizeEvent *event) override;
+void resizeEvent(QResizeEvent *event) override;
 private:
-    QTimer *m_windowFocusTimer;
-    bool m_enterKeySendsChat = false;
-    AvatarImageProvider* avatarProvider = nullptr;
-    unsigned int m_windowFocus = 0; // seconds
-    bool m_active = false;  // do we have an active Tp connection?
-    bool m_windowActive = false;
-    int m_windowHeight = 0;
+  QTimer *m_windowFocusTimer;
+  bool m_enterKeySendsChat = false;
+  AvatarImageProvider* avatarProvider = nullptr;
+  unsigned int m_windowFocus = 0; // seconds
+  bool m_active = false;  // do we have an active Tp connection?
+  bool m_windowActive = false;
+  int m_windowHeight = 0;
 private:
-    QString remoteId() const;
-    void detectActiveChannel();
-    void setChatState(Tp::ChannelChatState state) const;
-    void dynamicInputTextHeight(QTextEdit *edit) const;
+  QString remoteId() const;
+  void detectActiveChannel();
+  void setChatState(Tp::ChannelChatState state) const;
+  void dynamicInputTextHeight(QTextEdit *edit) const;
 protected:
-    bool eventFilter(QObject *watched, QEvent *event) override;
-    void closeEvent(QCloseEvent *event) override;
-    void changeEvent(QEvent *event);
+  bool eventFilter(QObject *watched, QEvent *event) override;
+  void closeEvent(QCloseEvent *event) override;
+  void changeEvent(QEvent *event);
 };
-
