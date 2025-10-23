@@ -1,3 +1,9 @@
+conversations (0.7.84) unstable; urgency=medium
+
+  * qml/whatsthat: fix alignment when in potrait, and change text alignment for outgoing messages
+
+ -- Sander <sander@sanderf.nl>  Thu, 23 Oct 2025 20:55:34 +0300
+
 conversations (0.7.83) unstable; urgency=medium
 
   * ifdef guard for QUICK (slim vs qml)
