@@ -43,6 +43,8 @@ Q_OBJECT
 Q_PROPERTY(QString local_uid MEMBER local_uid);
 Q_PROPERTY(QString remote_uid MEMBER remote_uid);
 Q_PROPERTY(bool groupchat MEMBER groupchat NOTIFY groupchatChanged);
+Q_PROPERTY(bool linkPreviewRequiresUserInteraction MEMBER linkPreviewRequiresUserInteraction NOTIFY linkPreviewRequiresUserInteractionChanged)
+Q_PROPERTY(bool isPinned MEMBER is_pinned NOTIFY isPinnedChanged)  // pinned to the bottom (auto-scroll)
 
 public:
     Ui::ChatWindow *ui;
@@ -113,8 +115,14 @@ signals:
     void chatCleared();
     void avatarChanged();
     void groupchatChanged();
+    void linkPreviewRequiresUserInteractionChanged();
+    void isPinnedChanged();
+    void isPressed();
+    void isReleased();
 
 private:
+    bool linkPreviewRequiresUserInteraction = true;
+    bool is_pinned = true;
     Conversations *m_ctx;
     ChatModel *chatModel = nullptr;
     static ChatWindow *pChatWindow;

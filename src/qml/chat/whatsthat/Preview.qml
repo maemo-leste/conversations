@@ -11,6 +11,15 @@ Rectangle {
     property int loadingIconFrameIndex: 1
 
     height: previewRoot.model.totalHeight
+    signal itemHeightChanged();
+
+    Connections {
+        target: previewRoot.model
+
+        function onTotalHeightChanged() {
+            previewRoot.itemHeightChanged();
+        }
+    }
 
     color: "transparent"
 

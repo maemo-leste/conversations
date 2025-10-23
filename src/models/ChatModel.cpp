@@ -13,7 +13,7 @@ ChatModel::ChatModel(const bool has_preview_capability, QObject *parent)
     : m_has_preview_capability(has_preview_capability), QAbstractListModel(parent) {
   if(m_has_preview_capability) {
     const auto *ctx = Conversations::instance();
-    connect(ctx, &Conversations::enableLinkPreviewEnabledToggled, [=](bool enabled) {
+    connect(ctx, &Conversations::enableLinkPreviewEnabledToggled, [this](bool enabled) {
       const QModelIndex topLeft = index(0, 0);
       const QModelIndex bottomRight = index(rowCount() - 1, 0);
       emit dataChanged(topLeft, bottomRight, { previewRole });
@@ -141,6 +141,8 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
       return {};
 
     const auto event_id = message->event_id();
+    const bool requires_user_interaction = config()->get(ConfigKeys::LinkPreviewRequiresUserInteraction).toBool();
+
     if (!webPreviewCache.contains(event_id)) {
       auto *previewModel = new PreviewModel(event_id);
       const auto ptr = QSharedPointer<PreviewModel>(previewModel);
@@ -149,11 +151,16 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
       ptr->addLinks(links);
       webPreviewCache[event_id] = ptr;
 
-      bool requires_user_interaction = config()->get(ConfigKeys::LinkPreviewRequiresUserInteraction).toBool();
       if (!requires_user_interaction)
         ptr->buttonPressed();
     } else {
-      connect(webPreviewCache[event_id].data(), &PreviewModel::previewItemClicked, this, &ChatModel::previewItemClicked, Qt::UniqueConnection);
+      const auto previewModel = webPreviewCache[event_id];
+      connect(previewModel.data(), &PreviewModel::previewItemClicked, this, &ChatModel::previewItemClicked, Qt::UniqueConnection);
+
+      // auto-fetch
+      if (!requires_user_interaction && previewModel->state() == PreviewModel::USER_WAIT) {
+        previewModel->buttonPressed();
+      }
     }
 
     return QVariant::fromValue(webPreviewCache[event_id].data());

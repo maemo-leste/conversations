@@ -22,6 +22,7 @@ RowLayout {
     spacing: 0
 
     signal showMessageContextMenu(int event_id, var point);
+    signal itemHeightChanged();
 
     property bool highlight: false
     property int screenHeight: 0
@@ -303,10 +304,14 @@ RowLayout {
                         Layout.fillWidth: true
                         Layout.preferredHeight: preview !== undefined ? preview.totalHeight * ctx.scaleFactor : 0;
 
+                        signal itemHeightChanged();
+                        onItemHeightChanged: item.itemHeightChanged();
+
                         sourceComponent: Component {
                             Preview {
                                 id: previewComponent
                                 model: preview
+                                onItemHeightChanged: previewLoader.itemHeightChanged();
                             }
                         }
 

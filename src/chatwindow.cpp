@@ -71,8 +71,11 @@ ChatWindow::ChatWindow(
 #endif
    this->chatModel->getMessages(service_uid, group_uid);
 
+   linkPreviewRequiresUserInteraction = config()->get(ConfigKeys::LinkPreviewRequiresUserInteraction).toBool();
+
    // QML
 #ifdef QUICK
+   ui->quick->installEventFilter(this);
    auto *qctx = ui->quick->rootContext();
    qctx->setContextProperty("chatWindow", this);
    qctx->setContextProperty("chatModel", this->chatModel);
@@ -458,6 +461,9 @@ void ChatWindow::onSearchResultClicked(const QSharedPointer<ChatMessage> &msg) {
 }
 
 void ChatWindow::setHighlight(const unsigned int event_id) {
+  is_pinned = false;
+  emit isPinnedChanged();
+
   emit chatPreReady();
 
   fillBufferUntil(event_id);
@@ -603,7 +609,19 @@ void ChatWindow::setChatState(Tp::ChannelChatState state) const {
 }
 
 bool ChatWindow::eventFilter(QObject *watched, QEvent *event) {
-  switch (event->type()) {
+  const auto event_type = event->type();
+
+  if (watched == ui->quick) {
+    if (event_type == QEvent::MouseButtonPress || event_type == QEvent::TouchBegin) {
+      emit isPressed();
+    } else if (event_type == QEvent::MouseButtonRelease || event_type == QEvent::TouchEnd) {
+      emit isReleased();
+    }
+
+    return QObject::eventFilter(watched, event);
+  }
+
+  switch (event_type) {
     case QEvent::KeyPress: {
       auto *ke = static_cast<QKeyEvent*>(event);
 

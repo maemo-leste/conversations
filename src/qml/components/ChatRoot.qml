@@ -97,7 +97,7 @@ Rectangle {
 
             Components.PlainText {
                 color: "lime"
-                text: "mayAutoScroll: " + chatList.mayAutoScroll
+                text: "is_pinned: " + chatWindow.isPinned
                 font.pointSize: parent.pointSize
                 font.bold: true
             }
@@ -177,13 +177,16 @@ Rectangle {
 
     Timer {
         id: scrollBottomTimer
-        interval: 10
+        interval: 50
         repeat: false
         running: false
         onTriggered: {
-            console.log('scrollBottomTimer() fired');
             while(!chatList.atBottom)
               chatList.positionViewAtEnd();
+
+            if(!chatWindow.isPinned)
+                chatWindow.isPinned = true;
+
             chatRoot.scrollToBottomFinished();
         }
     }

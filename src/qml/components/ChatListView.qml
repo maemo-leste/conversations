@@ -14,10 +14,14 @@ ListView {
     property bool scrollable: root.childrenRect.height > parent.height
     property bool atBottom: (chatScroll.position + chatScroll.size) >= 1
     property bool atTop: chatScroll.position <= 0.01
-    property bool mayAutoScroll: atBottom && scrollable && chatPostReady
+
+    onAtBottomChanged: {
+        if(atBottom)
+            chatWindow.isPinned = true;
+    }
 
     onCountChanged: {  // scroll to bottom
-        if(chatListView.mayAutoScroll) {
+        if(chatWindow.isPinned && scrollable && chatPostReady) {
             scrollToBottom();
         }
     }
@@ -30,5 +34,16 @@ ListView {
     Component.onCompleted: {
         console.log('ChatListView onCompleted()');
         console.log('listview count', root.count);
+    }
+
+    Connections {
+        target: chatWindow
+        onIsReleased: {
+            if(atBottom) {
+                chatWindow.isPinned = true;
+            } else {
+                chatWindow.isPinned = false;
+            }
+        }
     }
 }

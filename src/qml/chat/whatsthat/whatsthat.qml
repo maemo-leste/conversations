@@ -57,6 +57,22 @@ Components.ChatRoot {
             screenHeight: root.height
             highlight: root.highlightEventId == event_id
             onShowMessageContextMenu: root.showMessageContextMenu(event_id, point);
+            onItemHeightChanged: {
+                if(chatWindow.isPinned) {
+                    ctx.singleShot(100, () => {
+                        chatListView.positionViewAtIndex(chatListView.model.count - 1, ListView.End);
+                    });
+                    return;
+                }
+
+                // auto-scroll to the end of this delegate after the height changes
+                // but only when we are not pinned to the bottom
+                if(root.chatPostReady && chatWindow.linkPreviewRequiresUserInteraction) {
+                    ctx.singleShot(100, () => {
+                        chatListView.positionViewAtIndex(index, ListView.End);
+                    });
+                }
+            }
         }
     }
 

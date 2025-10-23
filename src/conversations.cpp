@@ -222,7 +222,7 @@ void Conversations::setWindowTitle(const QString &title) {
 }
 
 #ifdef QUICK
-void Conversations::singleShot(int msec, QJSValue callback) {
+void Conversations::singleShot(int msec, QJSValue callback) const {
   QTimer::singleShot(msec, this, [callback] () mutable {
     if (callback.isCallable())
       callback.call();
