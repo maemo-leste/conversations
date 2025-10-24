@@ -45,6 +45,7 @@ Q_PROPERTY(QString remote_uid MEMBER remote_uid);
 Q_PROPERTY(bool groupchat MEMBER groupchat NOTIFY groupchatChanged);
 Q_PROPERTY(bool linkPreviewRequiresUserInteraction MEMBER linkPreviewRequiresUserInteraction NOTIFY linkPreviewRequiresUserInteractionChanged)
 Q_PROPERTY(bool isPinned MEMBER is_pinned NOTIFY isPinnedChanged)  // pinned to the bottom (auto-scroll)
+Q_PROPERTY(bool bgMatrixRainEnabled MEMBER bgMatrixRainEnabled NOTIFY bgMatrixRainEnabledChanged)
 
 public:
   Ui::ChatWindow *ui;
@@ -103,6 +104,7 @@ private slots:
   void onRejectFriend();
   void onDisplayChatBox();
   void onPreviewItemClicked(const QSharedPointer<PreviewItem> &item, const QPoint point);
+  void onBgMatrixRainEnabledChanged(bool enabled);
 
 signals:
   void closed(const QString &remote_uid);
@@ -118,9 +120,11 @@ signals:
   void isPinnedChanged();
   void isPressed();
   void isReleased();
+  void bgMatrixRainEnabledChanged();
 
 private:
   bool linkPreviewRequiresUserInteraction = true;
+  bool bgMatrixRainEnabled = false;
   bool is_pinned = true;
   Conversations *m_ctx;
   ChatModel *chatModel = nullptr;

@@ -40,6 +40,7 @@ signals:
   void enableLinkPreviewEnabledToggled(bool enabled);
   void enableLinkPreviewImageEnabledToggled(bool enabled);
   void enableLinkPreviewRequiresUserInteractionToggled(bool enabled);
+  void bgMatrixRainEnabledToggled(bool enabled);
 private slots:
   void onTextScalingValueChanged(int val);
   void onAttachmentMaxDownloadSize(float val);

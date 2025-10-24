@@ -33,7 +33,8 @@ static QHash<ConfigKeys::ConfigKey, ConfigDirective> configStrings = {
   {ConfigKeys::LinkPreviewEnabled, {QS("LinkPreviewEnabled"), true}},
   {ConfigKeys::LinkPreviewRequiresUserInteraction, {QS("LinkPreviewRequiresUserInteraction"), true}},
   {ConfigKeys::LinkPreviewImageEnabled, {QS("LinkPreviewImageEnabled"), true}},
-  {ConfigKeys::LinkPreviewMaxDownloadSize, {QS("LinkPreviewMaxDownloadSize"), 2}}
+  {ConfigKeys::LinkPreviewMaxDownloadSize, {QS("LinkPreviewMaxDownloadSize"), 2}},
+  {ConfigKeys::EnableMatrixRainBackground, {QS("EnableMatrixRainBackground"), false}}
 };
 
 QPointer<Config> Config::m_instance(nullptr);

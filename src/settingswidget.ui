@@ -116,6 +116,48 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="checkBox_enableGPUAccel">
+         <property name="text">
+          <string>GPU acceleration (requires application restart)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_enableInheritSystemTheme">
+         <property name="text">
+          <string>Inherit system theme</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_enableSlim">
+         <property name="text">
+          <string>Slim mode (requires application restart)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_enableDisplayAvatars">
+         <property name="text">
+          <string>Avatars</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_enableDisplayChatGradient">
+         <property name="text">
+          <string>Chat gradient (requires GPU accel.)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_enableMatrixRainBackground">
+         <property name="text">
+          <string>Matrix rain background (requires GPU accel.)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
           <widget class="QLabel" name="label_textScaling">
@@ -161,41 +203,6 @@
          </property>
          <property name="tickInterval">
           <number>25</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_enableInheritSystemTheme">
-         <property name="text">
-          <string>Inherit system theme</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_enableDisplayAvatars">
-         <property name="text">
-          <string>Avatars</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_enableSlim">
-         <property name="text">
-          <string>Slim mode (requires application restart)</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_enableGPUAccel">
-         <property name="text">
-          <string>GPU acceleration (requires application restart)</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_enableDisplayChatGradient">
-         <property name="text">
-          <string>Chat gradient (requires GPU acceleration)</string>
          </property>
         </widget>
        </item>

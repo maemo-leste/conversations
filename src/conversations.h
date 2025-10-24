@@ -121,6 +121,7 @@ signals:
     void enableLinkPreviewImageEnabledToggled(bool enabled);
     void enableLinkPreviewRequiresUserInteractionToggled(bool enabled);
     void attachmentMaxDownloadSizeChanged(int val);
+    void bgMatrixRainEnabledChanged(bool enabled);
 
 public slots:
     void onContactsChanged(std::vector<std::shared_ptr<abook_qt::AbookContact>> contacts);

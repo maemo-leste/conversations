@@ -75,6 +75,10 @@ ChatWindow::ChatWindow(
 
    // QML
 #ifdef QUICK
+   const auto gpu_accel = config()->get(ConfigKeys::EnableGPUAccel).toBool();
+   bgMatrixRainEnabled = gpu_accel && config()->get(ConfigKeys::EnableMatrixRainBackground).toBool();
+   connect(m_ctx, &Conversations::bgMatrixRainEnabledChanged, this, &ChatWindow::onBgMatrixRainEnabledChanged);
+
    ui->quick->installEventFilter(this);
    auto *qctx = ui->quick->rootContext();
    qctx->setContextProperty("chatWindow", this);
@@ -262,6 +266,11 @@ void ChatWindow::onAvatarChanged(const std::string& abook_uid) {
   if (abook_qt::get_abook_uid(protocol, remote_uid_str) == abook_uid) {
     emit avatarChanged();
   }
+}
+
+void ChatWindow::onBgMatrixRainEnabledChanged(bool enabled) {
+  bgMatrixRainEnabled = enabled;
+  emit bgMatrixRainEnabledChanged();
 }
 
 void ChatWindow::onIgnoreNotificationsToggled() {

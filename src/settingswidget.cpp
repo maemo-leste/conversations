@@ -59,6 +59,7 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
     emit enableDisplayGroupchatJoinLeaveToggled(toggled);
   });
 
+#ifdef QUICK
   // GPU acceleration
   ui->checkBox_enableGPUAccel->setChecked(config()->get(ConfigKeys::EnableGPUAccel).toBool());
   connect(ui->checkBox_enableGPUAccel, &QCheckBox::toggled, [this](bool toggled) {
@@ -68,6 +69,23 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
       QApplication::quit();
     emit enableGPUAccel(toggled);
   });
+
+  ui->checkBox_enableMatrixRainBackground->setChecked(config()->get(ConfigKeys::EnableMatrixRainBackground).toBool());
+  connect(ui->checkBox_enableMatrixRainBackground, &QCheckBox::toggled, [this](bool toggled) {
+    const auto gpu_accel = config()->get(ConfigKeys::EnableGPUAccel).toBool();
+    if (toggled && !gpu_accel) {
+      QMessageBox::information(this, "Warning", "Please enable GPU acceleration first.");
+      ui->checkBox_enableMatrixRainBackground->setChecked(false);
+      return;
+    }
+
+    config()->set(ConfigKeys::EnableMatrixRainBackground, toggled);
+    emit bgMatrixRainEnabledToggled(toggled);
+  });
+#else
+  ui->checkBox_enableGPUAccel->hide();
+  ui->checkBox_enableMatrixRainBackground->hide();
+#endif
 
   // chat avatars
   ui->checkBox_enableDisplayAvatars->setChecked(config()->get(ConfigKeys::EnableDisplayAvatars).toBool());
@@ -154,12 +172,23 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
   });
   emit attachmentMaxDownloadSizeChanged(attachmentMaxDownloadSize * 1024 * 1024);
 
+#ifdef QUICK
   // chat bg gradient shader
   ui->checkBox_enableDisplayChatGradient->setChecked(config()->get(ConfigKeys::EnableDisplayChatGradient).toBool());
   connect(ui->checkBox_enableDisplayChatGradient, &QCheckBox::toggled, [this](bool toggled) {
+    const auto gpu_accel = config()->get(ConfigKeys::EnableGPUAccel).toBool();
+    if (toggled && !gpu_accel) {
+      QMessageBox::information(this, "Warning", "Please enable GPU acceleration first.");
+      ui->checkBox_enableDisplayChatGradient->setChecked(false);
+      return;
+    }
+
     config()->set(ConfigKeys::EnableDisplayChatGradient, toggled);
     emit enableDisplayChatGradientToggled(toggled);
   });
+#else
+  ui->checkBox_enableDisplayChatGradient->hide();
+#endif
 
   ui->checkBox_enableSlim->setChecked(config()->get(ConfigKeys::EnableSlim).toBool());
   connect(ui->checkBox_enableSlim, &QCheckBox::toggled, [this](const bool toggled) {

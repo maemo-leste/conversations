@@ -24,6 +24,20 @@ Components.ChatRoot {
     historyPopupBackgroundColor: ctx.inheritSystemTheme ? theme.colors.statusBarBackgroundColor : "262d31"
     historyPopupTextColor: ctx.inheritSystemTheme ? theme.colors.statusBarTextColor : "white"
 
+    Component {
+        id: shaderMatrixRainComponent
+        Components.ShaderMatrixRain {
+            anchors.fill: parent
+        }
+    }
+
+    Loader {
+        id: shaderLoader
+        anchors.fill: parent
+        active: chatWindow.bgMatrixRainEnabled
+        sourceComponent: chatWindow.bgMatrixRainEnabled ? shaderMatrixRainComponent : null
+    }
+
     Components.ChatListView {
         id: chatListView
 

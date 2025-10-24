@@ -34,10 +34,24 @@ Components.ChatRoot {
 
     Image {
         // background
-        visible: !ctx.inheritSystemTheme
+        visible: !ctx.inheritSystemTheme && !chatWindow.bgMatrixRainEnabled
         source: "qrc:/whatsthat/bg.png"
         anchors.fill: parent
         fillMode: Image.Tile
+    }
+
+    Component {
+        id: shaderMatrixRainComponent
+        Components.ShaderMatrixRain {
+            anchors.fill: parent
+        }
+    }
+
+    Loader {
+        id: shaderLoader
+        anchors.fill: parent
+        active: chatWindow.bgMatrixRainEnabled
+        sourceComponent: chatWindow.bgMatrixRainEnabled ? shaderMatrixRainComponent : null
     }
 
     Components.ChatListView {

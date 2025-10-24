@@ -5,5 +5,9 @@
         <file alias="components/ChatRoot.qml">ChatRoot.qml</file>
         <file alias="components/ChatListView.qml">ChatListView.qml</file>
         <file alias="components/StackViewFancy.qml">StackViewFancy.qml</file>
+        <file alias="components/ShaderMatrixRain.qml">ShaderMatrixRain.qml</file>
+        <file>ichannel0.png</file>
+        <file>ichannel0_small.png</file>
+        <file>ichannel1.png</file>
     </qresource>
 </RCC>

@@ -347,6 +347,7 @@ void MainWindow::onOpenSettingsWindow() {
   connect(settings, &SettingsWidget::enableLinkPreviewEnabledToggled, m_ctx, &Conversations::enableLinkPreviewEnabledToggled);
   connect(settings, &SettingsWidget::enableLinkPreviewImageEnabledToggled, m_ctx, &Conversations::enableLinkPreviewImageEnabledToggled);
   connect(settings, &SettingsWidget::enableLinkPreviewRequiresUserInteractionToggled, m_ctx, &Conversations::enableLinkPreviewRequiresUserInteractionToggled);
+  connect(settings, &SettingsWidget::bgMatrixRainEnabledToggled, m_ctx, &Conversations::bgMatrixRainEnabledChanged);
   connect(settings, &SettingsWidget::attachmentMaxDownloadSizeChanged, m_ctx, &Conversations::attachmentMaxDownloadSizeChanged);
 
   connect(settings, &SettingsWidget::enterKeySendsChatToggled, m_ctx, &Conversations::enterKeySendsChatToggled);
