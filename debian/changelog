@@ -1,3 +1,10 @@
+conversations (0.7.85) unstable; urgency=medium
+
+  * qml: optional digital rain background shader
+  * chatWindow: code cleanup
+
+ -- Sander <sander@sanderf.nl>  Fri, 24 Oct 2025 18:04:41 +0300
+
 conversations (0.7.84) unstable; urgency=medium
 
   * qml/whatsthat: fix alignment when in potrait, and change text alignment for outgoing messages
