@@ -42,6 +42,4 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
     librtcom-eventlogger-plugins1,
     libosso-abook,
     libtelepathy-qt5-0,
-    libebook-1.2-20,
-    libebook-contacts-1.2-3
 Description: Maemo Conversations UI with RTCOM and Telepathy integration
