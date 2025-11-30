@@ -110,7 +110,7 @@ private:
     QString m_group_uid;
     QString m_service_id;
 
-    int m_limit = 25;
+    int m_limit = 40;
     int m_offset = 0;
     int m_count = 0;
     bool m_exhausted = false;
