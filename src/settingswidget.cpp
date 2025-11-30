@@ -1,3 +1,5 @@
+#include <QScreen>
+
 #include "settingswidget.h"
 #include "ui_settingswidget.h"
 
@@ -9,6 +11,12 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
   m_ctx(ctx),
   ui(new Ui::SettingsWidget) {
   ui->setupUi(this);
+
+  // dialog height
+  if (const QScreen *screen = QGuiApplication::primaryScreen()) {
+    if (const int height = screen->geometry().height(); height - 160 >= 400)
+      setMinimumHeight(height - 160);
+  }
 
   auto theme = config()->get(ConfigKeys::ChatTheme).toString();
   if (theme == "irssi")
