@@ -18,7 +18,6 @@ target_include_directories(abook_qt PUBLIC
 target_link_libraries(abook_qt PRIVATE
     ${GLIB_LIBRARIES}
     ${OSSO_ABOOK_LIBRARIES}
-    PkgConfig::LIBEBOOK
     PkgConfig::TELEPATHY-GLIB
     logger_std
 )

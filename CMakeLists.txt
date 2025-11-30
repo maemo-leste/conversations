@@ -37,7 +37,6 @@ find_package(Threads REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(GLIB REQUIRED)
 
-pkg_check_modules(LIBEBOOK REQUIRED IMPORTED_TARGET libebook-1.2)
 pkg_check_modules(TELEPATHY-GLIB REQUIRED IMPORTED_TARGET telepathy-glib)
 pkg_check_modules(RTCOM-EVENTLOGGER REQUIRED IMPORTED_TARGET rtcom-eventlogger)
 pkg_check_modules(RTCOM-EVENTLOGGER-PLUGINS REQUIRED IMPORTED_TARGET rtcom-eventlogger-plugins)
