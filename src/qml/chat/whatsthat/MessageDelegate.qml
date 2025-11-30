@@ -16,7 +16,7 @@ RowLayout {
         if(width < 600) {  // we are probably in landscape
             return segment_width * 5;
         } else {
-            return segment_width * 3;
+            return segment_width * 5;
         }
     }
     spacing: 0
