@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>511</width>
-    <height>841</height>
+    <height>874</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -52,7 +52,7 @@
         <x>0</x>
         <y>0</y>
         <width>511</width>
-        <height>841</height>
+        <height>874</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -370,6 +370,26 @@
          </property>
          <property name="checkable">
           <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_8">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Application</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_quitApplication">
+         <property name="text">
+          <string>Quit application</string>
          </property>
         </widget>
        </item>

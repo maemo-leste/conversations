@@ -44,6 +44,7 @@ signals:
 private slots:
   void onTextScalingValueChanged(int val);
   void onAttachmentMaxDownloadSize(float val);
+  void onAskQuitApplication();
 private:
   Ui::SettingsWidget *ui;
   Conversations *m_ctx;

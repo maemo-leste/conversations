@@ -67,7 +67,6 @@ public slots:
     void onOpenJoinChatWindow();
     void onCloseSearchWindow(const QSharedPointer<ChatMessage> &msg);
     void onQuitApplication();
-    void onAskQuitApplication();
     void onShowApplication();
     void onHideApplication();
     void onChatWindowClosed(const QString &remote_uid);

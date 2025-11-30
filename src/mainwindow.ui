@@ -942,7 +942,6 @@ QPlainTextEdit { background: transparent; }</string>
      <string>menu</string>
     </property>
     <addaction name="actionSendTo"/>
-    <addaction name="actionQuit_application"/>
     <addaction name="actionCompose"/>
     <addaction name="actionJoinChatRoom"/>
     <addaction name="actionSearch"/>

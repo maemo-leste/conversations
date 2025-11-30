@@ -16,6 +16,8 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
   else
     ui->radio_theme_whatsthat->setChecked(true);
 
+  connect(ui->btn_quitApplication, &QPushButton::clicked, this, &SettingsWidget::onAskQuitApplication);
+
   connect(ui->themeRadioGroup, QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked), [this](QAbstractButton *button) {
     auto name = button->objectName();
     if (name == "radio_theme_whatsthat") {
@@ -159,6 +161,8 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
     emit enableLinkPreviewRequiresUserInteractionToggled(toggled);
   });
 
+
+
   // attachment max download size
   int attachmentMaxDownloadSize = config()->get(ConfigKeys::LinkPreviewMaxDownloadSize).toInt();
   QString maxAttachmentDownloadSize_text = "Max. download size: " + QString::number(attachmentMaxDownloadSize) + "mb";
@@ -233,6 +237,11 @@ void SettingsWidget::onTextScalingValueChanged(int val) {
   ui->label_textScalingValue->setText("x" + QString::number(scaling));
   config()->set(ConfigKeys::TextScaling, scaling);
   emit textScalingChanged();
+}
+
+void SettingsWidget::onAskQuitApplication() {
+  if (QMessageBox::question(nullptr, "Confirm", "Quit conversations?", QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+    QApplication::quit();
 }
 
 SettingsWidget::~SettingsWidget() {
