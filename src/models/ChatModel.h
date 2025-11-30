@@ -23,6 +23,7 @@ public:
     enum ChatModelRoles {
         NameRole = Qt::UserRole + 1,
         DateRole,
+        RawDateRole,
         HourRole,
         MessageRole,
         isHeadRole,
@@ -45,6 +46,7 @@ public:
         LeaveEventRole,
         MessageReadRole,
         displayTimestampRole,
+        newDayRole,
         weblinksRole,
         weblinksCountRole,
         previewRole,

@@ -1,5 +1,6 @@
 #include <QObject>
 #include <QDebug>
+#include <QDateTime>
 #include <ranges>
 
 #include "lib/rtcom/rtcom_public.h"
@@ -26,6 +27,9 @@ void ChatModel::prependMessage(const QSharedPointer<ChatMessage> &message) {
     const auto n = chats.at(0);
     message->next = n;
     n->previous = message;
+
+    if (n->date().date() != message->date().date())
+      n->set_new_day(true);
   }
 
   beginInsertRows(QModelIndex(), 0, 0);
@@ -44,6 +48,9 @@ void ChatModel::appendMessage(const QSharedPointer<ChatMessage> &message) {
     auto prev = chats.at(idx - 1);
     prev->next = message;
     message->previous = prev;
+
+    if (prev->date().date() != message->date().date())
+      message->set_new_day(true);
   }
 
   beginInsertRows(QModelIndex(), idx, rowCount());
@@ -91,6 +98,10 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const {
     return message->text();
   else if (role == isHeadRole)
     return message->isHead();
+  else if (role == newDayRole)
+    return message->new_day();
+  else if (role == RawDateRole)
+    return message->date();
   else if (role == AvatarRole)
     return message->avatar();
   else if (role == AvatarImageRole) {
@@ -205,6 +216,7 @@ QHash<int, QByteArray> ChatModel::roleNames() const {
   roles[RemoteNameRole] = "remote_name";
   roles[NameRole] = "name";
   roles[DateRole] = "datestr";
+  roles[RawDateRole] = "rawdate";
   roles[HourRole] = "hourstr";
   roles[MessageRole] = "message";
   roles[isHeadRole] = "isHead";
@@ -227,6 +239,7 @@ QHash<int, QByteArray> ChatModel::roleNames() const {
   roles[weblinksRole] = "weblinks";
   roles[weblinksCountRole] = "weblinks_count";
   roles[previewRole] = "preview";
+  roles[newDayRole] = "new_day";
   return roles;
 }
 

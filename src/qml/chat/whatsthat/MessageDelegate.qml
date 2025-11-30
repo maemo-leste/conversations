@@ -16,7 +16,7 @@ RowLayout {
         if(width < 600) {  // we are probably in landscape
             return segment_width * 5;
         } else {
-            return segment_width * 5;
+            return segment_width * 4;
         }
     }
     spacing: 0
@@ -52,11 +52,13 @@ RowLayout {
             width_meta_row += metaNameText.implicitWidth + metaDateText.implicitWidth;
         width_meta_row += 12;
 
-        let width_message = textItem.implicitWidth + 18;
+        let width_message = textItem.implicitWidth + 24;
         let width_result = 30; // minimum
 
         let displayName = outgoing && isHead;
         if(displayName)
+            width_result -= 16;
+        if(outgoing && !isHead)
             width_result -= 16;
 
         if(displayAvatar && hasAvatar) {
@@ -69,19 +71,25 @@ RowLayout {
             // console.log("+= width_meta_row", width_meta_row);
         }
 
+        let _maxWidth = (w) => {
+            if(w >= max_width)
+                return max_width;
+            return w;
+        }
+
         if(width_message > width_result) {
             if(width_message < max_width) {
                 // console.log("return", width_message);
-                return width_message;
+                return _maxWidth(width_message * ctx.scaleFactor);
             }
 
             if(width_result >= max_width)
-                return width_result;
+                return _maxWidth(width_result * ctx.scaleFactor);
 
-            return max_width;
+            return _maxWidth(max_width * ctx.scaleFactor);
         }
 
-        return width_result;
+        return _maxWidth(width_result * ctx.scaleFactor);
     }
 
     property bool displayAvatar: !outgoing && (isHead || display_timestamp) && !chatWindow.groupchat && ctx.displayAvatars && hasAvatar
@@ -119,8 +127,12 @@ RowLayout {
         if(!isHead && !display_timestamp)
             meta_height = -12 * ctx.scaleFactor;
 
-        let _height = textItem.implicitHeight + textItem.font.pointSize + (20) + meta_height;
-        let _height_and_avatar = avatarContainer.childrenRect.height + (20 ) + meta_height;
+        let new_day_offset = 0;
+        if(new_day && !outgoing)
+            new_day_offset += 32;
+
+        let _height = textItem.implicitHeight + textItem.font.pointSize + (20) + meta_height + new_day_offset;
+        let _height_and_avatar = avatarContainer.childrenRect.height + (20 ) + meta_height + new_day_offset;
 
         if (displayAvatar) {
             if (_height_and_avatar > _height) {
@@ -245,7 +257,7 @@ RowLayout {
                                 visible: (!outgoing && isHead) || !outgoing
                                 color: root.colorTextThem
                                 text: name
-                                font.pointSize: ctx.scaleFactor !== 1.0 ? 16 : 14;
+                                font.pointSize: ctx.scaleFactor !== 1.0 ? 20 : 14;
                                 font.bold: true
                                 Layout.alignment: Qt.AlignLeft | Qt.AlignTop
                             }
@@ -323,6 +335,31 @@ RowLayout {
                     }
                 }
             }
+        }
+    }
+
+    Rectangle {
+        visible: new_day && !outgoing
+        color: "transparent"
+        Layout.fillHeight: true
+        Layout.fillWidth: true
+
+        Text {
+            font.pointSize: ctx.scaleFactor !== 1.0 ? 14 : 12;
+            font.family: fixedFont
+            anchors.top: parent.top
+            anchors.topMargin: 10;
+            anchors.left: parent.left
+            anchors.leftMargin: 16;
+            text: {
+                const day = rawdate.getDate();
+                const months = [
+                    "January","February","March","April","May","June",
+                    "July","August","September","October","November","December"];
+                const month = months[rawdate.getMonth()];
+                return day + " " + month;
+            }
+            color: "white"
         }
     }
 

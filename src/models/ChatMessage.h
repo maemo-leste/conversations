@@ -34,6 +34,7 @@ public:
     unsigned int flags() const { return m_raw->flags; }
     QString cid() const { return m_cid; }
     QDateTime date() const { return m_date; }
+    bool new_day() const { return m_new_day; }
     QString protocol() const { return QString::fromStdString(m_raw->protocol); }
 
     QString text() const;
@@ -50,6 +51,7 @@ public:
     QString hourstr() const { return m_date.toString("hh:mm"); }
     QString datestr() const { return m_date.toString("dd/MM/yyyy"); }
     time_t epoch() const { return m_date.toTime_t(); }
+    void set_new_day(const bool new_day) { m_new_day = new_day; }
     void set_message_read() {
       rtcom_qt::set_read(this->event_id(), true);
       m_raw->is_read = true;
@@ -103,6 +105,7 @@ private:
     rtcom_qt::ChatMessageEntry* m_raw = nullptr;
     QString m_persistent_uid;
     QDateTime m_date;
+    bool m_new_day = false;
     QString m_cid;
 
     QStringList m_weblinks;

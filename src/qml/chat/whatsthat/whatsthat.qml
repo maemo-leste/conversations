@@ -57,7 +57,7 @@ Components.ChatRoot {
     Components.ChatListView {
         id: chatListView
 
-        spacing: 8
+        spacing: 14
 
         anchors.fill: parent
         anchors.topMargin: 10
