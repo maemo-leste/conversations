@@ -37,7 +37,7 @@ bool TpContactsProxyModel::filterAcceptsRow(int source_row, const QModelIndex& s
     return true;
 
   Tp::ContactPtr contact = mdl->tpchannel->room_contacts[index.row()];
-  const auto name = contact->alias();
+  const auto name = contact->alias().toLower();
   return name.contains(m_nameFilter);
 }
 
