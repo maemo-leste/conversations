@@ -52,10 +52,12 @@ RowLayout {
             width_meta_row += metaNameText.implicitWidth + metaDateText.implicitWidth;
         width_meta_row += 12;
 
-        let width_message = textItem.implicitWidth + 24;
-        let width_result = 70; // minimum
+        let width_message = textItem.implicitWidth + 18;
+        let width_result = 30; // minimum
 
-        // console.log(message);
+        let displayName = outgoing && isHead;
+        if(displayName)
+            width_result -= 16;
 
         if(displayAvatar && hasAvatar) {
             width_result += avatarSize;
