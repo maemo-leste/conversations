@@ -409,6 +409,10 @@ void ChatWindow::onOpenTpContactsWindow() {
     });
 
     m_tpContactsWindow->show();
+  } else {
+    QMessageBox _msgBox;
+    _msgBox.setText(QString("Cannot retrieve chat participants. Is this chat currently connected?"));
+    _msgBox.exec();
   }
 }
 
