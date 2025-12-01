@@ -97,6 +97,40 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
   ui->checkBox_enableMatrixRainBackground->hide();
 #endif
 
+  // kotki
+  ui->checkBox_enableKotki->setChecked(config()->get(ConfigKeys::EnableKotki).toBool());
+  connect(ui->checkBox_enableKotki, &QCheckBox::toggled, [this](bool toggled) {
+    if (toggled) {
+      // spawn/test kotki-server child process
+      if (!m_ctx->kotkiClient->startServer()) {
+        QMessageBox::warning(this, "Warning", "could not start /usr/bin/kotki-server");
+        config()->set(ConfigKeys::EnableKotki, false);
+        ui->checkBox_enableKotki->setChecked(false);
+        emit kotkiToggled(false);
+        return;
+      }
+
+      QTimer::singleShot(200, [this, toggled] {
+        // test connection
+          qDebug() << "testing";
+        const auto &client = m_ctx->kotkiClient;
+        client->clearListModelsCache();
+        if (client->listModels().size() > 0) {
+          config()->set(ConfigKeys::EnableKotki, toggled);
+          emit kotkiToggled(toggled);
+          return;
+        }
+        QMessageBox::warning(this, "Warning", "Could not reach unix socket /tmp/kotki_server.socket. Is kotki-server running?");
+      });
+
+      return;
+    }
+
+    config()->set(ConfigKeys::EnableKotki, false);
+    m_ctx->kotkiClient->stopServer();
+    emit kotkiToggled(false);
+  });
+
   // chat avatars
   ui->checkBox_enableDisplayAvatars->setChecked(config()->get(ConfigKeys::EnableDisplayAvatars).toBool());
   connect(ui->checkBox_enableDisplayAvatars, &QCheckBox::toggled, [this](bool toggled) {

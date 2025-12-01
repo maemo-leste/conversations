@@ -42,7 +42,7 @@ void ChatModel::prependMessage(const QSharedPointer<ChatMessage> &message) {
 }
 
 void ChatModel::appendMessage(const QSharedPointer<ChatMessage> &message) {
-  connect(message.data(), &ChatMessage::messageFlagsChanged, this, &ChatModel::onMessageFlagsChanged);
+  connect(message.data(), &ChatMessage::messageFlagsChanged, this, &ChatModel::onMessageRowChanged);
   const int idx = rowCount();
   if(idx != 0 && !chats.isEmpty()) {
     auto prev = chats.at(idx - 1);
@@ -344,7 +344,7 @@ unsigned int ChatModel::getPage(int custom_limit) {
   return count;
 }
 
-void ChatModel::onMessageFlagsChanged(const unsigned int event_id) {
+void ChatModel::onMessageRowChanged(const unsigned int event_id) {
   for (int row = 0; row < chats.size(); ++row) {
     if (const auto& chat = chats[row]; chat->event_id() == event_id) {
       emit dataChanged(index(row, 0), index(row, 0));

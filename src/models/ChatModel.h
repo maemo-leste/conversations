@@ -103,8 +103,8 @@ signals:
     void countChanged();
     void messageRead(unsigned int event_id);
     void previewItemClicked(QSharedPointer<PreviewItem> item, const QPoint point);
-private slots:
-    void onMessageFlagsChanged(unsigned int event_id);
+public slots:
+    Q_INVOKABLE void onMessageRowChanged(unsigned int event_id);
 protected:
     QHash<int, QByteArray> roleNames() const;
 

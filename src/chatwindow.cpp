@@ -73,6 +73,9 @@ ChatWindow::ChatWindow(
 
    linkPreviewRequiresUserInteraction = config()->get(ConfigKeys::LinkPreviewRequiresUserInteraction).toBool();
 
+   connect(m_ctx, &Conversations::kotkiToggled, this, &ChatWindow::kotkiEnabledChanged);
+   kotki = config()->get(ConfigKeys::EnableKotki).toBool();
+
    // QML
 #ifdef QUICK
    const auto gpu_accel = config()->get(ConfigKeys::EnableGPUAccel).toBool();
@@ -84,6 +87,7 @@ ChatWindow::ChatWindow(
    qctx->setContextProperty("chatWindow", this);
    qctx->setContextProperty("chatModel", this->chatModel);
    qctx->setContextProperty("ctx", m_ctx);
+   qctx->setContextProperty("kotki", m_ctx->kotkiClient);
    qctx->setContextProperty("theme", m_ctx->theme);
    const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);  // has no effect on Leste?
    qctx->setContextProperty("fixedFont", fixedFont);
@@ -745,6 +749,35 @@ void ChatWindow::showMessageContextMenu(const unsigned int event_id, const QPoin
     contextMenu.addMenu(copyLinkMenu);
   }
 
+  // translation
+  const auto kotkiMenu = new QMenu("Translate", &contextMenu);
+
+  auto actionTranslationNone = new QAction("No translation", &contextMenu);
+  actionTranslationNone->setData("none");
+  connect(actionTranslationNone, &QAction::triggered, [this, msg] {
+    msg->setTextTranslation("");
+    this->chatModel->onMessageRowChanged(msg->event_id());
+  });
+  kotkiMenu->addAction(actionTranslationNone);
+
+  for (const auto &item: m_ctx->kotkiClient->listModels()) {
+    auto obj = item.toObject();
+    auto name = obj["name"].toString();
+    auto desc = obj["description"].toString();
+    auto actionModel = new QAction(desc, &contextMenu);
+    actionModel->setData(name);
+
+    connect(actionModel, &QAction::triggered, [this, name, desc, msg] {
+      auto result = m_ctx->kotkiClient->translate(msg->text(), name, 3000);
+      msg->setTextTranslation(result["translated"].toString());
+      this->chatModel->onMessageRowChanged(msg->event_id());
+    });
+
+    kotkiMenu->addAction(actionModel);
+  }
+
+  contextMenu.addMenu(kotkiMenu);
+
   // submenu; open weblinks
   if(!msg->weblinks().isEmpty()) {
     const auto openLinkMenu = new QMenu("Open Link", &contextMenu);
@@ -758,9 +791,10 @@ void ChatWindow::showMessageContextMenu(const unsigned int event_id, const QPoin
         GError *error = NULL;
 
         if(error != NULL) {
-         qWarning() << QString("Could not get default action by uri, error: %1->'%s'").arg(
-            QString::number(error->code),
-            QString::fromLocal8Bit(error->message));
+          qWarning() <<
+          QString("Could not get default action by uri, error: %1->'%s'").arg(
+          QString::number(error->code),
+          QString::fromLocal8Bit(error->message));
         } else {
           hildon_uri_open(webLinkStr.c_str(), NULL, &error);
           if(error != NULL)

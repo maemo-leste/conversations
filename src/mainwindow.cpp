@@ -104,6 +104,14 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   connect(m_ctx->telepathy, &Telepathy::onlinenessChanged, this, &MainWindow::onTPAccountOnlinenessChanged);
 
   this->onDeterminePage();
+
+  // kotki
+  QTimer::singleShot(1000, [this] {
+    if (config()->get(ConfigKeys::EnableKotki).toBool())
+      if (!m_ctx->kotkiClient->startServer()) {
+        QMessageBox::warning(this, "Warning", "could not start /usr/bin/kotki-server");
+      }
+  });
 }
 
 void MainWindow::onTPAccountManagerReady() {}
@@ -343,6 +351,7 @@ void MainWindow::onOpenSettingsWindow() {
   connect(settings, &SettingsWidget::enableLinkPreviewRequiresUserInteractionToggled, m_ctx, &Conversations::enableLinkPreviewRequiresUserInteractionToggled);
   connect(settings, &SettingsWidget::bgMatrixRainEnabledToggled, m_ctx, &Conversations::bgMatrixRainEnabledChanged);
   connect(settings, &SettingsWidget::attachmentMaxDownloadSizeChanged, m_ctx, &Conversations::attachmentMaxDownloadSizeChanged);
+  connect(settings, &SettingsWidget::kotkiToggled, m_ctx, &Conversations::kotkiToggled);
 
   connect(settings, &SettingsWidget::enterKeySendsChatToggled, m_ctx, &Conversations::enterKeySendsChatToggled);
 

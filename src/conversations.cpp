@@ -132,6 +132,9 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   // save config whilst quiting
   connect(qApp, &QCoreApplication::aboutToQuit, config(), &Config::sync);
   CLOCK_MEASURE_END(start_total, "Conversations::constructor total");
+
+  // kotki
+  this->kotkiClient = new KotkiClient();
 }
 
 // get a list of 'service accounts' (AKA protocols) from both TP and rtcom

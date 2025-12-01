@@ -52,7 +52,7 @@
         <x>0</x>
         <y>0</y>
         <width>511</width>
-        <height>874</height>
+        <height>885</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -360,6 +360,13 @@
          </property>
          <property name="text">
           <string>in-development:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_enableKotki">
+         <property name="text">
+          <string>Kotki translate</string>
          </property>
         </widget>
        </item>

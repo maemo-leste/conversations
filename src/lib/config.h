@@ -30,7 +30,8 @@ namespace ConfigKeys {
         LinkPreviewRequiresUserInteraction,
         LinkPreviewImageEnabled,
         LinkPreviewMaxDownloadSize,
-        EnableMatrixRainBackground
+        EnableMatrixRainBackground,
+        EnableKotki
     };
     Q_ENUM_NS(ConfigKey)
 }

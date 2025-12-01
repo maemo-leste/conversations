@@ -58,6 +58,10 @@ public:
     }
     bool message_read() { return m_raw->is_read; }
 
+    void setTextTranslation(const QString& translated) {
+      m_translated_text = translated;
+    }
+
     bool chat_event() const { return m_raw->event_type == "RTCOM_EL_EVENTTYPE_SMS_MESSAGE" || m_raw->event_type == "RTCOM_EL_EVENTTYPE_CHAT_MESSAGE"; }
     bool join_event() const { return m_raw->event_type == "RTCOM_EL_EVENTTYPE_CHAT_JOIN"; }  // groupchat join
     bool leave_event() const { return m_raw->event_type == "RTCOM_EL_EVENTTYPE_CHAT_LEAVE"; }  // groupchat leave
@@ -110,5 +114,7 @@ private:
 
     QStringList m_weblinks;
     unsigned int m_weblinks_count = 0;
+
+    QString m_translated_text;
 };
 

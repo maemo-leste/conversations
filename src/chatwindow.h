@@ -46,6 +46,7 @@ Q_PROPERTY(bool groupchat MEMBER groupchat NOTIFY groupchatChanged);
 Q_PROPERTY(bool linkPreviewRequiresUserInteraction MEMBER linkPreviewRequiresUserInteraction NOTIFY linkPreviewRequiresUserInteractionChanged)
 Q_PROPERTY(bool isPinned MEMBER is_pinned NOTIFY isPinnedChanged)  // pinned to the bottom (auto-scroll)
 Q_PROPERTY(bool bgMatrixRainEnabled MEMBER bgMatrixRainEnabled NOTIFY bgMatrixRainEnabledChanged)
+Q_PROPERTY(bool kotki_enabled MEMBER kotki NOTIFY kotkiEnabledChanged)
 
 public:
   Ui::ChatWindow *ui;
@@ -121,10 +122,12 @@ signals:
   void isPressed();
   void isReleased();
   void bgMatrixRainEnabledChanged();
+  void kotkiEnabledChanged();
 
 private:
   bool linkPreviewRequiresUserInteraction = true;
   bool bgMatrixRainEnabled = false;
+  bool kotki = false;
   bool is_pinned = true;
   Conversations *m_ctx;
   ChatModel *chatModel = nullptr;

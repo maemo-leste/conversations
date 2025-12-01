@@ -41,6 +41,11 @@ QString ChatMessage::text() const {
   else if (m_raw->flags & rtcom_qt::RTCOM_EL_FLAG_SMS_PERMANENT_ERROR)
     text += "[Sending permanently failed] ";
 
+  const bool kotki = config()->get(ConfigKeys::EnableKotki).toBool();
+
+  if (kotki && !m_translated_text.isEmpty())
+    return m_translated_text;
+
   text += QString::fromStdString(m_raw->text);
   return text;
 }

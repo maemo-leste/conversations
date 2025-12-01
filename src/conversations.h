@@ -16,6 +16,7 @@
 #include "lib/abook/abook_public.h"
 #include "lib/PreviewImageProvider.h"
 #include "lib/libnotify-qt/Notification.h"
+#include "lib/kotki.h"
 #include "models/ChatModel.h"
 #include "models/ContactItem.h"
 #include "models/ChatMessage.h"
@@ -54,6 +55,8 @@ public:
     QCommandLineParser *cmdargs;
     IPC *ipc;
     ConfigState *state;
+
+    KotkiClient *kotkiClient = nullptr;
 
     QString configDirectory;
     QString configRoot;
@@ -122,6 +125,7 @@ signals:
     void enableLinkPreviewRequiresUserInteractionToggled(bool enabled);
     void attachmentMaxDownloadSizeChanged(int val);
     void bgMatrixRainEnabledChanged(bool enabled);
+    void kotkiToggled(bool enabled);
 
 public slots:
     void onContactsChanged(std::vector<std::shared_ptr<abook_qt::AbookContact>> contacts);
