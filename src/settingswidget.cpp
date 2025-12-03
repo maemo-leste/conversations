@@ -104,6 +104,12 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
     emit enableDisplayAvatarsToggled(toggled);
   });
 
+  ui->checkBox_enableNewVersionMessage->setChecked(config()->get(ConfigKeys::EnableNewVersionMessage).toBool());
+  connect(ui->checkBox_enableNewVersionMessage, &QCheckBox::toggled, [this](bool toggled) {
+    config()->set(ConfigKeys::EnableNewVersionMessage, toggled);
+    emit enableNewVersionMessageToggled(toggled);
+  });
+
   // Log: writing
   ui->checkBox_logWriteToDisk->setChecked(config()->get(ConfigKeys::EnableLogWrite).toBool());
   connect(ui->checkBox_logWriteToDisk, &QCheckBox::toggled, [this](bool toggled) {

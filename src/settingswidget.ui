@@ -52,7 +52,7 @@
         <x>0</x>
         <y>0</y>
         <width>511</width>
-        <height>874</height>
+        <height>885</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -154,6 +154,13 @@
         <widget class="QCheckBox" name="checkBox_enableMatrixRainBackground">
          <property name="text">
           <string>Matrix rain background (requires GPU accel.)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_enableNewVersionMessage">
+         <property name="text">
+          <string>Warn on new Conversations version</string>
          </property>
         </widget>
        </item>

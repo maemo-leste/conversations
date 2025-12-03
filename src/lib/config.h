@@ -20,6 +20,7 @@ namespace ConfigKeys {
         EnableInheritSystemTheme,
         EnableDisplayGroupchatJoinLeave,
         EnableDisplayAvatars,
+        EnableNewVersionMessage,
         EnableDisplayChatGradient,
         GroupChatChannels,
         EnableGPUAccel,

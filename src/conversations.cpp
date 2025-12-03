@@ -132,6 +132,13 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   // save config whilst quiting
   connect(qApp, &QCoreApplication::aboutToQuit, config(), &Config::sync);
   CLOCK_MEASURE_END(start_total, "Conversations::constructor total");
+
+  // check for updates
+  m_newVersionCheckTimer = new QTimer();
+  m_newVersionCheckTimer->setInterval(1000*60*10);
+  connect(m_newVersionCheckTimer, &QTimer::timeout, this, &Conversations::onCheckNewVersion);
+  if (config()->get(ConfigKeys::EnableNewVersionMessage).toBool())
+    m_newVersionCheckTimer->start();
 }
 
 // get a list of 'service accounts' (AKA protocols) from both TP and rtcom
@@ -264,6 +271,18 @@ void Conversations::createConfigDirectory(const QString &dir) {
         throw std::runtime_error("Could not create directory " + d.toStdString());
     }
   }
+}
+
+void Conversations::onCheckNewVersion() {
+  if (globals::conversationsSlimExecutableSize == -1 ||
+      globals::conversationsQuickExecutableSize == -1)
+    return;
+
+  const auto fileSizeQuick = Utils::fileSize(PATH_CONV);
+  const auto fileSizeSlim = Utils::fileSize(PATH_CONV_SLIM);
+  const auto newer = globals::conversationsSlimExecutableSize != fileSizeSlim || globals::conversationsQuickExecutableSize != fileSizeQuick;
+  if (newer)
+    emit differentVersionAvailable();
 }
 
 void Conversations::onAbookReady() {

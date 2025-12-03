@@ -34,9 +34,7 @@
 #include "lib/logger.h"
 #include "lib/logger_std/logger_std.h"
 #include "lib/utils_c.h"
-
-#define PATH_CONV INSTALL_PREFIX_QUOTED "/bin/conversations_qml"
-#define PATH_CONV_SLIM INSTALL_PREFIX_QUOTED "/bin/conversations_slim"
+#include "lib/globals.h"
 
 Q_DECLARE_METATYPE(PreviewModel*)
 
@@ -52,6 +50,9 @@ int main(int argc, char *argv[]) {
     return ipc_try_wakeup(ipc_message);  // regardless, exit and refuse to run twice
   }
 #endif
+
+globals::conversationsSlimExecutableSize = Utils::fileSize(PATH_CONV_SLIM);
+globals::conversationsQuickExecutableSize = Utils::fileSize(PATH_CONV);
 
 #ifdef ENABLE_DEBUG_TIMINGS
   globals::logger_std_init();

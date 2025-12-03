@@ -1,3 +1,5 @@
+#include <sys/stat.h>
+
 #include <QScreen>
 #include <QMessageBox>
 #include <QtNetwork>
@@ -12,6 +14,13 @@ DeviceType DEVICE_TYPE = DeviceType::DEFAULT;
 bool Utils::fileExists(const QString &path) {
     QFileInfo check_file(path);
     return check_file.exists() && check_file.isFile();
+}
+
+qint64 Utils::fileSize(const QString &path) {
+  struct stat fileInfo{};
+  if (stat(path.toStdString().c_str(), &fileInfo) == 0)
+    return fileInfo.st_size;
+  return -1;
 }
 
 bool Utils::dirExists(const QString &path) {

@@ -44,6 +44,7 @@ extern DeviceType DEVICE_TYPE;
 class Utils {
 public:
   static bool fileExists(const QString &path);
+  static qint64 fileSize(const QString &path);
   static QByteArray fileOpen(const QString &path);
   static QByteArray fileOpenQRC(const QString &path);
   static qint64 fileModifiedAge(const QString &path);

@@ -89,6 +89,9 @@ public:
 
     static void configRemove(const QString &backend_name, const QString &remote_id);
 
+    void stopNewVersionTimer() const { m_newVersionCheckTimer->stop(); }
+    void startNewVersionTimer() const { m_newVersionCheckTimer->start(); }
+
 #ifdef QUICK
     Q_INVOKABLE void singleShot(int msec, QJSValue callback) const;
 #endif
@@ -122,6 +125,7 @@ signals:
     void enableLinkPreviewRequiresUserInteractionToggled(bool enabled);
     void attachmentMaxDownloadSizeChanged(int val);
     void bgMatrixRainEnabledChanged(bool enabled);
+    void differentVersionAvailable();
 
 public slots:
     void onContactsChanged(std::vector<std::shared_ptr<abook_qt::AbookContact>> contacts);
@@ -135,10 +139,12 @@ public slots:
     void onAbookReady();
 
 private slots:
+    void onCheckNewVersion();
     void onApplicationLog(QString msg);
 
 private:
     QMap<QString, QString> ossoIconCache;
     std::chrono::seconds m_hibernateDetectInterval{300};
     std::chrono::time_point<std::chrono::steady_clock> m_hibernatePreviousTime;
+    QTimer *m_newVersionCheckTimer;
 };

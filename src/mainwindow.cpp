@@ -11,6 +11,7 @@
 #include "aboutwidget.h"
 #include "config-conversations.h"
 #include "lib/globals.h"
+#include "lib/QClickFrame.h"
 #include "logger_std/logger_std.h"
 
 #include "ui_mainwindow.h"
@@ -46,6 +47,43 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   CLOCK_MEASURE_START(start_overviewwidget);
   m_widgetOverview = new OverviewWidget(ctx, ctx->overviewProxyModel, this);
   ui->mainLayout->addWidget(m_widgetOverview);
+
+  // new version available message
+  connect(m_ctx, &Conversations::differentVersionAvailable, [this] {
+    if (!config()->get(ConfigKeys::EnableNewVersionMessage).toBool()) {
+      ui->infoFrame->hide();
+      return;
+    }
+    ui->infoFrame->setStyleSheet("QFrame { background-color: #e1d400; }");
+    ui->infoLabel->setText("New version detected on disk. Click here to quit, or dismiss.");
+    ui->infoLabel->setStyleSheet("color: black;");
+
+    QFont defaultFont = QApplication::font();
+    defaultFont.setPointSize(defaultFont.pointSize() - 2);
+
+    ui->infoLabel->setFont(defaultFont);
+    ui->infoFrame->show();
+  });
+
+  connect(ui->infoFrame, &ClickFrame::clicked, [this] {
+    QWidget window;
+    QMessageBox msgBox(&window);
+    msgBox.setWindowTitle("New version available");
+    msgBox.setText("After quitting, start Conversations again to run the latest version.");
+
+    const QPushButton *btn_quit = msgBox.addButton("Quit application", QMessageBox::ActionRole);
+    const QPushButton *btn_dismiss = msgBox.addButton("Dismiss", QMessageBox::ActionRole);
+
+    msgBox.exec();
+    if (msgBox.clickedButton() == btn_quit) {
+      QApplication::quit();
+    } else if (msgBox.clickedButton() == btn_dismiss) {
+      ui->infoFrame->hide();
+    }
+  });
+
+  ui->infoFrame->hide();
+
   connect(m_ctx, &Conversations::textScalingChanged, m_widgetOverview, &OverviewWidget::onSetColumnStyleDelegate);
   connect(m_ctx, &Conversations::textScalingChanged, m_widgetOverview, &OverviewWidget::onSetTableHeight);
   CLOCK_MEASURE_END(start_overviewwidget, "mainwindow::start_overviewwidget");
@@ -336,6 +374,11 @@ void MainWindow::onOpenSettingsWindow() {
   connect(settings, &SettingsWidget::enableDisplayChatGradientToggled, this, [this](bool toggled){
     m_ctx->displayChatGradient = toggled;
     emit m_ctx->displayChatGradientChanged(toggled);
+  });
+
+  connect(settings, &SettingsWidget::enableNewVersionMessageToggled, this, [this](const bool toggled) {
+    if (toggled) m_ctx->startNewVersionTimer();
+    else m_ctx->stopNewVersionTimer();
   });
 
   connect(settings, &SettingsWidget::enableLinkPreviewEnabledToggled, m_ctx, &Conversations::enableLinkPreviewEnabledToggled);
