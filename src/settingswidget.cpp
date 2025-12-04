@@ -16,8 +16,8 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
 
   // dialog height
   if (const QScreen *screen = QGuiApplication::primaryScreen()) {
-    if (const int height = screen->geometry().height(); height - 160 >= 400)
-      setMinimumHeight(height - 160);
+    if (const int height = screen->geometry().height(); height - 190 >= 400)
+      setMinimumHeight(height - 190);
   }
 
   auto theme = config()->get(ConfigKeys::ChatTheme).toString();
