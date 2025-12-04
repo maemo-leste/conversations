@@ -11,7 +11,9 @@ namespace globals
 {
   const static QRegExp reTelMimeHandler = QRegExp(R"(^(?:tel|callto)\:([\d\-+]+))");
   const static QRegExp reConversationsHandler = QRegExp(R"(^conversations\:([\d\-+]+))");
-  inline QString configDownloadDirectory = {};
+  inline QString appDataDirectory = {};
+  inline QString configDirectory = {};
+  inline QString appDataDownloadDirectory = {};
   inline qint64 conversationsSlimExecutableSize = 0;
   inline qint64 conversationsQuickExecutableSize = 0;
 }

@@ -58,8 +58,8 @@ void WebPreviewHTTP::download(const QSharedPointer<PreviewItem> item) {
   }
 
   const QString fileName = hashUrl(item->url) + "." + item->ext();
-  const QString filePath = globals::configDownloadDirectory + QDir::separator() + fileName;
-  QDir().mkpath(globals::configDownloadDirectory);
+  const QString filePath = globals::appDataDownloadDirectory + QDir::separator() + fileName;
+  QDir().mkpath(globals::appDataDownloadDirectory);
 
   if (QFile::exists(filePath)) {
     if (const QPixmap pix(filePath); !pix.isNull()) {

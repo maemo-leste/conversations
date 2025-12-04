@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>511</width>
-    <height>874</height>
+    <height>921</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -52,7 +52,7 @@
         <x>0</x>
         <y>0</y>
         <width>511</width>
-        <height>885</height>
+        <height>971</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -390,6 +390,23 @@
          </property>
          <property name="text">
           <string>Application</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lbl_configDir">
+         <property name="text">
+          <string>lbl_configDir</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lbl_appData">
+         <property name="text">
+          <string>lbl_appData</string>
          </property>
         </widget>
        </item>

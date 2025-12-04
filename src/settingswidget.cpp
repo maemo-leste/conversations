@@ -3,6 +3,8 @@
 #include "settingswidget.h"
 #include "ui_settingswidget.h"
 
+#include "lib/globals.h"
+
 // #include "config-conversations.h"
 // ui->label_version->setText(QString("Version: ") + CONVERSATIONS_VERSION);
 
@@ -123,7 +125,7 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
   });
 
   // Log: TP
-  const QString path_log_tp = m_ctx->configDirectory + ".log_tp";
+  const QString path_log_tp = globals::configDirectory + ".log_tp";
   ui->checkBox_logTP->setChecked(QFile::exists(path_log_tp));
   connect(ui->checkBox_logTP, &QCheckBox::toggled, [this, path_log_tp](const bool toggled) {
     if (toggled) {
@@ -139,7 +141,7 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
   });
 
   // Log: GLib/osso
-  const QString path_log_glib = m_ctx->configDirectory + ".log_glib";
+  const QString path_log_glib = globals::configDirectory + ".log_glib";
   ui->checkBox_logGlib->setChecked(QFile::exists(path_log_glib));
   connect(ui->checkBox_logGlib, &QCheckBox::toggled, [this, path_log_glib](const bool toggled) {
     if (toggled) {
@@ -175,7 +177,8 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
     emit enableLinkPreviewRequiresUserInteractionToggled(toggled);
   });
 
-
+  ui->lbl_appData->setText(QString("appdata: %1").arg(globals::appDataDirectory));
+  ui->lbl_configDir->setText(QString("configdir: %1").arg(globals::configDirectory));
 
   // attachment max download size
   int attachmentMaxDownloadSize = config()->get(ConfigKeys::LinkPreviewMaxDownloadSize).toInt();
@@ -212,7 +215,7 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
   connect(ui->checkBox_enableSlim, &QCheckBox::toggled, [this](const bool toggled) {
     config()->set(ConfigKeys::EnableSlim, toggled);
 
-    const QString path = m_ctx->configDirectory + "slim";
+    const QString path = globals::configDirectory + "slim";
     if (toggled) {
       if (!QFile::exists(path)) {
         QFile file(path);
