@@ -1,3 +1,12 @@
+conversations (0.7.88) unstable; urgency=medium
+
+  * SettingsWidget: tweak height
+  * SettingsWidget: show application paths
+  * Move downloads to XDG appdata
+  * mainwindow: show message on new conversations binary detected
+
+ -- Sander <sander@sanderf.nl>  Thu, 04 Dec 2025 06:09:04 +0200
+
 conversations (0.7.87) unstable; urgency=medium
 
   * qml/whatsthat: new day indication, and some chatbox width tweaks
