@@ -38,7 +38,9 @@ Conversations::Conversations(QCommandLineParser *cmdargs, IPC *ipc) {
   accountName = qgetenv("USER");
   homeDir = QDir::homePath();
   configDirectory = QString("%1/.config/%2/").arg(configRoot, QCoreApplication::applicationName());
+  globals::configDownloadDirectory = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/" + "tmp_downloads";
   createConfigDirectory(configDirectory);
+  createConfigDirectory(globals::configDownloadDirectory);
   CLOCK_MEASURE_END(start_create_dirs, "ctx::create_dirs");
 
   CLOCK_MEASURE_START(start_avatar_provider);

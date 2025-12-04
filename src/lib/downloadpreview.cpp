@@ -6,6 +6,7 @@
 
 #include "downloadpreview.h"
 #include "conversations.h"
+#include "globals.h"
 
 WebPreviewHTTP::WebPreviewHTTP(QObject *parent) :
   QObject(parent) {
@@ -57,9 +58,8 @@ void WebPreviewHTTP::download(const QSharedPointer<PreviewItem> item) {
   }
 
   const QString fileName = hashUrl(item->url) + "." + item->ext();
-  const QString downloadDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-  QDir().mkpath(downloadDir);
-  const QString filePath = downloadDir + QDir::separator() + fileName;
+  const QString filePath = globals::configDownloadDirectory + QDir::separator() + fileName;
+  QDir().mkpath(globals::configDownloadDirectory);
 
   if (QFile::exists(filePath)) {
     if (const QPixmap pix(filePath); !pix.isNull()) {
