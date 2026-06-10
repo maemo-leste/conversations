@@ -84,7 +84,7 @@ bool Utils::writeJsonFile(QIODevice &device, const QSettings::SettingsMap &map) 
 }
 
 QString Utils::barrayToString(const QByteArray &data) {
-    return QString(QTextCodec::codecForMib(106)->toUnicode(data));
+    return QString::fromUtf8(data);
 }
 
 QString Utils::formatBytes(quint64 bytes)
@@ -274,7 +274,7 @@ QString Utils::extractTitleFromHtml(const QString &filePath, const int max_len) 
   }
 
   QTextStream in(&file);
-  in.setCodec("UTF-8");
+  in.setEncoding(QStringConverter::Utf8);
   const QString content = in.readAll();
   file.close();
 

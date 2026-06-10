@@ -13,7 +13,6 @@
 #include <QObject>
 #include <QDebug>
 #include <QSettings>
-#include <QRegExp>
 #include <QPixmapCache>
 #ifdef QUICK
 #include <QQmlContext>

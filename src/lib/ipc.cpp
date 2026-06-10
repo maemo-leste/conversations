@@ -31,7 +31,7 @@ void IPC::bind() {
 
     if (clientConnection->waitForReadyRead(2000)) {
       QByteArray cmdArray = clientConnection->readAll();
-      QString cmdString = QTextCodec::codecForName("UTF-8")->toUnicode(cmdArray);
+      QString cmdString = QString::fromUtf8(cmdArray);
 
       qDebug() << "IPC received" << cmdString;
 

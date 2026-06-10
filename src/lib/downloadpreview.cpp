@@ -77,7 +77,8 @@ void WebPreviewHTTP::download(const QSharedPointer<PreviewItem> item) {
   }
 
   QNetworkRequest request(item->url);
-  request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+  request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                     QNetworkRequest::NoLessSafeRedirectPolicy);
 
   QNetworkReply *reply = m_manager.get(request);
   reply->setProperty("downloadUrl", item->url);

@@ -7,7 +7,7 @@
 ChatMessage::ChatMessage(rtcom_qt::ChatMessageEntry* raw_msg, QObject *parent) :
     QObject(parent),
     m_raw(raw_msg) {
-  m_date = QDateTime::fromTime_t(raw_msg->timestamp);
+  m_date = QDateTime::fromSecsSinceEpoch(raw_msg->timestamp);
   m_cid = QString("%1%2").arg(QString::number(raw_msg->outgoing), QString::fromStdString(raw_msg->remote_uid));
 
   const auto ctx = Conversations::instance();

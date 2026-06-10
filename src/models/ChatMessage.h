@@ -50,7 +50,7 @@ public:
     QString partialdate() const { return m_date.toString("MM-dd hh:mm:ss"); }
     QString hourstr() const { return m_date.toString("hh:mm"); }
     QString datestr() const { return m_date.toString("dd/MM/yyyy"); }
-    time_t epoch() const { return m_date.toTime_t(); }
+    time_t epoch() const { return m_date.toSecsSinceEpoch(); }
     void set_new_day(const bool new_day) { m_new_day = new_day; }
     void set_message_read() {
       rtcom_qt::set_read(this->event_id(), true);

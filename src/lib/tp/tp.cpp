@@ -720,7 +720,7 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
     // @TODO:
   }
 
-  if (const auto result = log_event(dt.toTime_t(), text, outgoing, channel, remote_uid, remote_alias); result.isNull())
+  if (const auto result = log_event(dt.toSecsSinceEpoch(), text, outgoing, channel, remote_uid, remote_alias); result.isNull())
     qWarning() << "Failed to add a database event";
   else {
     // only write to state when insertion was successful
@@ -733,7 +733,7 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
                                      const QString &sentMessageToken, const Tp::TextChannelPtr &channel) {
   qDebug() << "onMessageSent" << message.text();
 
-  const time_t epoch = message.sent().toTime_t();
+  const time_t epoch = message.sent().toSecsSinceEpoch();
   const QString remote_uid = getRemoteUid(channel);
   const auto text = message.text().toLocal8Bit();
 
@@ -797,7 +797,7 @@ void TelepathyAccount::onChannelJoinedOrLeft(bool joined, QString channel) {
   const std::string group_uid_str = group_uid.toStdString();
   const std::string text_content = joined ? "!joined!" : "!left!";
 
-  const time_t now = QDateTime::currentDateTime().toTime_t();
+  const time_t now = QDateTime::currentDateTime().toSecsSinceEpoch();
   const std::string remote_name = "";
 
   auto *new_message = rtcom_qt::register_chat_leave(

@@ -46,29 +46,21 @@ file(GLOB SOURCE_FILES
         "requests/*.h"
         "lib/libnotify-qt/*.h"
         "lib/libnotify-qt/*.cpp"
-        "lib/qtcsv/*.h"
-        "lib/qtcsv/*.cpp"
         )
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui Network DBus Svg Xml Quick QuickWidgets Qml QuickControls2 QuickCompiler)
-if(MAEMO)
-    find_package(Qt5 REQUIRED COMPONENTS Maemo5)
-endif()
+find_package(qtcsv REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Network DBus Svg Xml Quick QuickWidgets Qml QuickControls2)
 
-find_package(TelepathyQt5 0.9.7 REQUIRED)
-
-qtquick_compiler_add_resources(QUICK_RESOURCES
-        qml/components/qml_components.qrc
-        qml/chat/chatty/chatty.qrc
-        qml/chat/whatsthat/whatsthat.qrc
-        qml/chat/irssi/irssi.qrc
-)
+find_package(TelepathyQt6 REQUIRED COMPONENTS Core Service)
 
 # conversations
 add_executable(conversations_qml ${EXECUTABLE_FLAG} main.cpp
         ${SOURCE_FILES}
         assets.qrc
-        ${QUICK_RESOURCES}
+        qml/components/qml_components.qrc
+        qml/chat/chatty/chatty.qrc
+        qml/chat/whatsthat/whatsthat.qrc
+        qml/chat/irssi/irssi.qrc
 )
 
 # conversations_slim
@@ -93,7 +85,7 @@ add_subdirectory(lib/rtcom/)
 
 foreach(target ${TARGETS})
     set_property(TARGET ${target} PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
-    target_include_directories(${target} PUBLIC ${Qt5Gui_PRIVATE_INCLUDE_DIRS})
+    target_include_directories(${target} PUBLIC ${Qt6Gui_PRIVATE_INCLUDE_DIRS})
     target_compile_definitions(${target} PRIVATE OSSO_ABOOK_DEBUG=1)
     target_compile_definitions(${target} PRIVATE MAEMO=1)
     target_compile_definitions(${target} PRIVATE TP_QT_ENABLE_LOWLEVEL_API=1)
@@ -103,14 +95,13 @@ foreach(target ${TARGETS})
             ${CMAKE_SOURCE_DIR}/src/lib/
             ${X11_INCLUDE_DIR}
             ${CMAKE_CURRENT_SOURCE_DIR}
-            ${Qt5Core_INCLUDE_DIRS}
-            ${Qt5Widgets_INCLUDE_DIRS}
-            ${Qt5Gui_INCLUDE_DIRS}
-            ${Qt5Network_INCLUDE_DIRS}
-            ${Qt5DBus_INCLUDE_DIRS}
-            ${Qt5Svg_INCLUDE_DIRS}
-            ${Qt5Xml_INCLUDE_DIRS}
-            ${TELEPATHY_QT5_INCLUDE_DIR}
+            ${Qt6Core_INCLUDE_DIRS}
+            ${Qt6Widgets_INCLUDE_DIRS}
+            ${Qt6Gui_INCLUDE_DIRS}
+            ${Qt6Network_INCLUDE_DIRS}
+            ${Qt6DBus_INCLUDE_DIRS}
+            ${Qt6Svg_INCLUDE_DIRS}
+            ${Qt6Xml_INCLUDE_DIRS}
             ${GLIB_INCLUDE_DIRS}
             ${RTCOM-EVENTLOGGER_INCLUDE_DIRS}
             ${LIBHILDON_INCLUDE_DIRS}
@@ -121,13 +112,13 @@ foreach(target ${TARGETS})
 
     target_compile_definitions(${target}
             PUBLIC
-            ${Qt5Core_DEFINITIONS}
-            ${Qt5Widgets_DEFINITIONS}
-            ${Qt5Gui_DEFINITIONS}
-            ${Qt5DBus_DEFINITIONS}
-            ${Qt5Network_DEFINITIONS}
-            ${Qt5Svg_DEFINITIONS}
-            ${Qt5Xml_DEFINITIONS}
+            ${Qt6Core_DEFINITIONS}
+            ${Qt6Widgets_DEFINITIONS}
+            ${Qt6Gui_DEFINITIONS}
+            ${Qt6DBus_DEFINITIONS}
+            ${Qt6Network_DEFINITIONS}
+            ${Qt6Svg_DEFINITIONS}
+            ${Qt6Xml_DEFINITIONS}
     )
 
     if(ENABLE_DEBUG_TIMINGS)
@@ -157,21 +148,20 @@ foreach(target ${TARGETS})
     target_link_libraries(${target} PUBLIC
             ${CMAKE_DL_LIBS}
             ${X11_LIBRARIES}
-            Qt5::Core
-            Qt5::Widgets
-            Qt5::Gui
-            Qt5::DBus
-            Qt5::Network
-            Qt5::Svg
-            Qt5::QSvgIconPlugin
-            Qt5::QSvgPlugin
-            Qt5::Xml
-            Qt5::Maemo5
+            Qt6::Core
+            Qt6::Widgets
+            Qt6::Gui
+            Qt6::DBus
+            Qt6::Network
+            Qt6::Svg
+            Qt6::Xml
             Threads::Threads
             logger_std
             abook_qt
             rtcom_qt
-            ${TELEPATHY_QT5_LIBRARIES}
+            qtcsv
+            TelepathyQt6::Core
+            TelepathyQt6::Service
             ${LIBHILDON_LIBRARIES}
             ${LIBHILDONMIME_LIBRARIES}
     )
@@ -179,17 +169,12 @@ foreach(target ${TARGETS})
     install(TARGETS ${target} DESTINATION bin)
 endforeach()
 
-set(CMAKE_CXX_FLAGS
-        ${CMAKE_CXX_FLAGS}
-        ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}
-        )
-
 target_compile_definitions(conversations_qml PRIVATE QUICK=1)
 target_link_libraries(conversations_qml PUBLIC
-    Qt5::Quick
-    Qt5::QuickWidgets
-    Qt5::Qml
-    Qt5::QuickControls2
+    Qt6::Quick
+    Qt6::QuickWidgets
+    Qt6::Qml
+    Qt6::QuickControls2
 )
 
 message(STATUS "CONVERSATIONS: ${VERSION} ${CMAKE_BUILD_TYPE}")
@@ -199,7 +184,7 @@ else()
     message(STATUS "Maemo build: NO! (not running on maemo? things may not work!)")
 endif()
 message(STATUS "GLib: ${GLIB_VERSION}")
-message(STATUS "tp-qt: ${TELEPATHY_QT5_VERSION}")
+message(STATUS "tp-qt: ${TelepathyQt6_VERSION}")
 if(OSSO_ABOOK)
     message(STATUS "osso-abook: ${OSSO_ABOOK_VERSION}")
 else()

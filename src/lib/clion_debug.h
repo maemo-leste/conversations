@@ -2,7 +2,6 @@
 
 #include <QObject>
 #include <QFile>
-#include <QTextCodec>
 
 inline void clion_debug_setup() {
   // For remote debugging (QEMU) with CLion, the environment variables need
@@ -22,7 +21,7 @@ inline void clion_debug_setup() {
       throw "File could not be opened";
 
     const auto env_file = file.readAll();
-    const auto env_file_str = QString(QTextCodec::codecForMib(106)->toUnicode(env_file));
+    const auto env_file_str = QString::fromUtf8(env_file);
 
     for(auto &line: env_file_str.split("\n")) {
       line = line.replace("export ", "");

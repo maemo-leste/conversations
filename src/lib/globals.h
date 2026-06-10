@@ -2,15 +2,15 @@
 #define CONV_GLOBALS_H
 
 #include <QtGlobal>
-#include <QRegExp>
+#include <QRegularExpression>
 
 #define PATH_CONV INSTALL_PREFIX_QUOTED "/bin/conversations_qml"
 #define PATH_CONV_SLIM INSTALL_PREFIX_QUOTED "/bin/conversations_slim"
 
 namespace globals
 {
-  const static QRegExp reTelMimeHandler = QRegExp(R"(^(?:tel|callto)\:([\d\-+]+))");
-  const static QRegExp reConversationsHandler = QRegExp(R"(^conversations\:([\d\-+]+))");
+  const static QRegularExpression reTelMimeHandler = QRegularExpression(R"(^(?:tel|callto)\:([\d\-+]+))");
+  const static QRegularExpression reConversationsHandler = QRegularExpression(R"(^conversations\:([\d\-+]+))");
   inline QString appDataDirectory = {};
   inline QString configDirectory = {};
   inline QString appDataDownloadDirectory = {};

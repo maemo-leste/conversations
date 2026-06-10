@@ -775,7 +775,7 @@ void ChatWindow::showMessageContextMenu(const unsigned int event_id, const QPoin
     contextMenu.addMenu(openLinkMenu);
   }
 
-  contextMenu.exec(mapToGlobal({point.x(), point.y()}));
+  contextMenu.exec(mapToGlobal(QPoint(point.x(), point.y())));
 }
 
 
