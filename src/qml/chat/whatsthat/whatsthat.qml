@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
 
 import "../components" as Components
 import "."
@@ -30,28 +29,13 @@ Components.ChatRoot {
     historyPopupTextColor: "white"
 
     signal showMessageContextMenu(int event_id, var point);
-    signal chatBgShaderUpdate();
 
     Image {
         // background
-        visible: !ctx.inheritSystemTheme && !chatWindow.bgMatrixRainEnabled
+        visible: !ctx.inheritSystemTheme
         source: "qrc:/whatsthat/bg.png"
         anchors.fill: parent
         fillMode: Image.Tile
-    }
-
-    Component {
-        id: shaderMatrixRainComponent
-        Components.ShaderMatrixRain {
-            anchors.fill: parent
-        }
-    }
-
-    Loader {
-        id: shaderLoader
-        anchors.fill: parent
-        active: chatWindow.bgMatrixRainEnabled
-        sourceComponent: chatWindow.bgMatrixRainEnabled ? shaderMatrixRainComponent : null
     }
 
     Components.ChatListView {
@@ -67,8 +51,6 @@ Components.ChatRoot {
 
         onScrollToBottom: root.scrollToBottom();
         delegate: MessageDelegate {
-            screenWidth: root.width
-            screenHeight: root.height
             highlight: root.highlightEventId == event_id
             onShowMessageContextMenu: root.showMessageContextMenu(event_id, point);
             onItemHeightChanged: {
@@ -90,37 +72,4 @@ Components.ChatRoot {
         }
     }
 
-    Connections {
-        target: root
-        function onScrollToBottomFinished() {
-            if(ctx.displayChatGradient)
-                root.chatBgShaderUpdate();
-        }
-    }
-
-    Connections {
-        target: chatListView
-        function onCountChanged() {
-            if(ctx.displayChatGradient)
-              root.chatBgShaderUpdate();
-        }
-    }
-
-    Connections {
-        target: chatWindow
-        function onChatPostReady() {
-            if(ctx.displayChatGradient)
-                root.chatBgShaderUpdate();
-        }
-    }
-
-    Timer {
-        interval: 100
-        running: chatListView.moving && ctx.displayChatGradient
-        repeat: true
-        onTriggered: {
-            if(ctx.displayChatGradient)
-                root.chatBgShaderUpdate();
-        }
-    }
 }
