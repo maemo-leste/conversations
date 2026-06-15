@@ -54,10 +54,7 @@ public:
     };
 
     explicit ChatModel(bool has_preview_capability, QObject *parent = nullptr);
-    ~ChatModel() override {
-      this->clear();
-      qDebug() << "destroying ChatModel";
-    }
+    ~ChatModel() override;
 
     // rtcom
     static QList<QString> localUIDs();
@@ -117,4 +114,5 @@ private:
     int m_count = 0;
     bool m_exhausted = false;
     bool m_has_preview_capability = false;
+    QMetaObject::Connection m_previewEnabledConnection;
 };

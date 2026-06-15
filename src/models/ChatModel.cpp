@@ -14,7 +14,7 @@ ChatModel::ChatModel(const bool has_preview_capability, QObject *parent)
     : m_has_preview_capability(has_preview_capability), QAbstractListModel(parent) {
   if(m_has_preview_capability) {
     const auto *ctx = Conversations::instance();
-    connect(ctx, &Conversations::enableLinkPreviewEnabledToggled, [this](bool enabled) {
+    m_previewEnabledConnection = connect(ctx, &Conversations::enableLinkPreviewEnabledToggled, [this](bool enabled) {
       const QModelIndex topLeft = index(0, 0);
       const QModelIndex bottomRight = index(rowCount() - 1, 0);
       emit dataChanged(topLeft, bottomRight, { previewRole });
@@ -351,4 +351,10 @@ void ChatModel::onMessageFlagsChanged(const unsigned int event_id) {
       break;
     }
   }
+}
+
+ChatModel::~ChatModel() {
+  disconnect(m_previewEnabledConnection);
+  this->clear();
+  qDebug() << "destroying ChatModel";
 }
