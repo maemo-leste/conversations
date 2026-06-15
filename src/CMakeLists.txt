@@ -48,8 +48,9 @@ file(GLOB SOURCE_FILES
         "lib/libnotify-qt/*.cpp"
         )
 
-find_package(qtcsv REQUIRED)
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Network DBus Svg Xml Quick QuickWidgets Qml QuickControls2)
+find_package(qtcsv REQUIRED)  # https://git.maemo.org/leste-upstream-forks/qt6csv
+find_package(qt6maemo REQUIRED)  # https://git.maemo.org/leste/qt6-maemo-widgets
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Network DBus Svg Xml Quick QuickWidgets Qml QuickControls2 Core5Compat)
 
 find_package(TelepathyQt6 REQUIRED COMPONENTS Core Service)
 
@@ -155,6 +156,7 @@ foreach(target ${TARGETS})
             Qt6::Network
             Qt6::Svg
             Qt6::Xml
+            Qt6::Core5Compat
             Threads::Threads
             logger_std
             abook_qt
@@ -164,6 +166,7 @@ foreach(target ${TARGETS})
             TelepathyQt6::Service
             ${LIBHILDON_LIBRARIES}
             ${LIBHILDONMIME_LIBRARIES}
+            qt6maemo::qt6maemo
     )
 
     install(TARGETS ${target} DESTINATION bin)
