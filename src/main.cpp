@@ -69,7 +69,11 @@ globals::conversationsQuickExecutableSize = Utils::fileSize(PATH_CONV);
 #endif
 
 #ifdef DEBUG
+  qDebug() << "note: setting QT_QPA_PLATFORM, QT_STYLE_OVERRIDE, QT_QPA_PLATFORMTHEME to use maemo Qt6 plugins (debug only)";
   clion_debug_setup();
+  qputenv("QT_QPA_PLATFORM", "maemo");
+  qputenv("QT_STYLE_OVERRIDE", "maemo5");
+  qputenv("QT_QPA_PLATFORMTHEME", "maemo5");
 #endif
 
 #ifdef QUICK
@@ -100,6 +104,12 @@ globals::conversationsQuickExecutableSize = Utils::fileSize(PATH_CONV);
   CLOCK_MEASURE_START(start_osso_intl);
   intl("conversations-ui");
   CLOCK_MEASURE_END(start_osso_intl, "main::osso-intl.h init");
+
+  QSurfaceFormat fmt;
+  fmt.setRenderableType(QSurfaceFormat::OpenGLES);
+  fmt.setVersion(2, 0);
+  fmt.setProfile(QSurfaceFormat::NoProfile);
+  QSurfaceFormat::setDefaultFormat(fmt);
 
   QApplication::setApplicationName("conversations");
   QApplication::setOrganizationDomain("https://maemo-leste.github.io/");
