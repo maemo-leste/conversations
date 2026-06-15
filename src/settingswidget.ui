@@ -145,6 +145,9 @@
        </item>
        <item>
         <widget class="QCheckBox" name="checkBox_enableDisplayChatGradient">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
           <string>Chat gradient (requires GPU accel.)</string>
          </property>
@@ -152,6 +155,9 @@
        </item>
        <item>
         <widget class="QCheckBox" name="checkBox_enableMatrixRainBackground">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
           <string>Matrix rain background (requires GPU accel.)</string>
          </property>
