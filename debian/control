@@ -3,21 +3,22 @@ Section: x11
 Priority: extra
 Maintainer: Merlijn Wajer <merlijn@wizzup.org>
 Build-Depends: debhelper (>= 10),
-    qtbase5-dev,
+    qt6-base-dev,
     cmake,
     libx11-dev,
     zlib1g-dev,
     libpng-dev,
-    libqt5svg5-dev,
-    libqt5maemo5-dev,
-    libqt5x11extras5-dev,
-    qtquickcontrols2-5-dev,
+    qt6-svg-dev,
+    qt6-5compat-dev,
+    qt6-declarative-dev,
+    libqt6-qpa-maemo,
+    libqt6-style-maemo,
+    qt6-maemo,
+    libqt6csv-dev,
     libosso-abook-dev,
     librtcom-eventlogger-dev,
     librtcom-eventlogger-plugins-dev,
-    qtdeclarative5-dev,
-    qtdeclarative5-dev-tools,
-    libtelepathy-qt5-dev,
+    libtelepathy-qt6-dev,
     maemo-system-services-dev
 Homepage: https://github.com/maemo-leste/conversations
 XSBC-Bugtracker: https://github.com/maemo-leste/conversations/issues
@@ -28,16 +29,16 @@ Vcs-Browser: https://github.com/maemo-leste/conversations/
 Package: conversations
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-    libqt5quickcontrols2-5,
-    qml-module-qtquick-controls2,
-    qml-module-qtquick2,
-    qml-module-qtquick-layouts,
-    qml-module-qtquick-controls,
-    qml-module-qtquick-extras,
-    qml-module-qtquick-dialogs,
-    qml-module-qtquick-controls,
+    libqt6quickcontrols2-6,
+    qml6-module-qtquick-controls,
+    qml6-module-qtquick,
+    qml6-module-qtquick-layouts,
+    qml6-module-qtquick-dialogs,
+    qml6-module-qtqml-workerscript,
+    libqt6-qpa-maemo,
+    libqt6-style-maemo,
     librtcom-eventlogger1,
     librtcom-eventlogger-plugins1,
     libosso-abook,
-    libtelepathy-qt5-0
+    libtelepathy-qt6-0
 Description: Maemo Conversations UI with RTCOM and Telepathy integration
