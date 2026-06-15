@@ -1,8 +1,8 @@
-import QtQuick 2.7
-import QtQuick.Controls 2.3
-import QtQuick.Layouts 1.1
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
-import QtGraphicalEffects 1.0
+import Qt5Compat.GraphicalEffects
 
 StackView {
     // Usage:

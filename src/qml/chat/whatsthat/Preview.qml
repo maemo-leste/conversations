@@ -1,6 +1,6 @@
-import QtQuick 2.15
-import QtQuick.Layouts 1.0
-import QtQuick.Controls 2.15
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
 
 import Conversations 1.0
 import "../components" as Components
@@ -140,7 +140,7 @@ Rectangle {
 
         // results
         Rectangle {
-            color: "#1f2528"
+            color: "transparent"
             Layout.preferredHeight: previewRoot.model.resultsHeight * ctx.scaleFactor
 
             Layout.fillWidth: true
