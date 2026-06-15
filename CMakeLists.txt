@@ -14,6 +14,12 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_SKIP_RPATH ON)
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake")
 
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+endif()
+
 option(DISABLE_QML_DISK_CACHE "Disables the disk cache and forces QML/JS re-compilation. Should be ON during QML development." OFF)
 option(ENABLE_DEBUG_TIMINGS "Write time measurements to /tmp/conversations.timings to e.g. debug boot times." OFF)
 
