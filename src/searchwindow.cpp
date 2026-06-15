@@ -33,7 +33,7 @@ SearchWindow::SearchWindow(Conversations *ctx, QString group_uid, QWidget *paren
   m_overviewProxyModel = new OverviewProxyModel(this);
   m_overviewProxyModel->setSourceModel(m_overviewModel);
   m_overviewProxyModel->setDynamicSortFilter(true);
-  connect(m_overviewModel, &OverviewModel::overviewRowClicked, [=](const QSharedPointer<ChatMessage>& msg){
+  connect(m_overviewModel, &OverviewModel::overviewRowClicked, [this](const QSharedPointer<ChatMessage>& msg){
     searchResultClicked(msg);
   });
 
