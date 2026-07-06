@@ -1,3 +1,9 @@
+conversations (0.8.2) unstable; urgency=medium
+
+  * dbus: launch conversations, not conversations_*
+
+ -- Sander <sander@sanderf.nl>  Mon, 7 Jul 2026 00:00:00 +0200
+
 conversations (0.8.1) unstable; urgency=medium
 
   * dbus: make conversations a dbus activatable TP client, so MC can start it to handle channels instead of just dropping them when conversations happens to be not running.
