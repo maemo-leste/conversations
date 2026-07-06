@@ -11,11 +11,11 @@ inline void clion_debug_setup() {
   //
   // inside QEMU VM, create ~/env.sh: `printenv > env.sh`
 
-  setuid(1000);
   const QString path_env_file = "/home/user/env.sh";
   qDebug() << "trying to read ENV from" << path_env_file << ", if it exists";
 
   if(QFile::exists(path_env_file)) {
+    setuid(1000);
     QFile file(path_env_file);
     if(!file.open(QFile::ReadOnly | QFile::Text))
       throw "File could not be opened";
