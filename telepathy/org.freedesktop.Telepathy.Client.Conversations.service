@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.freedesktop.Telepathy.Client.Conversations
+Exec=/usr/local/bin/conversations_slim
