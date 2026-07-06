@@ -1,3 +1,10 @@
+conversations (0.8.1) unstable; urgency=medium
+
+  * dbus: make conversations a dbus activatable TP client, so MC can start it to handle channels instead of just dropping them when conversations happens to be not running.
+  * clion: uid 1000 fix
+
+ -- Sander <sander@sanderf.nl>  Mon, 15 Jun 2026 00:00:00 +0200
+
 conversations (0.8.0) unstable; urgency=medium
 
   * qt6 port
