@@ -124,6 +124,12 @@ void OverviewWidget::onSetColumnStyleDelegate() {
   css_tmpl = css_tmpl.replace("{{ font_size_big }}", QString::number(systemFontSizeScaled + 2));
   m_richContentDelegate->setStyleSheet(css_tmpl);
 
+  if (config()->get(ConfigKeys::EnableColorEmoji).toBool()) {
+    QFont f = QApplication::font();
+    f.setFamilies({f.family(), "Noto Color Emoji"});
+    m_richContentDelegate->setFont(f);
+  }
+
   ui->tableOverview->setItemDelegateForColumn(static_cast<int>(OverviewModel::Columns::ContentColumn), m_richContentDelegate);
   ui->tableOverview->setItemDelegateForColumn(static_cast<int>(OverviewModel::Columns::PresenceColumn), m_centeredIconDelegate);
 }

@@ -87,6 +87,15 @@ ChatWindow::ChatWindow(
    qctx->setContextProperty("theme", m_ctx->theme);
    const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);  // has no effect on Leste?
    qctx->setContextProperty("fixedFont", fixedFont);
+
+   const bool colorEmojiEnabled = config()->get(ConfigKeys::EnableColorEmoji).toBool();
+   const QString notoEmojiPath = "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf";
+   if (colorEmojiEnabled)
+     QFontDatabase::addApplicationFont(notoEmojiPath);
+   qctx->setContextProperty("colorEmojiEnabled", colorEmojiEnabled);
+   qctx->setContextProperty("colorEmojiFontUrl", QUrl::fromLocalFile(notoEmojiPath));
+
+
    ui->quick->setAttribute(Qt::WA_AlwaysStackOnTop);
    ui->quick->engine()->addImageProvider("avatar", new AvatarImageProvider);
    ui->quick->engine()->addImageProvider("previewImage", new PreviewImageProvider);
@@ -220,6 +229,14 @@ QString ChatWindow::generateChatHTML(const QSharedPointer<ChatMessage> &chats) {
 }
 
 void ChatWindow::setupChatWidget() {
+  if (config()->get(ConfigKeys::EnableColorEmoji).toBool()) {
+    for (auto *w : {static_cast<QTextEdit*>(ui->chat), ui->chatBox_multi}) {
+      QFont f = w->font();
+      f.setFamilies({f.family(), "Noto Color Emoji"});
+      w->setFont(f);
+    }
+  }
+
   QString html = "";
   ui->chat->document()->setDefaultStyleSheet(".date{color:grey;}");
   for (const auto& chat: this->chatModel->chats) {

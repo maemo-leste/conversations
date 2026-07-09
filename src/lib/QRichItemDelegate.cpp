@@ -8,6 +8,10 @@ void RichItemDelegate::setStyleSheet(const QString &sheet) {
   m_styleSheet = sheet;
 }
 
+void RichItemDelegate::setFont(const QFont &font) {
+  m_font = font;
+}
+
 // debug: red
 // void RichItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const {
 //   painter->save();
@@ -24,6 +28,8 @@ void RichItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
   QTextDocument doc;
   if (!m_styleSheet.isEmpty())
     doc.setDefaultStyleSheet(m_styleSheet);
+  if (!m_font.family().isEmpty())
+    doc.setDefaultFont(m_font);
 
   doc.setHtml(options.text);
 
@@ -81,6 +87,8 @@ QSize RichItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QMode
   initStyleOption(&options, index);
 
   QTextDocument doc;
+  if (!m_font.family().isEmpty())
+    doc.setDefaultFont(m_font);
   doc.setHtml(options.text);
   doc.setTextWidth(options.rect.width());
   return QSize(doc.idealWidth(), doc.size().height());

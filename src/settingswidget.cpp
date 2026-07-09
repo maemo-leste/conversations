@@ -112,6 +112,12 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
     emit enableNewVersionMessageToggled(toggled);
   });
 
+  // color emoji font fallback
+  ui->checkBox_enableColorEmoji->setChecked(config()->get(ConfigKeys::EnableColorEmoji).toBool());
+  connect(ui->checkBox_enableColorEmoji, &QCheckBox::toggled, [](bool toggled) {
+    config()->set(ConfigKeys::EnableColorEmoji, toggled);
+  });
+
   // Log: writing
   ui->checkBox_logWriteToDisk->setChecked(config()->get(ConfigKeys::EnableLogWrite).toBool());
   connect(ui->checkBox_logWriteToDisk, &QCheckBox::toggled, [this](bool toggled) {

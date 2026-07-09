@@ -1,6 +1,7 @@
 #pragma once
 #include <QObject>
 #include <QSize>
+#include <QFont>
 #include <QTextDocument>
 #include <QStyledItemDelegate>
 #include <QPainter>
@@ -12,6 +13,7 @@ Q_OBJECT
 public:
   explicit RichItemDelegate(QObject *parent = nullptr);
   void setStyleSheet(const QString &sheet);
+  void setFont(const QFont &font);
   QString anchorAt(QString html, const QPoint &point) const;
 
 protected:
@@ -20,4 +22,5 @@ protected:
 
 private:
   QString m_styleSheet;
+  QFont m_font;
 };
