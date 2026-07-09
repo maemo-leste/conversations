@@ -189,16 +189,12 @@ ChatWindow::ChatWindow(
   // chatBox
   ui->chatBox_multi->setFocus();
   // hack to calculate initial line height
-  // 1) send event synchronously
-  // 2) textBox generates some richText
-  // 3) calculate height based on that
-  // 4) reset
-  // other approaches have failed
+  // 1) put one char in the document so documentSize() reflects a line
+  // 2) calculate height based on that
+  // 3) reset
   // note: depends on this->show()
-  QKeyEvent press(QEvent::KeyPress, Qt::Key_E, Qt::NoModifier, "e");
-  QKeyEvent release(QEvent::KeyRelease, Qt::Key_E, Qt::NoModifier, "e");
-  QCoreApplication::sendEvent(ui->chatBox_multi, &press);
-  QCoreApplication::sendEvent(ui->chatBox_multi, &release);
+  // note: populate via the document API rather than synthetic key events so we dont route through hildon input
+  ui->chatBox_multi->setText("e");
   dynamicInputTextHeight(ui->chatBox_multi);
   ui->chatBox_multi->setText("");
   //
