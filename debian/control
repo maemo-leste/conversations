@@ -20,7 +20,8 @@ Build-Depends: debhelper (>= 10),
     librtcom-eventlogger-plugins-dev,
     libtelepathy-qt6-dev,
     libtelepathy-qt6-0,
-    maemo-system-services-dev
+    maemo-system-services-dev,
+    qml6-module-qt5compat-graphicaleffects
 Homepage: https://github.com/maemo-leste/conversations
 XSBC-Bugtracker: https://github.com/maemo-leste/conversations/issues
 Vcs-Git: https://github.com/maemo-leste/conversations/
@@ -43,5 +44,6 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
     libosso-abook,
     libtelepathy-qt6-dev,
     libtelepathy-qt6-0,
-    fonts-noto-color-emoji
+    fonts-noto-color-emoji,
+    qml6-module-qt5compat-graphicaleffects
 Description: Maemo Conversations UI with RTCOM and Telepathy integration
