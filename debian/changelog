@@ -1,3 +1,9 @@
+conversations (0.8.5) unstable; urgency=medium
+
+  * chatwindow: send emojis
+
+ -- Sander <sander@sanderf.nl>  Mon, 10 Jul 2026 21:20:00 +0200
+
 conversations (0.8.4) unstable; urgency=medium
 
   * debian/control: add qml6-module-qt5compat-graphicaleffects
