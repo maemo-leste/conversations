@@ -87,6 +87,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="btnEmojis">
+        <property name="text">
+         <string>Emojis</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="btnSend">
         <property name="text">
          <string>Send</string>

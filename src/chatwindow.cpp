@@ -131,6 +131,9 @@ ChatWindow::ChatWindow(
   connect(this->ui->btnSend, &QPushButton::clicked, this, &ChatWindow::onGatherMessage);
   connect(m_ctx->telepathy, &Telepathy::databaseAddition, this, &ChatWindow::onDatabaseAddition);
 
+  ui->btnEmojis->setVisible(config()->get(ConfigKeys::EnableColorEmoji).toBool());
+  connect(this->ui->btnEmojis, &QPushButton::clicked, this, &ChatWindow::onOpenEmojiPicker);
+
   // groupchat
   if(groupchat) {
     this->onSetupGroupchat();
@@ -697,6 +700,35 @@ void ChatWindow::onPreviewItemClicked(const QSharedPointer<PreviewItem> &item, c
 
 void ChatWindow::onDisplayChatBox() {
   ui->chatBox_multi->show();
+}
+
+void ChatWindow::onOpenEmojiPicker() {
+  if (m_emojiPickerDialog) {
+    m_emojiPickerDialog->raise();
+    m_emojiPickerDialog->activateWindow();
+    return;
+  }
+
+  m_emojiPickerDialog = new QDialog(this);
+  m_emojiPickerDialog->setWindowTitle("Emoji picker");
+  m_emojiPickerDialog->setAttribute(Qt::WA_DeleteOnClose);
+
+  connect(m_emojiPickerDialog, &QObject::destroyed, this, [this] {
+    m_emojiPickerDialog = nullptr;
+  });
+
+  const auto emojiPicker = new EmojiPicker(m_ctx, m_emojiPickerDialog);
+
+  connect(emojiPicker, &EmojiPicker::emojiPicked, this, [this](const QString &emoji) {
+    ui->chatBox_multi->insertPlainText(emoji);
+    ui->chatBox_multi->setFocus();
+    if (m_emojiPickerDialog)
+      m_emojiPickerDialog->accept();
+  });
+
+  const auto layout = new QVBoxLayout(m_emojiPickerDialog);
+  layout->addWidget(emojiPicker);
+  m_emojiPickerDialog->show();
 }
 
 void ChatWindow::showMessageContextMenu(const unsigned int event_id, const QPoint point) {

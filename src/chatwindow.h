@@ -33,6 +33,7 @@
 #include "previewwindow.h"
 #include "models/ChatModel.h"
 #include "models/ChatMessage.h"
+#include "emojipicker.h"
 
 namespace Ui {
   class ChatWindow;
@@ -103,6 +104,7 @@ private slots:
   void onAcceptFriend();
   void onRejectFriend();
   void onDisplayChatBox();
+  void onOpenEmojiPicker();
   void onPreviewItemClicked(const QSharedPointer<PreviewItem> &item, const QPoint point);
   void onBgMatrixRainEnabledChanged(bool enabled);
 
@@ -132,6 +134,7 @@ private:
   SearchWindow *m_searchWindow = nullptr;
   PreviewWindow *m_previewWindow = nullptr;
   TpContactsWindow *m_tpContactsWindow = nullptr;
+  QDialog *m_emojiPickerDialog = nullptr;
   bool m_auto_join = false;
   bool m_ignore_notifications = false;
   QSharedPointer<ContactItem> m_abook_contact;
