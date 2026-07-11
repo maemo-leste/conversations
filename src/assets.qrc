@@ -8,7 +8,6 @@
         <file>assets/fonts/Roboto-Regular.ttf</file>
 
         <file>qml/Main.qml</file>
-        <file>qml/Search.qml</file>
         <file alias="back.png">assets/images/back.png</file>
         <file alias="close.png">assets/images/close.png</file>
         <file alias="overviewdots.png">assets/images/overviewdots.png</file>
