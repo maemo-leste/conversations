@@ -1,3 +1,9 @@
+conversations (0.8.7) unstable; urgency=medium
+
+  * chatwindow_slim: properly support mixing emojis with the regular Roboto font, dont use Qt's font fallback mechanism.
+
+ -- Sander <sander@sanderf.nl>  Mon, 11 Jul 2026 17:55:00 +0200
+
 conversations (0.8.6) unstable; urgency=medium
 
   * overview: properly support mixing emojis with the regular Roboto font, dont use Qt's font fallback mechanism.
