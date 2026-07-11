@@ -115,6 +115,112 @@ QString Utils::escapeHtml(const QString& text) {
   return escaped;
 }
 
+static bool utils_isEmojiScalar(char32_t cp) {
+  return (cp >= 0x1F000 && cp <= 0x1FAFF) ||
+         (cp >= 0x2600  && cp <= 0x27BF)  ||
+         (cp >= 0x2B00  && cp <= 0x2BFF)  ||
+         (cp >= 0x2300  && cp <= 0x23FF)  ||
+         (cp >= 0x2194  && cp <= 0x21AA)  ||
+         (cp >= 0x25AA  && cp <= 0x25FE)  ||
+         cp == 0x203C || cp == 0x2049 || cp == 0x2122 || cp == 0x2139 ||
+         cp == 0x24C2 || cp == 0x3030 || cp == 0x303D || cp == 0x3297 || cp == 0x3299;
+}
+
+static bool utils_isRegionalIndicator(char32_t cp) { return cp >= 0x1F1E6 && cp <= 0x1F1FF; }
+
+QList<QPair<int, int>> Utils::emojiRanges(const QString &s) {
+  QList<QPair<int, int>> ranges;
+
+  int i = 0;
+  while (i < s.length()) {
+    char32_t cp;
+    int len = 1;
+    if (s[i].isHighSurrogate() && i + 1 < s.length() && s[i + 1].isLowSurrogate()) {
+      cp = QChar::surrogateToUcs4(s[i], s[i + 1]);
+      len = 2;
+    } else {
+      cp = s[i].unicode();
+    }
+
+    const bool nextIsVS16 = (i + len < s.length() && s[i + len].unicode() == 0xFE0F);
+    const bool keycapBase = (cp == '#' || cp == '*' || (cp >= '0' && cp <= '9'));
+
+    if (keycapBase) {
+      int j = i + len;
+      if (j < s.length() && s[j].unicode() == 0xFE0F) j++;
+      if (j < s.length() && s[j].unicode() == 0x20E3) {
+        ranges.append({i, j + 1});
+        i = j + 1;
+        continue;
+      }
+    }
+
+    if (utils_isEmojiScalar(cp) || utils_isRegionalIndicator(cp) || nextIsVS16) {
+      const int start = i;
+      i += len;
+      for (;;) {
+        if (i >= s.length())
+          break;
+        const ushort u = s[i].unicode();
+        if (u == 0xFE0F || u == 0x20E3) { i++; continue; }
+        if (u == 0x200D) {
+          i++;
+          if (i < s.length())
+            i += (s[i].isHighSurrogate() && i + 1 < s.length()) ? 2 : 1;
+          continue;
+        }
+        if (s[i].isHighSurrogate() && i + 1 < s.length() && s[i + 1].isLowSurrogate()) {
+          const char32_t m = QChar::surrogateToUcs4(s[i], s[i + 1]);
+          if ((m >= 0x1F3FB && m <= 0x1F3FF) || utils_isRegionalIndicator(m)) { i += 2; continue; }
+        }
+        break;
+      }
+      ranges.append({start, i});
+      continue;
+    }
+
+    i += len;
+  }
+
+  return ranges;
+}
+
+QString Utils::emojiHtml(const QString &text, const QString &family) {
+  const auto escape = [](const QString &in) -> QString {
+    QString out = in;
+    out.replace("&", "&amp;");
+    out.replace("<", "&lt;");
+    out.replace(">", "&gt;");
+    out.replace("\n", "<br/>");
+    return out;
+  };
+
+  if (family.isEmpty())
+    return escape(text);
+
+  const QList<QPair<int, int>> ranges = emojiRanges(text);
+  if (ranges.isEmpty())
+    return escape(text);
+
+  const QString open = QStringLiteral("<span style=\"font-family:'%1'\">").arg(family);
+  const QString close = QStringLiteral("</span>");
+
+  QString out;
+  int pos = 0;
+  for (const auto &r : ranges) {
+    if (r.first > pos)
+      out += escape(text.mid(pos, r.first - pos));
+    out += open;
+    out += escape(text.mid(r.first, r.second - r.first));
+    out += close;
+    pos = r.second;
+  }
+  if (pos < text.length())
+    out += escape(text.mid(pos));
+
+  return out;
+}
+
 double Utils::roundUp(double value, int decimal_places) {
     const double multiplier = std::pow(10.0, decimal_places);
     return std::ceil(value * multiplier) / multiplier;

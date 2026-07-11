@@ -2,17 +2,14 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import "." as Components
-
-// Ensure Text components use `Text.PlainText` by
-// default, for security reasons.
-
 Text {
-    textFormat: Text.PlainText
+    property string plainText: ""
+
+    textFormat: Text.RichText
+    text: ctx.emojify(plainText)
     font.hintingPreference: Font.PreferNoHinting
 
     FontLoader {
-        id: notoEmoji
         source: colorEmojiEnabled ? colorEmojiFontUrl : ""
     }
 }

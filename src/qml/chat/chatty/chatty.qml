@@ -86,11 +86,11 @@ Components.ChatRoot {
                 RowLayout {
                     Layout.fillWidth: true
 
-                    Components.PlainText {
+                    Components.EmojiText {
                         id: textNick
                         Layout.alignment: Qt.AlignVCenter
                         Layout.minimumWidth: chatListView.nickWidth
-                        text: {
+                        plainText: {
                             if(!isHead) return "";
                             if(outgoing) return "<self>";
                             return name
@@ -104,13 +104,13 @@ Components.ChatRoot {
                         }
                     }
 
-                    Components.PlainText {
+                    Components.EmojiText {
                         id: textChatMessage
                         visible: isHead
                         Layout.fillWidth: true
                         Layout.leftMargin: 8
                         Layout.alignment: isHead ? Qt.AlignVCenter : Qt.AlignTop
-                        text: message
+                        plainText: message
                         color: root.colorText
                         wrapMode: Text.WordWrap
                         font.pointSize: 14 * ctx.scaleFactor
@@ -124,9 +124,9 @@ Components.ChatRoot {
                         Layout.leftMargin: 8
                         visible: !isHead
 
-                        Components.PlainText {
+                        Components.EmojiText {
                             Layout.fillWidth: true
-                            text: message
+                            plainText: message
                             color: root.colorText
                             wrapMode: Text.WordWrap
                             font.pointSize: 14 * ctx.scaleFactor

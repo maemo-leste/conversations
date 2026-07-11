@@ -105,7 +105,7 @@ RowLayout {
     }
 
     function calculateItemHeight() {
-        let meta_height = 12 * ctx.scaleFactor;
+        let meta_height = 16 * ctx.scaleFactor;
         if(!isHead && !display_timestamp)
             meta_height = -12 * ctx.scaleFactor;
 
@@ -118,7 +118,7 @@ RowLayout {
 
         if (displayAvatar) {
             if (_height_and_avatar > _height) {
-                if(textItem.text.length <= 20)  // hack
+                if(message.length <= 20)  // hack
                     return _height_and_avatar - 10;
 
                 return _height_and_avatar;
@@ -195,17 +195,23 @@ RowLayout {
                         id: metaRow
                         visible: isHead || display_timestamp
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 20 * ctx.scaleFactor
+                        Layout.preferredHeight: 24 * ctx.scaleFactor
 
                         RowLayout {
+                            id: metaRowInner
                             anchors.fill: parent
+                            spacing: 10
 
-                            Components.PlainText {
+                            Components.EmojiText {
                                 id: metaNameText
                                 visible: (!outgoing && isHead) || !outgoing
                                 color: root.colorTextThem
-                                text: name
-                                font.pointSize: ctx.scaleFactor !== 1.0 ? 20 : 14;
+                                plainText: name
+                                font.pointSize: {
+                                    if(ctx.scaleFactor === 1.0) return 14;
+                                    else if (ctx.scaleFactor <= 1.5) return 20;
+                                    return 24;
+                                }
                                 font.bold: true
                                 Layout.alignment: Qt.AlignLeft | Qt.AlignTop
                             }
@@ -213,8 +219,11 @@ RowLayout {
                             Components.PlainText {
                                 id: metaDateText
                                 color: outgoing ? root.colorTextSelf : root.colorTextThem
-                                font.pointSize: ctx.scaleFactor !== 1.0 ? 14 : 12;
-                                font.family: fixedFont
+                                font.pointSize: {
+                                    if(ctx.scaleFactor === 1.0) return 12;
+                                    else if (ctx.scaleFactor <= 1.5) return 14;
+                                    return 16;
+                                }
                                 text: datestr + " " + hourstr
                                 Layout.alignment: Qt.AlignRight | Qt.AlignTop
                                 opacity: 0.6
@@ -222,10 +231,10 @@ RowLayout {
                         }
                     }
 
-                    Components.PlainText {
+                    Components.EmojiText {
                         id: textItem
                         color: outgoing ? root.colorTextSelf : root.colorTextThem
-                        text: message
+                        plainText: message
                         font.pointSize: 14 * ctx.scaleFactor
                         wrapMode: hardWordWrap ? Text.WrapAnywhere : Text.WordWrap
                         Layout.fillWidth: true
@@ -294,7 +303,6 @@ RowLayout {
 
         Text {
             font.pointSize: ctx.scaleFactor !== 1.0 ? 14 : 12;
-            font.family: fixedFont
             anchors.top: parent.top
             anchors.topMargin: 10;
             anchors.left: parent.left

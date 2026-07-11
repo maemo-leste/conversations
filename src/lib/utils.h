@@ -66,6 +66,8 @@ public:
   static QStringList extractWebLinks(const QString &content);
   static QString extractTitleFromHtml(const QString &filePath, int max_len = 32);
   static QString escapeHtml(const QString& text);
+  static QList<QPair<int, int>> emojiRanges(const QString &text);
+  static QString emojiHtml(const QString &text, const QString &family);
   static QList<QMap<QString, QString>> parseDebianChangelog(const QString &text);
 
   static __attribute__((always_inline)) bool get_avatar(const std::string& protocol, const std::string& remote_uid, const std::string& token, QPixmap& pixmap) {

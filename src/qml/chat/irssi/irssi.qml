@@ -65,11 +65,11 @@ Components.ChatRoot {
                 Layout.alignment: Qt.AlignTop
             }
 
-            Components.PlainText {
+            Components.EmojiText {
                 font.pointSize: 14 * ctx.scaleFactor
                 font.family: fixedFont
                 color: "white"
-                text: outgoing ? "@me" : name
+                plainText: outgoing ? "@me" : name
                 font.bold: outgoing
                 Layout.alignment: Qt.AlignTop
             }
@@ -84,11 +84,11 @@ Components.ChatRoot {
                 Layout.alignment: Qt.AlignTop
             }
 
-            Components.PlainText {
+            Components.EmojiText {
                 id: textMessage
                 font.family: fixedFont
                 font.pointSize: 14 * ctx.scaleFactor
-                text: message
+                plainText: message
                 color: !chat_event ? textGreyColor : "white"
                 Layout.fillWidth: true
                 wrapMode: hardWordWrap ? Text.WrapAnywhere : Text.WordWrap

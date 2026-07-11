@@ -1,5 +1,9 @@
 #include "QRichItemDelegate.h"
 
+#include <QTextCursor>
+#include <QTextBlock>
+
+#include "lib/utils.h"
 #include "overview/OverviewModel.h"
 
 RichItemDelegate::RichItemDelegate(QObject *parent) : QStyledItemDelegate(parent) {}
@@ -10,6 +14,39 @@ void RichItemDelegate::setStyleSheet(const QString &sheet) {
 
 void RichItemDelegate::setFont(const QFont &font) {
   m_font = font;
+}
+
+void RichItemDelegate::setColorEmojiFamily(const QString &family) {
+  m_colorEmojiFamily = family;
+}
+
+void RichItemDelegate::applyColorEmoji(QTextDocument *doc) const {
+  if (m_colorEmojiFamily.isEmpty())
+    return;
+
+  QList<QPair<int, int>> ranges;
+  for (QTextBlock block = doc->begin(); block.isValid(); block = block.next()) {
+    for (auto it = block.begin(); !it.atEnd(); ++it) {
+      const QTextFragment frag = it.fragment();
+      if (!frag.isValid())
+        continue;
+      const int base = frag.position();
+      for (const auto &r : Utils::emojiRanges(frag.text()))
+        ranges.append({base + r.first, base + r.second});
+    }
+  }
+
+  if (ranges.isEmpty())
+    return;
+
+  QTextCharFormat fmt;
+  fmt.setFontFamilies({m_colorEmojiFamily});
+  QTextCursor cursor(doc);
+  for (const auto &r : ranges) {
+    cursor.setPosition(r.first);
+    cursor.setPosition(r.second, QTextCursor::KeepAnchor);
+    cursor.mergeCharFormat(fmt);
+  }
 }
 
 // debug: red
@@ -32,6 +69,7 @@ void RichItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
     doc.setDefaultFont(m_font);
 
   doc.setHtml(options.text);
+  applyColorEmoji(&doc);
 
   options.text = "";
   options.widget->style()->drawControl(QStyle::CE_ItemViewItem, &options, painter);
@@ -90,6 +128,7 @@ QSize RichItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QMode
   if (!m_font.family().isEmpty())
     doc.setDefaultFont(m_font);
   doc.setHtml(options.text);
+  applyColorEmoji(&doc);
   doc.setTextWidth(options.rect.width());
   return QSize(doc.idealWidth(), doc.size().height());
 }

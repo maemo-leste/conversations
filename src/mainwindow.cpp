@@ -29,8 +29,16 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   setProperty("X-Maemo-Orientation", 2);
 
   CLOCK_MEASURE_START(start_add_fonts);
-  QFontDatabase::addApplicationFont(":/assets/fonts/Roboto-Regular.ttf");
+  const int robotoId = QFontDatabase::addApplicationFont(":/assets/fonts/Roboto-Regular.ttf");
   QFontDatabase::addApplicationFont(":/assets/fonts/Roboto-Bold.ttf");
+  if (config()->get(ConfigKeys::EnableColorEmoji).toBool())
+    QFontDatabase::addApplicationFont("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf");
+  const QStringList robotoFamilies = QFontDatabase::applicationFontFamilies(robotoId);
+  if (!robotoFamilies.isEmpty()) {
+    QFont appFont = QApplication::font();
+    appFont.setFamily(robotoFamilies.first());
+    QApplication::setFont(appFont);
+  }
   CLOCK_MEASURE_END(start_add_fonts, "mainwindow::add_fonts");
 
   m_filters = new QActionGroup(this);

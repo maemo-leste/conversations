@@ -239,6 +239,11 @@ void Conversations::singleShot(int msec, QJSValue callback) const {
       callback.call();
   });
 }
+
+QString Conversations::emojify(const QString &text) const {
+  const bool enabled = config()->get(ConfigKeys::EnableColorEmoji).toBool();
+  return Utils::emojiHtml(text, enabled ? QStringLiteral("Noto Color Emoji") : QString());
+}
 #endif
 
 QString Conversations::ossoIconLookup(const QString &filename) {
