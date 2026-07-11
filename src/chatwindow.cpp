@@ -220,22 +220,19 @@ ChatWindow::ChatWindow(
 
 #ifndef QUICK
 QString ChatWindow::generateChatHTML(const QSharedPointer<ChatMessage> &chats) {
+  const bool colorEmoji = config()->get(ConfigKeys::EnableColorEmoji).toBool();
+  const auto html = [colorEmoji](const QString &s) {
+    return colorEmoji ? Utils::emojiHtml(s, QStringLiteral("Noto Color Emoji"))
+                      : Utils::escapeHtml(s);
+  };
   return QString("<span class=\"date\">[%1]</span> <b>%2</b>: %3<br>").arg(
     chats->partialdate(),
-    Utils::escapeHtml(chats->name()),
-    Utils::escapeHtml(chats->text())
+    html(chats->name()),
+    html(chats->text())
   );
 }
 
 void ChatWindow::setupChatWidget() {
-  if (config()->get(ConfigKeys::EnableColorEmoji).toBool()) {
-    for (auto *w : {static_cast<QTextEdit*>(ui->chat), ui->chatBox_multi}) {
-      QFont f = w->font();
-      f.setFamilies({f.family(), "Noto Color Emoji"});
-      w->setFont(f);
-    }
-  }
-
   QString html = "";
   ui->chat->document()->setDefaultStyleSheet(".date{color:grey;}");
   for (const auto& chat: this->chatModel->chats) {
