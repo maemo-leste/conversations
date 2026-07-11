@@ -244,6 +244,10 @@ QString Conversations::emojify(const QString &text) const {
   const bool enabled = config()->get(ConfigKeys::EnableColorEmoji).toBool();
   return Utils::emojiHtml(text, enabled ? QStringLiteral("Noto Color Emoji") : QString());
 }
+
+bool Conversations::hasEmoji(const QString &text) const {
+  return !Utils::emojiRanges(text).isEmpty();
+}
 #endif
 
 QString Conversations::ossoIconLookup(const QString &filename) {

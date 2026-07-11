@@ -4,12 +4,9 @@ import QtQuick.Layouts
 
 Text {
     property string plainText: ""
+    property bool _emoji: colorEmojiEnabled && ctx.hasEmoji(plainText)
 
-    textFormat: Text.RichText
-    text: ctx.emojify(plainText)
+    textFormat: _emoji ? Text.RichText : Text.PlainText
+    text: _emoji ? ctx.emojify(plainText) : plainText
     font.hintingPreference: Font.PreferNoHinting
-
-    FontLoader {
-        source: colorEmojiEnabled ? colorEmojiFontUrl : ""
-    }
 }

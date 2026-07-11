@@ -95,6 +95,7 @@ public:
 #ifdef QUICK
     Q_INVOKABLE void singleShot(int msec, QJSValue callback) const;
     Q_INVOKABLE QString emojify(const QString &text) const;
+    Q_INVOKABLE bool hasEmoji(const QString &text) const;
 #endif
 
 signals:
