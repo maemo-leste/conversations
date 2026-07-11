@@ -1,3 +1,9 @@
+conversations (0.8.9) unstable; urgency=medium
+
+  * qml/whatsthat: another attempt at less binding loops for message delegate
+
+ -- Sander <sander@sanderf.nl>  Mon, 11 Jul 2026 23:59:00 +0200
+
 conversations (0.8.8) unstable; urgency=medium
 
   * qml/whatsthat: fix QML freeze from RichText message text in a fillWidth Layout by wrapping it in an Item with explicit width and sizing the bubble from a stable TextMetrics measurement
