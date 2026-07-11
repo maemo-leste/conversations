@@ -26,6 +26,12 @@ RowLayout {
     property bool highlight: false
     property int avatarSize: 58
 
+    TextMetrics {
+        id: msgMetrics
+        font: textItem.font
+        text: message
+    }
+
     // handy snippet to determine if this current delegate is in view, in case
     // we need it in the future
     // property int yoff: Math.round(item.y - chatListView.contentY)
@@ -44,7 +50,7 @@ RowLayout {
             width_meta_row += metaNameText.implicitWidth + metaDateText.implicitWidth;
         width_meta_row += 12;
 
-        let width_message = textItem.implicitWidth + 24;
+        let width_message = msgMetrics.advanceWidth + 24;
         let width_result = 30; // minimum
 
         let displayName = outgoing && isHead;
@@ -231,32 +237,37 @@ RowLayout {
                         }
                     }
 
-                    Components.EmojiText {
-                        id: textItem
-                        color: outgoing ? root.colorTextSelf : root.colorTextThem
-                        plainText: message
-                        font.pointSize: 14 * ctx.scaleFactor
-                        wrapMode: hardWordWrap ? Text.WrapAnywhere : Text.WordWrap
+                    Item {
                         Layout.fillWidth: true
-                        horizontalAlignment: outgoing ? Text.AlignRight : Text.AlignLeft
+                        Layout.preferredHeight: textItem.implicitHeight
 
-                        MouseArea {
-                            anchors.fill: parent
-                            acceptedButtons: Qt.LeftButton | Qt.RightButton
-                            onPressed: {
-                                textContainer.state = "on";
-                            }
-                            onReleased: {
-                                textContainer.state = "off";
-                            }
-                            onClicked: function (mouse) {
-                                if (mouse.button === Qt.RightButton)
-                                    chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
-                            }
-                            onPressAndHold: function (mouse) {
-                                if (mouse.button === Qt.LeftButton /*&&
-                                     mouse.source === Qt.MouseEventNotSynthesized*/) {
-                                    chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
+                        Components.EmojiText {
+                            id: textItem
+                            width: parent.width
+                            color: outgoing ? root.colorTextSelf : root.colorTextThem
+                            plainText: message
+                            font.pointSize: 14 * ctx.scaleFactor
+                            wrapMode: hardWordWrap ? Text.WrapAnywhere : Text.WordWrap
+                            horizontalAlignment: outgoing ? Text.AlignRight : Text.AlignLeft
+
+                            MouseArea {
+                                anchors.fill: parent
+                                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                                onPressed: {
+                                    textContainer.state = "on";
+                                }
+                                onReleased: {
+                                    textContainer.state = "off";
+                                }
+                                onClicked: function (mouse) {
+                                    if (mouse.button === Qt.RightButton)
+                                        chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
+                                }
+                                onPressAndHold: function (mouse) {
+                                    if (mouse.button === Qt.LeftButton /*&&
+                                         mouse.source === Qt.MouseEventNotSynthesized*/) {
+                                        chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
+                                    }
                                 }
                             }
                         }

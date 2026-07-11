@@ -22,6 +22,7 @@ WebPreviewHTTP::WebPreviewHTTP(QObject *parent) :
 
 void WebPreviewHTTP::head(const QSharedPointer<PreviewItem> item) {
   QNetworkRequest request(item->url);
+  qDebug() << "head" << item->url;
   QNetworkReply *reply = m_manager.head(request);
   reply->setProperty("headUrl", item->url);
 
@@ -58,6 +59,7 @@ void WebPreviewHTTP::download(const QSharedPointer<PreviewItem> item) {
   }
 
   const QString fileName = hashUrl(item->url) + "." + item->ext();
+  qDebug() << "fileName" << fileName;
   const QString filePath = globals::appDataDownloadDirectory + QDir::separator() + fileName;
   QDir().mkpath(globals::appDataDownloadDirectory);
 
