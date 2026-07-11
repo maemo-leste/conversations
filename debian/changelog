@@ -1,3 +1,11 @@
+conversations (0.8.6) unstable; urgency=medium
+
+  * overview: properly support mixing emojis with the regular Roboto font, dont use Qt's font fallback mechanism.
+  * qml: same as the overview; parse text, wrap emojis in the Noto emoji font, regular text stays Roboto
+  * Search.qml: remove, long-since replaced by QtWidgets based search
+
+ -- Sander <sander@sanderf.nl>  Mon, 11 Jul 2026 17:53:00 +0200
+
 conversations (0.8.5) unstable; urgency=medium
 
   * chatwindow: send emojis
