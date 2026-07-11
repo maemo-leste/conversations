@@ -32,6 +32,12 @@ RowLayout {
         text: message
     }
 
+    TextMetrics {
+        id: nameMetrics
+        font: metaNameText.font
+        text: name
+    }
+
     // handy snippet to determine if this current delegate is in view, in case
     // we need it in the future
     // property int yoff: Math.round(item.y - chatListView.contentY)
@@ -45,9 +51,9 @@ RowLayout {
         let has_meta_row = isHead || display_timestamp;
         let width_meta_row = 0;
         if(outgoing)
-            width_meta_row += metaDateText.implicitWidth;
+            width_meta_row += metaDateText.contentWidth;
         else
-            width_meta_row += metaNameText.implicitWidth + metaDateText.implicitWidth;
+            width_meta_row += nameMetrics.advanceWidth + metaDateText.contentWidth;
         width_meta_row += 12;
 
         let width_message = msgMetrics.advanceWidth + 24;
@@ -120,7 +126,7 @@ RowLayout {
             new_day_offset += 32;
 
         let _height = textItem.implicitHeight + textItem.font.pointSize + (20) + meta_height + new_day_offset;
-        let _height_and_avatar = avatarContainer.childrenRect.height + (20 ) + meta_height + new_day_offset;
+        let _height_and_avatar = avatarSize + (20 ) + meta_height + new_day_offset;
 
         if (displayAvatar) {
             if (_height_and_avatar > _height) {
@@ -161,9 +167,6 @@ RowLayout {
 
             RowLayout {
                 anchors.fill: parent
-                anchors.margins: 0
-                width: parent.width
-                height: parent.height
 
                 // avatar
                 Item {
