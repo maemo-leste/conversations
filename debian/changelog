@@ -1,3 +1,10 @@
+conversations (0.8.10) unstable; urgency=medium
+
+  * chatwindow: Reflect account state by appending (account disabled)/(offline) in onSetWindowTitle()
+  * tp: Fix first message to a new 1:1 chat being silently dropped by queueing outgoing messages until the TextChannel is ready and flushing them from onChannelReady()/onGroupAddContacts() instead of sending on the not-yet-ready channel.
+
+ -- Sander <sander@sanderf.nl>  Mon, 13 Jul 2026 22:00:00 +0200
+
 conversations (0.8.9) unstable; urgency=medium
 
   * qml/whatsthat: another attempt at less binding loops for message delegate
