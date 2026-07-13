@@ -151,6 +151,13 @@ ChatWindow::ChatWindow(
   connect(ui->actionIgnore_notifications, &QAction::triggered, this, &ChatWindow::onIgnoreNotificationsToggled);
   connect(m_ctx->telepathy, &Telepathy::channelJoined, this, &ChatWindow::onChannelJoinedOrLeft);
   connect(m_ctx->telepathy, &Telepathy::channelLeft, this, &ChatWindow::onChannelJoinedOrLeft);
+
+  // refresh the window title when our account goes online/offline (or is (dis)abled)
+  connect(m_ctx->telepathy, &Telepathy::onlinenessChanged, this,
+          [this](const TelepathyAccountPtr &account, bool) {
+            if(!account.isNull() && account->local_uid == this->local_uid)
+              this->onSetWindowTitle();
+          });
   connect(ui->actionParticipants, &QAction::triggered, this, &ChatWindow::onOpenTpContactsWindow);
 
   connect(ui->actionExportChatToCsv, &QAction::triggered, this, &ChatWindow::onExportToCsv);
@@ -566,8 +573,14 @@ void ChatWindow::onSetWindowTitle() {
     }
   }
 
-  if(!m_active && groupchat)
-    parts << QString(" (not joined)");
+  // reflect account availability in the title, otherwise a disabled/offline
+  // account looks the same as a joined room, which is confusing
+  if(acc->acc.isNull() || !acc->acc->isEnabled())
+    parts << QString("(account disabled)");
+  else if(!acc->isOnline)
+    parts << QString("(offline)");
+  else if(!m_active && groupchat)
+    parts << QString("(not joined)");
 
   this->setWindowTitle(parts.join(" - "));
 }

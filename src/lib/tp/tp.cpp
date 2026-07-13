@@ -747,7 +747,7 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
 }
 
 void TelepathyAccount::onOnline(const bool online) {
-  qDebug() << "onOnline: " << online;
+  qDebug() << "onOnline: " << online << "local_uid=" << local_uid;
   isOnline = online;
   emit onlinenessChanged(online);
 
@@ -774,6 +774,16 @@ void TelepathyAccount::_joinChannel(const QString &remote_uid, const bool auto_j
             } else {
               qWarning() << "_joinChannel failed for " << remote_uid;
             }
+          });
+
+  // report the final outcome of the room request (errors here are otherwise silent)
+  connect(pending, &Tp::PendingChannelRequest::finished, this,
+          [remote_uid](Tp::PendingOperation *op) {
+            if (op->isError())
+              qWarning() << "_joinChannel ensureTextChatroom FAILED for" << remote_uid
+                         << "error:" << op->errorName() << op->errorMessage();
+            else
+              qDebug() << "_joinChannel ensureTextChatroom finished OK for" << remote_uid;
           });
 }
 
@@ -892,21 +902,41 @@ void TelepathyAccount::sendMessage(QString remote_uid, const QString &message) {
   if (protocolName() == "matrix" && remote_uid.startsWith("#"))
     return;
 
-  qDebug() << "did not have TextChannelPtr, calling acc->ensureTextChat()";
+  // channel returned by the ensureTextChat request may not ready for send()
+  // immediately, queue the message and flush the queue once the channel is ready.
+  const bool requestInFlight = !m_pendingMessages.value(remote_uid).isEmpty();
+  m_pendingMessages[remote_uid].append(message);
+  if (requestInFlight)
+    return;  // channel request already pending for this remote_uid
+
+  qDebug() << "did not have TextChannelPtr, queueing message and calling acc->ensureTextChat()";
   auto *pending = acc->ensureTextChat(remote_uid);
 
-  connect(pending, &Tp::PendingChannelRequest::finished, [message, this](Tp::PendingOperation *op) {
+  connect(pending, &Tp::PendingChannelRequest::finished, [remote_uid, this](Tp::PendingOperation *op) {
     if (op->isError()) {
       auto err_msg = QString("ensureTextChat failed: %1").arg(op->errorMessage());
       qWarning() << err_msg;
       emit errorMessage(err_msg);
+      m_pendingMessages.remove(remote_uid);
       return;
     }
 
-    auto channel = reinterpret_cast<Tp::PendingChannelRequest *>(op)->channelRequest()->channel();
-    auto text_channel = (Tp::TextChannel *) channel.data();
-    text_channel->send(message);
+    flushPendingMessages(remote_uid);
   });
+}
+
+void TelepathyAccount::flushPendingMessages(const QString &remote_uid) {
+  if (!m_pendingMessages.contains(remote_uid))
+    return;
+
+  auto chan = hasChannel(remote_uid);
+  if (!chan)
+    return;
+
+  const auto queued = m_pendingMessages.take(remote_uid);
+  Tp::TextChannelPtr textChannel = Tp::TextChannelPtr::staticCast(chan->m_channel);
+  for (const auto &msg: queued)
+    textChannel->send(msg);
 }
 
 void TelepathyAccount::setChatState(const QString &remote_uid, Tp::ChannelChatState state) {
@@ -928,12 +958,22 @@ void TelepathyAccount::onRemoved() {
 // auto-join any user-defined persistent channels
 // called from: onOnline() and onAccReady()
 void TelepathyAccount::joinSavedGroupChats() {
+  qDebug() << "joinSavedGroupChats() local_uid=" << local_uid
+           << "isOnline=" << isOnline
+           << "configState->items=" << (configState ? configState->items.size() : -1);
   for (const ConfigStateItemPtr &configItem: configState->items) {
+    qDebug() << "  candidate item: local_uid=" << configItem->local_uid
+             << "remote_uid=" << configItem->remote_uid
+             << "type=" << (int)configItem->type
+             << "auto_join=" << configItem->auto_join
+             << "match_local=" << (configItem->local_uid == local_uid);
     if (configItem->local_uid == local_uid &&
         configItem->type == ConfigStateItemType::ConfigStateRoom &&
         configItem->auto_join) {
-      if (hasChannel(configItem->remote_uid))
+      if (hasChannel(configItem->remote_uid)) {
+        qDebug() << "  already have channel for" << configItem->remote_uid << "- skipping";
         continue;
+      }
 
       qDebug() << "account:" << local_uid << "auto-joining:" << configItem->remote_uid;
       this->_joinChannel(configItem->remote_uid, true);
@@ -1052,6 +1092,9 @@ void TelepathyChannel::onChannelReady(Tp::PendingOperation *op) {
     for (const Tp::ReceivedMessage &msg: channel->messageQueue()) {
       onChanMessageReceived(msg);
     }
+
+    // flush any outgoing messages queued while this channel was being established
+    m_account->flushPendingMessages(remote_uid);
   } else {
     auto pending = channel->groupAddContacts(QList<Tp::ContactPtr>() << channel->connection()->selfContact());
     connect(pending, &Tp::PendingOperation::finished, this, &TelepathyChannel::onGroupAddContacts);
@@ -1081,6 +1124,9 @@ void TelepathyChannel::onGroupAddContacts(Tp::PendingOperation *op) {
   for (const Tp::ReceivedMessage &msg: channel->messageQueue()) {
     onChanMessageReceived(msg);
   }
+
+  // flush any outgoing messages queued while this room channel was being established
+  m_account->flushPendingMessages(remote_uid);
 }
 
 /* Called when we have received a message on the specific channel
