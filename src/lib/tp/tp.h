@@ -97,6 +97,9 @@ public:
 
   const Tp::AccountPtr acc;
   QMap<QString, TelepathyChannelPtr> channels;
+  // messages typed before a channel exists; queued here and flushed once the
+  // channel becomes ready (see flushPendingMessages / TelepathyChannel::onChannelReady)
+  QMap<QString, QStringList> m_pendingMessages;
 
   QString cm_name;
   QString display_name;
@@ -133,6 +136,7 @@ signals:
 
 public slots:
   void sendMessage(QString remote_uid, const QString &message);
+  void flushPendingMessages(const QString &remote_uid);
   void joinChannel(const QString &remote_uid);
   void leaveChannel(const QString &remote_uid);
   void removeChannel(const QString &remote_uid);
