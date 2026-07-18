@@ -693,7 +693,15 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
   qDebug() << "channel->targetId()" << channel->targetId();
   qDebug() << "isRescued" << message.isRescued();
 
-  if (outgoing) {
+  if (channel->targetHandleType() == Tp::HandleTypeContact) {
+    // For 1:1 chats remote_uid is the counterparty, regardless of direction; the same as
+    // getRemoteUid() does for the send path. Our own messages reach us here as carbons or
+    // scrollback, with the self contact as sender, but they still belong to the peer.
+    remote_uid = channel->targetId();
+    if (outgoing)
+      remote_alias = nullptr;
+  } else if (outgoing) {
+    // in a room, remote_uid is our own nick
     remote_uid = channel->groupSelfContact()->id();
     remote_alias = nullptr;
   }
