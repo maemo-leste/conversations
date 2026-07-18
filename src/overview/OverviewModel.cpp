@@ -353,14 +353,19 @@ QList<ChatMessage*> OverviewModel::getOverviewMessages() {
       if(configItem)
         date_created = configItem->date_created / 1000;
 
+      // for a room the remote_uid *is* the channel, for a 1:1 chat it is the counterparty
+      const auto channel_str = channel->isRoom ? remote_uid : QString();
+      const auto contact_str = channel->isRoom ? QString() : remote_uid;
+
       results << new ChatMessage(new rtcom_qt::ChatMessageEntry(
         -1,
         account->getServiceName().toStdString(),
         group_uid.toStdString(),
         account->local_uid.toStdString(),
         account->protocolName().toStdString(),
-        "", "", "", "", "", date_created, 0,
-        remote_uid.toStdString(),
+        contact_str.toStdString(),
+        "", "", "", "", date_created, 0,
+        channel_str.toStdString(),
         "-1",
         false,
         true,
