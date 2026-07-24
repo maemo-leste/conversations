@@ -42,7 +42,6 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
     librtcom-eventlogger1,
     librtcom-eventlogger-plugins1,
     libosso-abook,
-    libtelepathy-qt6-dev,
     libtelepathy-qt6-0,
     qml6-module-qt5compat-graphicaleffects
 Description: Maemo Conversations UI with RTCOM and Telepathy integration
