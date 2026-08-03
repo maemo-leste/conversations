@@ -26,18 +26,6 @@ RowLayout {
     property bool highlight: false
     property int avatarSize: 58
 
-    TextMetrics {
-        id: msgMetrics
-        font: textItem.font
-        text: message
-    }
-
-    TextMetrics {
-        id: nameMetrics
-        font: metaNameText.font
-        text: name
-    }
-
     // handy snippet to determine if this current delegate is in view, in case
     // we need it in the future
     // property int yoff: Math.round(item.y - chatListView.contentY)
@@ -51,12 +39,12 @@ RowLayout {
         let has_meta_row = isHead || display_timestamp;
         let width_meta_row = 0;
         if(outgoing)
-            width_meta_row += metaDateText.contentWidth;
+            width_meta_row += metaDateText.implicitWidth;
         else
-            width_meta_row += nameMetrics.advanceWidth + metaDateText.contentWidth;
+            width_meta_row += metaNameText.implicitWidth + metaDateText.implicitWidth;
         width_meta_row += 12;
 
-        let width_message = msgMetrics.advanceWidth + 24;
+        let width_message = textItem.implicitWidth + 24;
         let width_result = 30; // minimum
 
         let displayName = outgoing && isHead;
@@ -126,7 +114,7 @@ RowLayout {
             new_day_offset += 32;
 
         let _height = textItem.implicitHeight + textItem.font.pointSize + (20) + meta_height + new_day_offset;
-        let _height_and_avatar = avatarSize + (20 ) + meta_height + new_day_offset;
+        let _height_and_avatar = avatarContainer.childrenRect.height + (20 ) + meta_height + new_day_offset;
 
         if (displayAvatar) {
             if (_height_and_avatar > _height) {
@@ -167,6 +155,9 @@ RowLayout {
 
             RowLayout {
                 anchors.fill: parent
+                anchors.margins: 0
+                width: parent.width
+                height: parent.height
 
                 // avatar
                 Item {
@@ -230,38 +221,33 @@ RowLayout {
                             }
                         }
                     }
-                    
-                    Item {
+
+                    Components.PlainText {
+                        id: textItem
+                        color: outgoing ? root.colorTextSelf : root.colorTextThem
+                        text: message
+                        font.pointSize: 14 * ctx.scaleFactor
+                        wrapMode: hardWordWrap ? Text.WrapAnywhere : Text.WordWrap
                         Layout.fillWidth: true
-                        Layout.preferredHeight: textItem.implicitHeight
+                        horizontalAlignment: outgoing ? Text.AlignRight : Text.AlignLeft
 
-                        Components.EmojiText {
-                            id: textItem
-                            width: parent.width
-                            color: outgoing ? root.colorTextSelf : root.colorTextThem
-                            plainText: message
-                            font.pointSize: 14 * ctx.scaleFactor
-                            wrapMode: hardWordWrap ? Text.WrapAnywhere : Text.WordWrap
-                            horizontalAlignment: outgoing ? Text.AlignRight : Text.AlignLeft
-
-                            MouseArea {
-                                anchors.fill: parent
-                                acceptedButtons: Qt.LeftButton | Qt.RightButton
-                                onPressed: {
-                                    textContainer.state = "on";
-                                }
-                                onReleased: {
-                                    textContainer.state = "off";
-                                }
-                                onClicked: function (mouse) {
-                                    if (mouse.button === Qt.RightButton)
-                                        chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
-                                }
-                                onPressAndHold: function (mouse) {
-                                    if (mouse.button === Qt.LeftButton /*&&
-                                         mouse.source === Qt.MouseEventNotSynthesized*/) {
-                                        chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
-                                    }
+                        MouseArea {
+                            anchors.fill: parent
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
+                            onPressed: {
+                                textContainer.state = "on";
+                            }
+                            onReleased: {
+                                textContainer.state = "off";
+                            }
+                            onClicked: function (mouse) {
+                                if (mouse.button === Qt.RightButton)
+                                    chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
+                            }
+                            onPressAndHold: function (mouse) {
+                                if (mouse.button === Qt.LeftButton /*&&
+                                     mouse.source === Qt.MouseEventNotSynthesized*/) {
+                                    chatWindow.showMessageContextMenu(event_id, Qt.point(mouse.x, mouse.y))
                                 }
                             }
                         }
