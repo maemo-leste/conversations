@@ -29,8 +29,18 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   setProperty("X-Maemo-Orientation", 2);
 
   CLOCK_MEASURE_START(start_add_fonts);
-  if (config()->get(ConfigKeys::EnableColorEmoji).toBool())
-    QFontDatabase::addApplicationFont("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf");
+  if (config()->get(ConfigKeys::EnableColorEmoji).toBool()) {
+    const QString emojiFamily = Utils::colorEmojiFamily();
+    if (!emojiFamily.isEmpty()) {
+      QFont appFont = QApplication::font();
+      QStringList families = appFont.families();
+      if (families.isEmpty() && !appFont.family().isEmpty())
+        families << appFont.family();
+      families << emojiFamily;
+      appFont.setFamilies(families);
+      QApplication::setFont(appFont);
+    }
+  }
   CLOCK_MEASURE_END(start_add_fonts, "mainwindow::add_fonts");
 
   m_filters = new QActionGroup(this);

@@ -88,12 +88,8 @@ ChatWindow::ChatWindow(
    const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);  // has no effect on Leste?
    qctx->setContextProperty("fixedFont", fixedFont);
 
-   const bool colorEmojiEnabled = config()->get(ConfigKeys::EnableColorEmoji).toBool();
-   const QString notoEmojiPath = "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf";
-   if (colorEmojiEnabled)
-     QFontDatabase::addApplicationFont(notoEmojiPath);
-   qctx->setContextProperty("colorEmojiEnabled", colorEmojiEnabled);
-   qctx->setContextProperty("colorEmojiFontUrl", QUrl::fromLocalFile(notoEmojiPath));
+   const QString colorEmojiFamily = config()->get(ConfigKeys::EnableColorEmoji).toBool() ? Utils::colorEmojiFamily() : QString();
+   qctx->setContextProperty("colorEmojiEnabled", !colorEmojiFamily.isEmpty());
 
 
    ui->quick->setAttribute(Qt::WA_AlwaysStackOnTop);
@@ -229,7 +225,7 @@ ChatWindow::ChatWindow(
 QString ChatWindow::generateChatHTML(const QSharedPointer<ChatMessage> &chats) {
   const bool colorEmoji = config()->get(ConfigKeys::EnableColorEmoji).toBool();
   const auto html = [colorEmoji](const QString &s) {
-    return colorEmoji ? Utils::emojiHtml(s, QStringLiteral("Noto Color Emoji"))
+    return colorEmoji ? Utils::emojiHtml(s, Utils::colorEmojiFamily())
                       : Utils::escapeHtml(s);
   };
   return QString("<span class=\"date\">[%1]</span> <b>%2</b>: %3<br>").arg(

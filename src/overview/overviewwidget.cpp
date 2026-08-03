@@ -125,7 +125,7 @@ void OverviewWidget::onSetColumnStyleDelegate() {
   m_richContentDelegate->setStyleSheet(css_tmpl);
 
   if (config()->get(ConfigKeys::EnableColorEmoji).toBool())
-    m_richContentDelegate->setColorEmojiFamily("Noto Color Emoji");
+    m_richContentDelegate->setColorEmojiFamily(Utils::colorEmojiFamily());
 
   ui->tableOverview->setItemDelegateForColumn(static_cast<int>(OverviewModel::Columns::ContentColumn), m_richContentDelegate);
   ui->tableOverview->setItemDelegateForColumn(static_cast<int>(OverviewModel::Columns::PresenceColumn), m_centeredIconDelegate);

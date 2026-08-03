@@ -242,7 +242,7 @@ void Conversations::singleShot(int msec, QJSValue callback) const {
 
 QString Conversations::emojify(const QString &text) const {
   const bool enabled = config()->get(ConfigKeys::EnableColorEmoji).toBool();
-  return Utils::emojiHtml(text, enabled ? QStringLiteral("Noto Color Emoji") : QString());
+  return Utils::emojiHtml(text, enabled ? Utils::colorEmojiFamily() : QString());
 }
 
 bool Conversations::hasEmoji(const QString &text) const {

@@ -66,6 +66,7 @@ public:
   static QStringList extractWebLinks(const QString &content);
   static QString extractTitleFromHtml(const QString &filePath, int max_len = 32);
   static QString escapeHtml(const QString& text);
+  static QString colorEmojiFamily();
   static bool mayContainEmoji(const QString &text);
   static QList<QPair<int, int>> emojiRanges(const QString &text);
   static QString emojiHtml(const QString &text, const QString &family);

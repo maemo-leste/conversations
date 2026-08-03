@@ -1,6 +1,7 @@
 #include <sys/stat.h>
 
 #include <QScreen>
+#include <QFontDatabase>
 #include <QMessageBox>
 #include <QtNetwork>
 #include <QClipboard>
@@ -127,6 +128,24 @@ static bool utils_isEmojiScalar(char32_t cp) {
 }
 
 static bool utils_isRegionalIndicator(char32_t cp) { return cp >= 0x1F1E6 && cp <= 0x1F1FF; }
+
+QString Utils::colorEmojiFamily() {
+  static const QString family = [] {
+    const QString path = QStringLiteral("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf");
+    const int id = QFontDatabase::addApplicationFont(path);
+    if (id < 0) {
+      qWarning() << "color emoji font could not be loaded:" << path;
+      return QString();
+    }
+    const QStringList families = QFontDatabase::applicationFontFamilies(id);
+    if (families.isEmpty()) {
+      qWarning() << "color emoji font registered no families:" << path;
+      return QString();
+    }
+    return families.first();
+  }();
+  return family;
+}
 
 bool Utils::mayContainEmoji(const QString &s) {
   const QChar *p = s.constData();

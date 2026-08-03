@@ -10,9 +10,4 @@ import "." as Components
 Text {
     textFormat: Text.PlainText
     font.hintingPreference: Font.PreferNoHinting
-
-    FontLoader {
-        id: notoEmoji
-        source: colorEmojiEnabled ? colorEmojiFontUrl : ""
-    }
 }
