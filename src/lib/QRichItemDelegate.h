@@ -2,6 +2,7 @@
 #include <QObject>
 #include <QSize>
 #include <QFont>
+#include <QCache>
 #include <QTextDocument>
 #include <QStyledItemDelegate>
 #include <QPainter>
@@ -22,9 +23,17 @@ protected:
   QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
 private:
-  void applyColorEmoji(QTextDocument *doc) const;
+  struct Entry {
+    ~Entry() { delete doc; }
+    QTextDocument *doc = nullptr;
+    QSizeF size;
+  };
+
+  Entry *entry(const QString &html, int textWidth) const;
+  void applyColorEmoji(QTextDocument *doc, const QString &html) const;
 
   QString m_styleSheet;
   QFont m_font;
   QString m_colorEmojiFamily;
+  mutable QCache<QString, Entry> m_cache;
 };

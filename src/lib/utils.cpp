@@ -128,7 +128,18 @@ static bool utils_isEmojiScalar(char32_t cp) {
 
 static bool utils_isRegionalIndicator(char32_t cp) { return cp >= 0x1F1E6 && cp <= 0x1F1FF; }
 
+bool Utils::mayContainEmoji(const QString &s) {
+  const QChar *p = s.constData();
+  for (qsizetype i = 0, n = s.size(); i < n; ++i)
+    if (p[i].unicode() >= 0x2000)
+      return true;
+  return false;
+}
+
 QList<QPair<int, int>> Utils::emojiRanges(const QString &s) {
+  if (!mayContainEmoji(s))
+    return {};
+
   QList<QPair<int, int>> ranges;
 
   int i = 0;
