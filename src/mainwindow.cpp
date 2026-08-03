@@ -29,16 +29,8 @@ MainWindow::MainWindow(Conversations *ctx, QWidget *parent) :
   setProperty("X-Maemo-Orientation", 2);
 
   CLOCK_MEASURE_START(start_add_fonts);
-  const int robotoId = QFontDatabase::addApplicationFont(":/assets/fonts/Roboto-Regular.ttf");
-  QFontDatabase::addApplicationFont(":/assets/fonts/Roboto-Bold.ttf");
   if (config()->get(ConfigKeys::EnableColorEmoji).toBool())
     QFontDatabase::addApplicationFont("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf");
-  const QStringList robotoFamilies = QFontDatabase::applicationFontFamilies(robotoId);
-  if (!robotoFamilies.isEmpty()) {
-    QFont appFont = QApplication::font();
-    appFont.setFamily(robotoFamilies.first());
-    QApplication::setFont(appFont);
-  }
   CLOCK_MEASURE_END(start_add_fonts, "mainwindow::add_fonts");
 
   m_filters = new QActionGroup(this);
@@ -175,9 +167,9 @@ void MainWindow::onShowOverviewPage() const {
 }
 
 void MainWindow::onShowEmptyDbPage() const {
-  QFont robotoRegular(QFontDatabase::applicationFontFamilies(0).at(0));
-  robotoRegular.setPointSize(16);
-  ui->label_emptyDb->setFont(robotoRegular);
+  QFont font = QApplication::font();
+  font.setPointSize(16);
+  ui->label_emptyDb->setFont(font);
   ui->overviewPages->setCurrentIndex(2);
 }
 
@@ -189,18 +181,18 @@ void MainWindow::onShowWelcomePage() const {
   ui->label_welcomeIcon->setText("");
   ui->label_welcomeIcon->setPixmap(p);
 
-  QFont robotoBold(QFontDatabase::applicationFontFamilies(1).at(0));
-  robotoBold.setPointSize(28);
-  ui->label_welcomeTitle->setFont(robotoBold);
+  QFont title = QApplication::font();
+  title.setPointSize(28);
+  ui->label_welcomeTitle->setFont(title);
 
-  QFont robotoBoldSubTitle(QFontDatabase::applicationFontFamilies(1).at(0));
-  robotoBoldSubTitle.setPointSize(16);
-  robotoBoldSubTitle.setBold(true);
-  ui->label_subtitle->setFont(robotoBoldSubTitle);
+  QFont subTitle = QApplication::font();
+  subTitle.setPointSize(16);
+  subTitle.setBold(true);
+  ui->label_subtitle->setFont(subTitle);
 
-  QFont robotoRegular(QFontDatabase::applicationFontFamilies(0).at(0));
-  robotoRegular.setPointSize(14);
-  ui->label_description->setFont(robotoRegular);
+  QFont description = QApplication::font();
+  description.setPointSize(14);
+  ui->label_description->setFont(description);
 }
 
 void MainWindow::onOpenChatWindow(int idx) {
