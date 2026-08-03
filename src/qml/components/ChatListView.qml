@@ -7,6 +7,8 @@ ListView {
     id: root
     model: chatModel
 
+    cacheBuffer: Math.round(height)
+
     signal scrollToBottom()
 
     //boundsBehavior: Flickable.StopAtBounds

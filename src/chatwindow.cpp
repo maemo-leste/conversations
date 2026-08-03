@@ -43,12 +43,17 @@ ChatWindow::ChatWindow(
     groupchat(!channel.isEmpty()),
     m_ctx(ctx) {
   pChatWindow = this;
+
+  qWarning() << "chatWindow: calling winId()";
+  winId();
+  setAttribute(Qt::WA_NativeWindow);
+
   ui->setupUi(this);
   ui->menuBar->hide();
   m_enterKeySendsChat = config()->get(ConfigKeys::EnterKeySendsChat).toBool();
   onDisplayChatBox();
 
-   qDebug() << "ChatWindow()";
+   qDebug() << "ChatWindow() xxx";
    qDebug() << "local_uid:" << local_uid;
    qDebug() << "group_uid:" << group_uid;
    qDebug() << "remote_uid:" << remote_uid;

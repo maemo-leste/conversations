@@ -173,7 +173,7 @@
        <item>
         <widget class="QCheckBox" name="checkBox_enableColorEmoji">
          <property name="text">
-          <string>Render color emoji</string>
+          <string>Enable emoji</string>
          </property>
         </widget>
        </item>

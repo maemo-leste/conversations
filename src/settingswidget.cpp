@@ -112,10 +112,13 @@ SettingsWidget::SettingsWidget(Conversations *ctx, QWidget *parent) :
     emit enableNewVersionMessageToggled(toggled);
   });
 
-  // color emoji font fallback
+  // emoji support
   ui->checkBox_enableColorEmoji->setChecked(config()->get(ConfigKeys::EnableColorEmoji).toBool());
-  connect(ui->checkBox_enableColorEmoji, &QCheckBox::toggled, [](bool toggled) {
+  connect(ui->checkBox_enableColorEmoji, &QCheckBox::toggled, [this](bool toggled) {
     config()->set(ConfigKeys::EnableColorEmoji, toggled);
+    if (const auto reply = QMessageBox::question(this, "Quit", "Quit application now?",
+                                                 QMessageBox::Yes | QMessageBox::No); reply == QMessageBox::Yes)
+      QApplication::quit();
   });
 
   // Log: writing

@@ -1,6 +1,9 @@
 #include "lib/abook/abook_public.h"
 
 #include <QGuiApplication>
+#ifdef QUICK
+#include <QQuickWindow>
+#endif
 #include <QSslSocket>
 #include <QResource>
 #include <QtCore>
@@ -121,6 +124,10 @@ globals::conversationsQuickExecutableSize = Utils::fileSize(PATH_CONV);
   if(const auto gpu = config()->get(ConfigKeys::EnableGPUAccel).toBool(); !gpu)
     qputenv("QT_QUICK_BACKEND", "software");
   CLOCK_MEASURE_END(start_cfg, "main::config init");
+
+#ifdef QUICK
+  QQuickWindow::setTextRenderType(QQuickWindow::NativeTextRendering);
+#endif
 
 #ifdef DISABLE_QML_DISK_CACHE
   qputenv("QML_DISABLE_DISK_CACHE", "1");
