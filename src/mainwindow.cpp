@@ -5,6 +5,7 @@
 #include <QCoreApplication>
 #include <QSystemTrayIcon>
 #include <QFileDialog>
+#include <QWindow>
 
 #include "mainwindow.h"
 #include "settingswidget.h"
@@ -238,9 +239,19 @@ void MainWindow::onOpenChatWindow(QString local_uid, QString remote_uid, QString
     return;
   }
 
-  auto *window = new ChatWindow(m_ctx, local_uid, remote_uid, group_uid, channel, service, this);
+  if(auto *mwh = this->windowHandle())
+    qWarning() << "MainWindow surfaceType BEFORE opening chat window:" << int(mwh->surfaceType());
+
+  auto *window = new ChatWindow(m_ctx, local_uid, remote_uid, group_uid, channel, service, nullptr);
+
+  if(auto *wh = window->windowHandle())
+    wh->setTransientParent(this->windowHandle());
+
   m_chatWindows[group_uid] = window;
   window->show();
+
+  if(auto *mwh = this->windowHandle())
+    qWarning() << "MainWindow surfaceType AFTER opening chat window:" << int(mwh->surfaceType());
 
   connect(window, &ChatWindow::sendMessage, this->m_ctx, &Conversations::onSendOutgoingMessage);
   connect(window, &ChatWindow::closed, this, &MainWindow::onChatWindowClosed);
@@ -535,5 +546,7 @@ QWidget *MainWindow::getChatWindow(const QString &group_uid)
 }
 
 MainWindow::~MainWindow() {
+  qDeleteAll(m_chatWindows);
+  m_chatWindows.clear();
   delete ui;
 }

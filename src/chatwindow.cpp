@@ -10,6 +10,7 @@
 #include <QGroupBox>
 #include <QFileDialog>
 #include <QTextEdit>
+#include <QWindow>
 
 #include "conversations.h"
 #include "chatwindow.h"
@@ -44,11 +45,17 @@ ChatWindow::ChatWindow(
     m_ctx(ctx) {
   pChatWindow = this;
 
-  qWarning() << "chatWindow: calling winId()";
   winId();
-  setAttribute(Qt::WA_NativeWindow);
+  qDebug() << "ChatWindow: winId=" << winId()
+             << "windowHandle=" << windowHandle()
+             << "WA_NativeWindow=" << testAttribute(Qt::WA_NativeWindow)
+             << "parentWidget=" << parentWidget();
 
   ui->setupUi(this);
+
+  qDebug() << "ChatWindow: after setupUi, surfaceType="
+             << (windowHandle() ? int(windowHandle()->surfaceType()) : -1)
+             << "(RasterSurface=0, OpenGLSurface=1)";
   ui->menuBar->hide();
   m_enterKeySendsChat = config()->get(ConfigKeys::EnterKeySendsChat).toBool();
   onDisplayChatBox();
