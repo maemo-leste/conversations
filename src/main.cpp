@@ -105,11 +105,11 @@ globals::conversationsQuickExecutableSize = Utils::fileSize(PATH_CONV);
   intl("conversations-ui");
   CLOCK_MEASURE_END(start_osso_intl, "main::osso-intl.h init");
 
-  QSurfaceFormat fmt;
-  fmt.setRenderableType(QSurfaceFormat::OpenGLES);
-  fmt.setVersion(2, 0);
-  fmt.setProfile(QSurfaceFormat::NoProfile);
-  QSurfaceFormat::setDefaultFormat(fmt);
+  //QSurfaceFormat fmt;
+  //fmt.setRenderableType(QSurfaceFormat::OpenGLES);
+  //fmt.setVersion(2, 0);
+  //fmt.setProfile(QSurfaceFormat::NoProfile);
+  //QSurfaceFormat::setDefaultFormat(fmt);
 
   QApplication::setApplicationName("conversations");
   QApplication::setOrganizationDomain("https://maemo-leste.github.io/");
