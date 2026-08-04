@@ -1,3 +1,13 @@
+conversations (0.8.11) unstable; urgency=medium
+
+  * mainwindow/chatwindow: Fix slowness on mainwindow chatoverview. Qt5 -> Qt6 regression. QQuickWidget on chatwindow converts the window surface into GL/EGL. Previously, Qt5 (5.15.0 qwidget_p.h:602) walked upward from the QML widget and stopped at the first thing that was a window (isWindow()). Qt6 (6.8.4 qwidget.cpp:1108) has no isWindow() check, thus walking past chat window, and found the main window, and turns on GPU compositing there. Fixed by initializing chat window separate from mainwindow.
+  * mainwindow/chatwindow: emoji performance fixes
+  * fonts: remove Roboto, use system font
+  * overview: optimize/cache QTextDocument so QPainter has an easier time with our table delegate
+  * populate el-v1 database with random data for testing purposes: 500 contacts, each having a conversation, sometimes with emojis/cyrillic, and multiple protocols (sms/xmpp/irc/...).
+
+ -- Sander <sander@sanderf.nl>  Tue, 4 Aug 2026 22:00:00 +0200
+
 conversations (0.8.10) unstable; urgency=medium
 
   * chatwindow: Reflect account state by appending (account disabled)/(offline) in onSetWindowTitle()
