@@ -9,10 +9,9 @@ import "../components" as Components
 import "."
 
 // image
-Rectangle {
+Item {
     property int previewItemType: 0
     property var previewFilePath: ""
-    color: "transparent"
 
     Image {
         anchors.fill: parent

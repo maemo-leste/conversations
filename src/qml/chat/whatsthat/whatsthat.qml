@@ -36,6 +36,7 @@ Components.ChatRoot {
         source: "qrc:/whatsthat/bg.png"
         anchors.fill: parent
         fillMode: Image.Tile
+        layer.enabled: true
     }
 
     Components.ChatListView {

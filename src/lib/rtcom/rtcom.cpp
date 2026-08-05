@@ -1,6 +1,8 @@
 #include "rtcom.h"
 #include "rtcom_public.h"
 
+#include "../logger_std/logger_std.h"
+
 namespace qtrtcom {
   RTComEl *el = NULL;
 
@@ -11,12 +13,14 @@ namespace qtrtcom {
   }
 
   std::string get_room_name(const char* group_uid) {
+    CLOCK_MEASURE_START(_get_room_name);
     gchar* title = rtcom_el_plugin_chat_get_group_title(rtcomel(), g_strdup(group_uid));
-    if (!title) return {};
-    return {title};
+    CLOCK_MEASURE_END(_get_room_name, "rtcom::get_room_name(): rtcom_el_plugin_chat_get_group_title");
+    return !title ? std::string() : std::string(title);
   }
 
   std::vector<std::string> get_service_accounts() {
+    CLOCK_MEASURE_START(_get_service_accounts);
     std::vector<std::string> rtn;
     RTComElQuery *query = startQuery(0, 0, RTCOM_EL_QUERY_GROUP_BY_EVENTS_LOCAL_UID);
     if(!rtcom_el_query_prepare(query, NULL)) {
@@ -30,10 +34,12 @@ namespace qtrtcom {
       }
       g_object_unref(query);
     }
+    CLOCK_MEASURE_END(_get_service_accounts, "rtcom::get_service_accounts(): RTCOM_EL_QUERY_GROUP_BY_EVENTS_LOCAL_UID -> iterateRtComEvents");
     return rtn;
   }
 
   std::vector<rtcom_qt::ChatMessageEntry*> get_messages(const char* service_id_cstr, const char* group_uid_cstr, unsigned int limit, unsigned int offset) {
+    CLOCK_MEASURE_START(_get_messages);
     if (limit == -1) limit = 9999999;
     RTComElQuery *query = startQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_NONE);
     const gint sid = rtcom_el_get_service_id(rtcomel(), service_id_cstr);
@@ -52,16 +58,19 @@ namespace qtrtcom {
 
     g_object_unref(query);
 
+    CLOCK_MEASURE_END(_get_messages, "rtcom::get_messages(): RTCOM_EL_QUERY_GROUP_BY_NONE -> iterateRtComEvents");
     return results;
   }
 
   std::vector<rtcom_qt::ChatMessageEntry*> get_overview_messages(unsigned int limit, unsigned int offset) {
+    CLOCK_MEASURE_START(_get_overview_messages);
     RTComElQuery *query = startQuery(limit, offset, RTCOM_EL_QUERY_GROUP_BY_GROUP);
     bool query_prepared = FALSE;
 
     const gint service_id = rtcom_el_get_service_id(rtcomel(), "RTCOM_EL_SERVICE_CALL");
     if (!service_id) {
       rtcom_log("Could not prepare query", true);
+      CLOCK_MEASURE_END(_get_overview_messages, "rtcom::get_overview_messages() 1");
       g_object_unref(query);
       return {};
     }
@@ -70,12 +79,14 @@ namespace qtrtcom {
     if(!query_prepared) {
       rtcom_log("Could not prepare query", true);
       g_object_unref(query);
+      CLOCK_MEASURE_END(_get_overview_messages, "rtcom::get_overview_messages() 2");
       return {};
     }
 
     auto results = iterateRtComEvents(query);
 
     g_object_unref(query);
+    CLOCK_MEASURE_END(_get_overview_messages, "rtcom::get_overview_messages() 3");
     return results;
   }
 
@@ -187,8 +198,10 @@ namespace qtrtcom {
   }
 
   void set_room_name(const char* group_uid, const char* title) {
+    CLOCK_MEASURE_START(_set_room_name);
     const auto el = rtcomel();
     rtcom_el_plugin_chat_set_group_title(el, g_strdup(group_uid), g_strdup(title));
+    CLOCK_MEASURE_END(_set_room_name, "rtcom::set_room_name() 3");
   }
 
   RTComElQuery* startQuery(const unsigned int limit, const unsigned int offset, const RTComElQueryGroupBy group_by) {
@@ -312,9 +325,11 @@ namespace qtrtcom {
   }
 
   void set_read(const unsigned int event_id, const gboolean read) {
+    CLOCK_MEASURE_START(_set_read);
     rtcom_log("set_read, event_id " + std::to_string(event_id), false);
     /* Ignore error for now by setting GError error to NULL */
     rtcom_el_set_read_event(rtcomel(), event_id, read, NULL);
+    CLOCK_MEASURE_END(_set_read, "rtcom::set_read");
   }
 
   rtcom_qt::ChatMessageEntry* register_chat_join(time_t start_time, time_t end_time, const char* self_name, const char* backend_name, const char *remote_uid, const char *remote_name, const char* abook_uid, const char* text, const char* protocol, const char* channel, const char* group_uid) {

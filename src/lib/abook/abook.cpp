@@ -138,7 +138,7 @@ namespace abookqt {
   std::string get_abook_uid(const std::string& protocol, const std::string& remote_uid) {
     OssoABookContact* contact = get_contact(protocol, remote_uid.c_str());
     if (!contact) {
-      fprintf(stderr, "abookqt::get_abook_uid(): could not find contact for protocol %s, remote_uid %s\n", protocol.c_str(), remote_uid.c_str());
+      fprintf(stderr, "abookqt::get_abook_uid(): could not find contact for protocol %s, remote_uid ***\n", protocol.c_str());
       return {};
     }
 
@@ -209,6 +209,7 @@ namespace abookqt {
 
   OssoABookContact* try_ensure_master_contact(OssoABookContact* contact) {
     if (!ensure_aggregator_rdy(__func__)) return contact;
+    CLOCK_MEASURE_START(start);
     const bool is_roster_contact = osso_abook_contact_is_roster_contact(contact);
     if (!is_roster_contact) return contact;
 
@@ -219,6 +220,7 @@ namespace abookqt {
     }
 
     g_list_free(it);
+    CLOCK_MEASURE_END(start, "abook::try_ensure_master_contact");
     return contact;
   }
 
@@ -526,6 +528,8 @@ namespace abookqt {
   OssoABookContact* get_sip_contact(const char *address) {
     if (!ensure_aggregator_rdy(__func__)) return nullptr;
 
+    CLOCK_MEASURE_START(start);
+
     OssoABookContact *res = NULL;
     GList *l = NULL;
     l = osso_abook_aggregator_find_contacts_for_sip_address(CONV_ABOOK_AGGREGATOR, address);
@@ -538,12 +542,14 @@ namespace abookqt {
     }
 
     g_list_free(l);
+    CLOCK_MEASURE_END(start, "abook::get_sip_contact");
     return res;
   }
 
   OssoABookContact* get_im_contact(const char* remote_uid) {
     if (!ensure_aggregator_rdy(__func__)) return nullptr;
 
+    CLOCK_MEASURE_START(start);
     OssoABookContact *res = NULL;
     GList *l = NULL;
     l = osso_abook_aggregator_find_contacts_for_im_contact(CONV_ABOOK_AGGREGATOR, remote_uid, NULL);
@@ -559,12 +565,14 @@ namespace abookqt {
     }
 
     g_list_free(l);
+    CLOCK_MEASURE_END(start, "abook::get_im_contact");
     return res;
   }
 
   OssoABookContact* get_tel_contact(const char *remote_uid) {
     if (!ensure_aggregator_rdy(__func__)) return nullptr;
 
+    CLOCK_MEASURE_START(start);
     OssoABookContact *res = NULL;
     GList *l = NULL;
 
@@ -578,6 +586,7 @@ namespace abookqt {
     }
 
     g_list_free(l);
+    CLOCK_MEASURE_END(start, "abook::get_tel_contact");
     return res;
   }
 }

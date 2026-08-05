@@ -31,6 +31,7 @@ Rectangle {
         anchors.rightMargin: 60
         anchors.bottomMargin: 60
         onClicked: scrollBottomTimer.start();
+        layer.enabled: true
     }
 
     Rectangle {
@@ -74,14 +75,15 @@ Rectangle {
 
     Rectangle {
         color: "#80000000"
-        z: parent.z + 1
+        z: parent.z + 10
         visible: ctx.isDebug
         anchors.top: parent.top
         anchors.left: parent.left
-        anchors.leftMargin: 60
-        anchors.topMargin: 60
+        anchors.leftMargin: 30
+        anchors.topMargin: 30
         height: debugBar.childrenRect.height
         width: debugBar.childrenRect.width
+        layer.enabled: true
 
         ColumnLayout {
             // debugBar

@@ -240,7 +240,7 @@ void MainWindow::onOpenChatWindow(QString local_uid, QString remote_uid, QString
   }
 
   if(auto *mwh = this->windowHandle())
-    qWarning() << "MainWindow surfaceType BEFORE opening chat window:" << int(mwh->surfaceType());
+    qDebug() << "MainWindow surfaceType BEFORE opening chat window:" << int(mwh->surfaceType());
 
   auto *window = new ChatWindow(m_ctx, local_uid, remote_uid, group_uid, channel, service, nullptr);
 
@@ -251,7 +251,7 @@ void MainWindow::onOpenChatWindow(QString local_uid, QString remote_uid, QString
   window->show();
 
   if(auto *mwh = this->windowHandle())
-    qWarning() << "MainWindow surfaceType AFTER opening chat window:" << int(mwh->surfaceType());
+    qDebug() << "MainWindow surfaceType AFTER opening chat window:" << int(mwh->surfaceType());
 
   connect(window, &ChatWindow::sendMessage, this->m_ctx, &Conversations::onSendOutgoingMessage);
   connect(window, &ChatWindow::closed, this, &MainWindow::onChatWindowClosed);

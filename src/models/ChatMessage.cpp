@@ -3,6 +3,7 @@
 
 #include "models/ChatMessage.h"
 #include "conversations.h"
+#include "logger_std/logger_std.h"
 
 ChatMessage::ChatMessage(rtcom_qt::ChatMessageEntry* raw_msg, QObject *parent) :
     QObject(parent),
@@ -165,6 +166,7 @@ bool ChatMessage::shouldHardWordWrap() const {
 }
 
 QString ChatMessage::generateOverviewItemDelegateRichText(){
+  CLOCK_MEASURE_START(_generateOverviewItemDelegateRichText);
   const auto overview_name = this->name_channel();
   QString richtext;
   // Stylesheet: overview/overviewRichDelegate.css
@@ -178,6 +180,7 @@ QString ChatMessage::generateOverviewItemDelegateRichText(){
   textSnippet = textSnippet.replace("<", "");
 
   richtext += QString("<span class=\"text-muted\">%1</span>").arg(textSnippet);
+  CLOCK_MEASURE_END(_generateOverviewItemDelegateRichText, "ChatMessage::generateOverviewItemDelegateRichText");
   return richtext;
 }
 

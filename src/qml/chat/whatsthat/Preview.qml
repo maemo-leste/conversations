@@ -5,7 +5,7 @@ import QtQuick.Controls
 import Conversations 1.0
 import "../components" as Components
 
-Rectangle {
+Item {
     id: previewRoot
     property var model
     property int loadingIconFrameIndex: 1
@@ -21,8 +21,6 @@ Rectangle {
         }
     }
 
-    color: "transparent"
-
     MouseArea {
         anchors.fill: parent
         onClicked: {
@@ -35,8 +33,7 @@ Rectangle {
         spacing: 0
 
         // preview button - user interaction
-        Rectangle {
-            color: "transparent"
+        Item {
             visible: previewRoot.model.displayButton
             Layout.preferredHeight: ctx.scaleFactor !== 1.0 ? 64 : previewRoot.model.buttonHeight
             Layout.fillWidth: true
@@ -53,8 +50,7 @@ Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
 
-                        Rectangle {
-                            color: "transparent"
+                        Item {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
 
@@ -139,8 +135,7 @@ Rectangle {
         }
 
         // results
-        Rectangle {
-            color: "transparent"
+        Item {
             Layout.preferredHeight: previewRoot.model.resultsHeight * ctx.scaleFactor
 
             Layout.fillWidth: true
@@ -153,10 +148,9 @@ Rectangle {
                 interactive: false
                 spacing: 2
 
-                delegate: Rectangle {
-                    width: parent.width
+                delegate: Item {
+                    width: ListView.view.width
                     height: itemHeight * ctx.scaleFactor
-                    color: "transparent"
 
                     // text
                     Loader {

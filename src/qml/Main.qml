@@ -25,7 +25,6 @@ Rectangle {
     Components.StackViewFancy {
         id: view
         anchors.fill: parent
-        clip: true
 
         initialItem: overviewWindow
     }

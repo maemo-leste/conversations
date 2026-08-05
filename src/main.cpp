@@ -143,11 +143,18 @@ globals::conversationsQuickExecutableSize = Utils::fileSize(PATH_CONV);
   CLOCK_MEASURE_START(start_tmp_logging);
   if (config()->get(ConfigKeys::EnableLogSyslog).toBool())
     conversations_logger::syslog_enabled = true;
-  if (config()->get(ConfigKeys::EnableLogWrite).toBool()) {
-    conversations_logger::logFile = new QFile(QString("%1/conversations.log").arg(QString::fromStdString(configDir)));
-    if(!conversations_logger::logFile->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
-      qWarning() << QString("could not open logfile");
-  }
+
+  auto logPath = QString("%1/conversations.log").arg(QString::fromStdString(configDir));
+  if (Utils::fileExists(logPath)) QFile::remove(logPath);
+  conversations_logger::logFile = new QFile(logPath);
+  if(!conversations_logger::logFile->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+    qWarning() << QString("could not open logfile");
+
+  // if (config()->get(ConfigKeys::EnableLogWrite).toBool()) {
+  //   conversations_logger::logFile = new QFile(QString("%1/conversations.log").arg(QString::fromStdString(configDir)));
+  //   if(!conversations_logger::logFile->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+  //     qWarning() << QString("could not open logfile");
+  // }
   CLOCK_MEASURE_END(start_tmp_logging, "main::start_tmp_logging");
 
   CLOCK_MEASURE_START(start_log_handler);
@@ -215,7 +222,7 @@ globals::conversationsQuickExecutableSize = Utils::fileSize(PATH_CONV);
   auto *ctx = new Conversations(&parser, ipc);
   conversations_logger::logger_ctx = ctx;
   ctx->applicationPath = argv_.at(0);
-  ctx->isDebug = debugMode;
+  ctx->isDebug = true;
   ctx->isMaemo = true;  // @TODO: remove
   CLOCK_MEASURE_END(start_ctx, "main::ctx_init");
 

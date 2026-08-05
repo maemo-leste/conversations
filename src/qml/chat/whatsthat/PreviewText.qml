@@ -47,7 +47,6 @@ RowLayout {
             color: "#1f2528"
             Layout.fillHeight: true
             Layout.fillWidth: true
-            clip: true
 
             /* @type {Components} */ // clion parser fix
             Components.PlainText {
@@ -72,7 +71,6 @@ RowLayout {
             color: "#1f2528"
             Layout.fillHeight: true
             Layout.fillWidth: true
-            clip: true
 
             Components.PlainText {
                 anchors.left: parent.left

@@ -21,8 +21,8 @@ namespace rtcom_qt {
 
     auto _group_uid = group_uid.c_str();
     std::string result = qtrtcom::get_room_name(_group_uid);
-    if (!result.empty())
-      cache_room_name[group_uid] = result;
+    // if (!result.empty())
+    cache_room_name[group_uid] = result;
 
     return result;
   }

@@ -157,8 +157,7 @@ RowLayout {
         // Layout.bottomMargin: 10
         // Layout.topMargin: 10
 
-        Rectangle {
-            color: "transparent"
+        Item {
             anchors.fill: parent
             anchors.topMargin: 10
             anchors.leftMargin: (hasAvatar && displayAvatar) ? 6 : 12
@@ -309,9 +308,8 @@ RowLayout {
         }
     }
 
-    Rectangle {
+    Item {
         visible: new_day && !outgoing
-        color: "transparent"
         Layout.fillHeight: true
         Layout.fillWidth: true
 
@@ -333,9 +331,8 @@ RowLayout {
         }
     }
 
-    Rectangle {
+    Item {
         visible: !outgoing
-        color: "transparent"
         Layout.preferredWidth: itemWidth
         Layout.fillHeight: true
     }
