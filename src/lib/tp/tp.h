@@ -14,6 +14,10 @@
 #include <TelepathyQt/Debug>
 #include <TelepathyQt/Constants>
 #include <TelepathyQt/Channel>
+#include <TelepathyQt/ChannelTypeRoomListInterface>
+#include <TelepathyQt/ChannelInterfaceRoomConfigInterface>
+#include <TelepathyQt/PendingChannel>
+#include <TelepathyQt/ConnectionLowlevel>
 #include <TelepathyQt/ContactMessenger>
 #include <TelepathyQt/ContactManager>
 #include <TelepathyQt/PendingSendMessage>
@@ -184,8 +188,11 @@ private:
   Tp::AccountManagerPtr m_accountmanager;
 
   Telepathy *m_parent;
+  Tp::ChannelPtr m_roomListChannel;
   void _joinChannel(const QString &channel, bool auto_join = false);
   void joinSavedGroupChats();
+  void adoptExistingChannels();
+  void startRoomListing(const Tp::ChannelPtr &channel);
   void configRead();
 };
 
@@ -245,6 +252,7 @@ public:
   TelepathyChannelPtr channelByName(const QString &local_uid, const QString &remote_uid);
   void joinChannel(const QString &local_uid, const QString &remote_uid);
   void leaveChannel(const QString &local_uid, const QString &remote_uid);
+  void adoptChannel(const TelepathyAccountPtr &accountPtr, const Tp::ChannelPtr &channelPtr, bool isAutoJoin);
   bool deleteChannel(const QString &local_uid, const QString &remote_uid);
 
   void getContact(QString local_uid, QString remote_uid, std::function<void(Tp::ContactPtr)> cb);

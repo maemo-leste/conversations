@@ -338,11 +338,21 @@ QList<ChatMessage*> OverviewModel::getOverviewMessages() {
   // ==
   // tp
   // ==
+  qDebug() << "OverviewModel TP: accounts=" << m_tp->accounts.size();
   for(const auto &account: m_tp->accounts) {
+    qDebug() << "OverviewModel TP: account" << account->local_uid
+             << "protocol" << account->protocolName()
+             << "channels=" << account->channels.size();
     for(const auto &remote_uid: account->channels.keys()) {
       auto channel = account->channels[remote_uid];
       auto group_uid = account->getGroupUid(channel);
       auto room_name = account->getRoomName(channel);
+
+      qDebug() << "OverviewModel TP: channel remote_uid=" << remote_uid
+               << "group_uid=" << group_uid
+               << "room_name=" << room_name
+               << "isRoom=" << (channel ? channel->isRoom : false)
+               << "duplicate=" << group_uids.contains(group_uid);
 
       if(group_uids.contains(group_uid))
         continue;
@@ -430,11 +440,18 @@ void OverviewModel::loadOverviewMessages() {
 }
 
 void OverviewModel::setMessages(QList<ChatMessage*> lst) {
-  beginInsertRows(QModelIndex(), 0, lst.size());
+  if (lst.isEmpty()) {
+    qDebug() << "OverviewModel::setMessages: nothing to insert, total=" << messages.size();
+    return;
+  }
+
+  beginInsertRows(QModelIndex(), 0, lst.size() - 1);
   for (const auto &message: lst) {
     messages << QSharedPointer<ChatMessage>(message);
   }
   endInsertRows();
+
+  qDebug() << "OverviewModel::setMessages: inserted" << lst.size() << "row(s), total=" << messages.size();
 }
 
 QHash<int, QByteArray> OverviewModel::roleNames() const {
