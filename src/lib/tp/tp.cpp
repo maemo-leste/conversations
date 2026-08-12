@@ -515,6 +515,12 @@ TelepathyAccount::TelepathyAccount(Tp::AccountPtr macc, QObject *parent) :
   m_protocol_name = acc->protocolName();
   m_parent = static_cast<Telepathy *>(parent);
 
+  connect(acc.data(), &Tp::Account::nicknameChanged, this, [this](const QString &nickname) {
+    qDebug() << "nicknameChanged" << local_uid << m_nickname << "->" << nickname;
+    m_nickname = nickname;
+    emit accountReady(this);
+  });
+
   cm_name = macc->cmName();
   display_name = macc->displayName();
 
@@ -705,10 +711,16 @@ void TelepathyAccount::onMessageReceived(const Tp::ReceivedMessage &message, con
     return;
   }
 
-  auto remote_uid = message.sender()->id();
-  auto remote_alias = message.sender()->alias();
-  const bool outgoing = groupSelfContact->handle() == message.sender()->handle() || groupSelfContact->id() ==
-                        remote_uid;
+  // a message without a sender comes from the channel itself (e.g. a service
+  // notice from the connection manager); attribute it to the channel target
+  const Tp::ContactPtr sender = message.sender();
+  if (sender.isNull())
+    qDebug() << "message without sender on" << channel->targetId() << "- treating as a service message";
+
+  auto remote_uid = sender.isNull() ? channel->targetId() : sender->id();
+  auto remote_alias = sender.isNull() ? channel->targetId() : sender->alias();
+  const bool outgoing = !sender.isNull() && !groupSelfContact.isNull() &&
+                        (groupSelfContact->handle() == sender->handle() || groupSelfContact->id() == remote_uid);
 
   const QDateTime dt = message.sent().isValid() ? message.sent() : message.received();
   qint64 epoch = dt.toMSecsSinceEpoch();
