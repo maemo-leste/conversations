@@ -5,8 +5,8 @@
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
-	-DCMAKE_BUILD_TYPE=Debug \
-	-DENABLE_DEBUG_TIMINGS=On
+	-DCMAKE_BUILD_TYPE=Release \
+	-DENABLE_DEBUG_TIMINGS=OFF
 
 override_dh_install:
 	dh_install

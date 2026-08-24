@@ -52,8 +52,8 @@ namespace globals {
       fputs(logLine, CLOCK_FILE);
       fflush(CLOCK_FILE);
 
-      // fputs(logLine, stderr);
-      // fflush(stderr);
+      fputs(logLine, stderr);
+      fflush(stderr);
     }
 #endif
   }
