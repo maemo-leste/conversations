@@ -5,8 +5,8 @@ from packaging.version import Version
 
 AUTHOR = "Sander <sander@sanderf.nl>"
 PATH_CHANGELOG = "debian/changelog"
-BRANCH_MAIN = "maemo/daedalus"
-BRANCH_DEVEL = "maemo/daedalus-devel"
+BRANCH_MAIN = "maemo/excalibur"
+BRANCH_DEVEL = "maemo/excalibur-devel"
 
 increment = "patch"
 if len(sys.argv) > 1:
