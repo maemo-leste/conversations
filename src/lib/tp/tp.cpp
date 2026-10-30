@@ -787,7 +787,7 @@ void TelepathyAccount::onMessageSent(const Tp::Message &message, Tp::MessageSend
   if (result.isNull()) {
     qWarning() << "Failed to add a database event";
   } else {
-    if (auto message_token = message.messageToken().toStdString(); !message_token.empty())
+    if (auto message_token = sentMessageToken.toStdString(); !message_token.empty())
       rtcom_qt::set_event_header(result->event_id(), "message-token", message_token);
   }
 }
